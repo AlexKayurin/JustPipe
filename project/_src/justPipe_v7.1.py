@@ -1,5 +1,5 @@
 """
-17 Sept 2025 v 7.1
+06 Feb 2026 v 7.1
 """
 """
 EIVA EXPORT STRING:
@@ -150,15 +150,14 @@ HOTKEYS:
         Z - profile bkwd
         Home - to first pofile
         End - to last profile
-        E - to last visited in group
+        E - to last visited in visited section
         0 - reset all profiles fwd
         Space - auto-snap TOP
+        I - 3D interpolate
         C - Show/Hide pipe assistant
         Ctrl+S - fast save (work and pipetracker)
         Alt - in PT edit mode - switch Accept/Reject
-        Up/Down - Decrease/Increase sector by 5deg
-        Left/Right - Rotate sector by 5deg
-        -_ / += - change Lview exageration
+        -_ / += - change Lview exaggeration
 MOUSE:
     Xview:
         LMB - force TOP
@@ -181,12 +180,13 @@ import platform
 from decimal import Decimal
 import PIL.Image
 from PIL import Image
+from PIL.TiffTags import TAGS
 import numpy as np
 from PySide6 import QtWidgets, QtCore, QtGui
 from PySide6.QtWidgets import QFileDialog, QMessageBox, QColorDialog
 from PySide6.QtCore import Qt, QThread
 import pyqtgraph as pg
-from pyqtgraph import Vector
+# from pyqtgraph import Vector
 import _UI_Control
 import _UI_Xview
 import _UI_Pview
@@ -376,14 +376,15 @@ class MainWindow(QtWidgets.QMainWindow, _UI_Control.Ui_CONTROL):
         self.cBackground = pg.mkColor(0, 0, 0, 255)
 
     def open_manual(self):
-        # open application manual 
+        # open application manual
+        appfolder = os.path.dirname(os.path.realpath(sys.argv[0]))
+        helpfile = os.path.join(appfolder, '_internal', 'justPipe.pdf')
+
         platf = platform.system()
         if platf == 'Linux':
-            appfolder = os.path.dirname(os.path.realpath(sys.argv[0]))
-            helpfile = os.path.join(appfolder, 'justPipe.pdf')           
             subprocess.call(['xdg-open', helpfile]) #, check=True)
         if platf == 'Windows':
-            os.startfile('justPipe.pdf')
+            os.startfile(helpfile)
 
     def showwarn(self, warn):
         # pop up message with 'warn' text
@@ -402,7 +403,7 @@ class MainWindow(QtWidgets.QMainWindow, _UI_Control.Ui_CONTROL):
     def closeEvent(self, e):
         # catch close event
         #  save workspace
-        parentfold = os.getcwd()
+        parentfold = os.path.dirname(sys.argv[0])
         configfile = os.path.join(parentfold, 'config', 'config.bin')
 
         views_geometry = []
@@ -759,26 +760,41 @@ class MainWindow(QtWidgets.QMainWindow, _UI_Control.Ui_CONTROL):
 
     def loadtif(self, fName):
         if fName:
-            filetype = Path(fName).suffix.strip().lower()
-            refName = fName[: -len(filetype)] + '.tfw' if filetype in ['.tif', '.tiff'] else fName[: -len(filetype)] + '.pgw'
-            with open(refName, 'r') as refFile:
-                refString = refFile.readlines()
+            available_geodata = False                                   # georef data available flag
+            filetype = Path(fName).suffix.strip().lower()               # only TIF presently!!!
+            if filetype in ['.tif', '.tiff']:
+                refName = fName[: -len(filetype)] + '.tfw'              # world file name
+                self.geodata = []                                       # georef data list
+                # open image, read metadata
+                img = Image.open(fName)
+                self.geoimage = np.swapaxes(np.array(img), 0, 1)
+                with img:
+                    meta_dict = {TAGS[key]: img.tag[key] for key in img.tag_v2}
 
-            self.geodata = []
-            for line in refString:
-                self.geodata.append(float(line.replace('\n', '')))
+                # reading georef data from tif metadata or ref world file
+                if 'ModelTiepointTag' in meta_dict.keys() and 'ModelPixelScaleTag' in meta_dict.keys():
+                    self.geodata.append(float(meta_dict['ModelPixelScaleTag'][0]))
+                    self.geodata.append(0)
+                    self.geodata.append(0)
+                    self.geodata.append(0)
+                    self.geodata.append(float(meta_dict['ModelTiepointTag'][3]))
+                    self.geodata.append(float(meta_dict['ModelTiepointTag'][4]))
+                    available_geodata = True
+                elif os.path.isfile(refName):
+                    with open(refName, 'r') as refFile:
+                        refString = refFile.readlines()
+                    for line in refString:
+                        self.geodata.append(float(line.replace('\n', '')))
+                    available_geodata = True
+                else:
+                    self.showwarn('No geodata available\ngeoimage not loaded')
 
-            self.geoimage = np.swapaxes(np.array(Image.open(fName)), 0, 1)
-
-            self.geodata.append(self.geoimage.shape[0])
-            self.geodata.append(self.geoimage.shape[1])
-
-            # load image to plan view
-            cellsize = mc.geodata[0]
-            o_left, o_top = mc.geodata[4], mc.geodata[5]
-            pv.pview.setImage(mc.geoimage, scale=(cellsize, -cellsize), pos=(o_left - cellsize, o_top + cellsize))
-
-            pv.UpdateP()
+                if available_geodata:
+                    # load image to plan view
+                    cellsize = mc.geodata[0]
+                    o_left, o_top = mc.geodata[4], mc.geodata[5]
+                    pv.pview.setImage(mc.geoimage, scale=(cellsize, -cellsize), pos=(o_left - cellsize, o_top + cellsize))
+                    pv.UpdateP()
 
     def loadtide(self, fName):
         if not self.ProfileFlag:
@@ -1466,7 +1482,7 @@ class XV(QtWidgets.QMainWindow, _UI_Xview.Ui_XVIEW):
             vis_start, vis_end = visited_ixs[0], visited_ixs[-1]
 
             visited[1:, 30] = np.diff(visited[:, 13])  # ping No's differences forward
-            self.vis_stats_ix = np.insert((visited[:, 13][visited[:, 30] > 1]).astype('int'), 0, vis_start)
+            self.vis_starts_ix = np.insert((visited[:, 13][visited[:, 30] > 1]).astype('int'), 0, vis_start)
 
             visited[-2::-1, 30] = np.diff(visited[::-1, 13]) # ping No's differences backward
             self.vis_ends_ix = np.append((visited[:, 13][visited[:, 30] < -1]).astype('int'), vis_end)
@@ -1630,7 +1646,7 @@ class PV(QtWidgets.QMainWindow, _UI_Pview.Ui_PVIEW):
             self.visited = []
             self.li, self.ri = [], []
             self.lo, self.ro = [], []
-            for s, e in zip(xv.vis_stats_ix, xv.vis_ends_ix + 1):
+            for s, e in zip(xv.vis_starts_ix, xv.vis_ends_ix + 1):
                 # top
                 self.visited.append(pg.PlotDataItem(x=mc.flush[s:e, 9],
                                                     y=mc.flush[s:e, 10],
@@ -1863,7 +1879,7 @@ class LV(QtWidgets.QMainWindow, _UI_Lview.Ui_LVIEW):
             self.visited_bop = []
             self.visited_inner = []
             self.visited_outer = []
-            for s, e in zip(xv.vis_stats_ix, xv.vis_ends_ix + 1):
+            for s, e in zip(xv.vis_starts_ix, xv.vis_ends_ix + 1):
                 TV = mc.ch_ApplyTide.isChecked() * mc.flush[s:e, 15]  # visited parts
                 # TOP
                 self.visited_top.append(pg.PlotDataItem(x=mc.flush[s:e, ix],
@@ -2355,12 +2371,12 @@ def FindPtGaps():
     acc_start, acc_end = accepted_ixs[0], accepted_ixs[-1]
 
     accepted[1:, 13] = np.diff(accepted[:, 12])         # chainage differences forward
-    acc_stats_ix = np.insert((accepted[:, 10][accepted[:, 13] > mc.PtGap]).astype('int'), 0, acc_start)
+    acc_starts_ix = np.insert((accepted[:, 10][accepted[:, 13] > mc.PtGap]).astype('int'), 0, acc_start)
 
     accepted[-2::-1, 13] = np.diff(accepted[::-1, 12])  # chainage differences backward
     acc_ends_ix = np.append((accepted[:, 10][accepted[:, 13] < -mc.PtGap]).astype('int'), acc_end)
 
-    return(acc_stats_ix, acc_ends_ix)
+    return(acc_starts_ix, acc_ends_ix)
 
 
 def Smooth_PT(smooth):
@@ -2369,9 +2385,9 @@ def Smooth_PT(smooth):
         filt = np.ones(sm_win)
         mov = sm_win // 2
 
-        acc_stats_ix, acc_ends_ix = FindPtGaps()
+        acc_starts_ix, acc_ends_ix = FindPtGaps()
 
-        for s, e in zip(acc_stats_ix, acc_ends_ix):
+        for s, e in zip(acc_starts_ix, acc_ends_ix):
             _for_smooth = mc.pipetracker[s + 1: e + 1][mc.pipetracker[s + 1: e + 1, 9] == 0]
             if len(_for_smooth) > 2 * sm_win:       #!!!! only smoothing if section > window +- margin (window/2)
                 if smooth == 'smoothplan':                         # smoothing plan
@@ -2406,14 +2422,14 @@ def Level_PT():
 def Snap_TOP(snap):
     # snap top e, n, z to pt by KP
     if mc.Ptflag:
-        acc_stats_ix, acc_ends_ix = FindPtGaps()
+        acc_starts_ix, acc_ends_ix = FindPtGaps()
 
         if mc.ChunkSelected:
             chs, che = mc.chunk[0], mc.chunk[1]
         else:
             chs, che = 0, mc.no_of_prof - 1
 
-        for s, e in zip(acc_stats_ix, acc_ends_ix):
+        for s, e in zip(acc_starts_ix, acc_ends_ix):
             if (s <= che) & (chs <= e):
                 _p_part = (mc.flush[chs:che + 1, 13][(s <= mc.flush[chs:che + 1, 13]) & (mc.flush[chs:che + 1, 13] <= e)]).astype('int')
 
@@ -2575,11 +2591,13 @@ def main():
     global opt
     global ic_app
 
-    parentfold = os.getcwd()
+    # executable parent folder and path to config.bin
+    parentfold = os.path.dirname(sys.argv[0])
     configfold = os.path.join(parentfold, 'config')
     configfile = os.path.join(configfold, 'config.bin')
 
     app = QtWidgets.QApplication(sys.argv)
+    app.setStyle('fusion')
 
     # icon
     ic_app = iconFromBase64()

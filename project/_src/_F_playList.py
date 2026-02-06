@@ -16,7 +16,7 @@ def buildplaylist(foldName, convention):
             ext = pathlib.Path(fname).suffix
             filetimestring = re.search(r'\d{14}', fname)
 
-            if filetimestring and ext in ['.mp4', '.asf']:
+            if filetimestring and ext in ['.mp4', '.asf', '.mkv']:
                 # get video metadata
                 video = VideoFileClip(os.path.join(root, fname))
                 duration       = video.duration
