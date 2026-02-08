@@ -1,4 +1,4 @@
-﻿# -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 
 ################################################################################
 ## Form generated from reading UI file '_Lview.ui'
@@ -37,7 +37,7 @@ class Ui_LVIEW(object):
         self.Layout1 = QHBoxLayout()
         self.Layout1.setSpacing(10)
         self.Layout1.setObjectName(u"Layout1")
-        self.Layout1.setSizeConstraint(QLayout.SetMinimumSize)
+        self.Layout1.setSizeConstraint(QLayout.SizeConstraint.SetMinimumSize)
         self.Layout1.setContentsMargins(0, 0, 0, 0)
         self.b_POI = QPushButton(self.centralwidget)
         self.b_POI.setObjectName(u"b_POI")
@@ -88,7 +88,7 @@ class Ui_LVIEW(object):
         font1 = QFont()
         font1.setPointSize(8)
         self.l1.setFont(font1)
-        self.l1.setAlignment(Qt.AlignRight|Qt.AlignTrailing|Qt.AlignVCenter)
+        self.l1.setAlignment(Qt.AlignmentFlag.AlignRight|Qt.AlignmentFlag.AlignTrailing|Qt.AlignmentFlag.AlignVCenter)
 
         self.Layout1.addWidget(self.l1)
 
@@ -106,7 +106,7 @@ class Ui_LVIEW(object):
         self.l0.setMinimumSize(QSize(140, 20))
         self.l0.setMaximumSize(QSize(140, 20))
         self.l0.setFont(font1)
-        self.l0.setAlignment(Qt.AlignRight|Qt.AlignTrailing|Qt.AlignVCenter)
+        self.l0.setAlignment(Qt.AlignmentFlag.AlignRight|Qt.AlignmentFlag.AlignTrailing|Qt.AlignmentFlag.AlignVCenter)
 
         self.Layout1.addWidget(self.l0)
 
@@ -124,7 +124,7 @@ class Ui_LVIEW(object):
         self.l2.setMinimumSize(QSize(140, 20))
         self.l2.setMaximumSize(QSize(140, 20))
         self.l2.setFont(font1)
-        self.l2.setAlignment(Qt.AlignRight|Qt.AlignTrailing|Qt.AlignVCenter)
+        self.l2.setAlignment(Qt.AlignmentFlag.AlignRight|Qt.AlignmentFlag.AlignTrailing|Qt.AlignmentFlag.AlignVCenter)
 
         self.Layout1.addWidget(self.l2)
 
@@ -142,7 +142,7 @@ class Ui_LVIEW(object):
 
         self.Layout0 = QGridLayout()
         self.Layout0.setObjectName(u"Layout0")
-        self.Layout0.setSizeConstraint(QLayout.SetMaximumSize)
+        self.Layout0.setSizeConstraint(QLayout.SizeConstraint.SetMaximumSize)
         self.lview = PlotWidget(self.centralwidget)
         self.lview.setObjectName(u"lview")
         sizePolicy = QSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Preferred)
@@ -165,7 +165,7 @@ class Ui_LVIEW(object):
         self.LAyout3 = QHBoxLayout()
         self.LAyout3.setSpacing(10)
         self.LAyout3.setObjectName(u"LAyout3")
-        self.LAyout3.setSizeConstraint(QLayout.SetMinimumSize)
+        self.LAyout3.setSizeConstraint(QLayout.SizeConstraint.SetMinimumSize)
         self.LAyout3.setContentsMargins(0, 0, 0, 0)
         self.ch_Center = QCheckBox(self.centralwidget)
         self.ch_Center.setObjectName(u"ch_Center")
@@ -202,23 +202,6 @@ class Ui_LVIEW(object):
 
         self.LAyout3.addWidget(self.ch_Aspect)
 
-        self.l3 = QLabel(self.centralwidget)
-        self.l3.setObjectName(u"l3")
-        self.l3.setMinimumSize(QSize(140, 20))
-        self.l3.setMaximumSize(QSize(140, 20))
-        self.l3.setFont(font1)
-        self.l3.setAlignment(Qt.AlignRight|Qt.AlignTrailing|Qt.AlignVCenter)
-
-        self.LAyout3.addWidget(self.l3)
-
-        self.t_aspect = QLineEdit(self.centralwidget)
-        self.t_aspect.setObjectName(u"t_aspect")
-        self.t_aspect.setMinimumSize(QSize(60, 25))
-        self.t_aspect.setMaximumSize(QSize(60, 25))
-        self.t_aspect.setFont(font1)
-
-        self.LAyout3.addWidget(self.t_aspect)
-
         self.horizontalSpacer_2 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
 
         self.LAyout3.addItem(self.horizontalSpacer_2)
@@ -229,7 +212,6 @@ class Ui_LVIEW(object):
         LVIEW.setCentralWidget(self.centralwidget)
 
         self.retranslateUi(LVIEW)
-        self.t_aspect.editingFinished.connect(LVIEW.setFocus)
 
         QMetaObject.connectSlotsByName(LVIEW)
     # setupUi
@@ -252,6 +234,5 @@ class Ui_LVIEW(object):
         self.ch_Time_Chn.setText(QCoreApplication.translate("LVIEW", u"Time", None))
         self.ch_ShowPT.setText(QCoreApplication.translate("LVIEW", u"Show PT", None))
         self.ch_Aspect.setText(QCoreApplication.translate("LVIEW", u"Scale 1:1", None))
-        self.l3.setText(QCoreApplication.translate("LVIEW", u"Scale:", None))
     # retranslateUi
 

@@ -824,7 +824,7 @@ class Ui_CONTROL(object):
         self.actionDV_Control.setText(QCoreApplication.translate("CONTROL", u"DV Control", None))
         self.actionInfo.setText(QCoreApplication.translate("CONTROL", u"Copyright (c) 2026 Aleksandr Kaiurin (akayurin@gmail.com)", None))
         self.actionInfo.setIconText(QCoreApplication.translate("CONTROL", u"Copyright (c) 2026 Aleksandr Kaiurin (akayurin@gmail.com)", None))
-        self.actionVersion.setText(QCoreApplication.translate("CONTROL", u"Version 7.1", None))
+        self.actionVersion.setText(QCoreApplication.translate("CONTROL", u"Version 2.1", None))
         self.actionManual.setText(QCoreApplication.translate("CONTROL", u"Manual", None))
         self.actionLoad_events.setText(QCoreApplication.translate("CONTROL", u"Load VW events", None))
         self.actionEvents.setText(QCoreApplication.translate("CONTROL", u"Events", None))

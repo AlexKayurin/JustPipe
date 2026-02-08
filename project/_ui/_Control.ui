@@ -1821,7 +1821,7 @@
     <bool>false</bool>
    </property>
    <property name="text">
-    <string>Version 7.1</string>
+    <string>Version 2.1</string>
    </property>
    <property name="font">
     <font>
