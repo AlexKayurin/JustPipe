@@ -765,25 +765,32 @@ class MainWindow(QtWidgets.QMainWindow, _UI_Control.Ui_CONTROL):
         if fName:
             available_geodata = False                                   # georef data available flag
             filetype = Path(fName).suffix.strip().lower()               # only TIF presently!!!
+
+            self.geodata = []  # georef data list
+            # open image, read metadata
+            img = Image.open(fName)
+            self.geoimage = np.swapaxes(np.array(img), 0, 1)
+
             if filetype in ['.tif', '.tiff']:
                 refName = fName[: -len(filetype)] + '.tfw'              # world file name
-                self.geodata = []                                       # georef data list
-                # open image, read metadata
-                img = Image.open(fName)
-                self.geoimage = np.swapaxes(np.array(img), 0, 1)
+            elif filetype in ['.png']:
+                refName = fName[: -len(filetype)] + '.pgw'              # world file name
+
+            try:
                 with img:
                     meta_dict = {TAGS[key]: img.tag[key] for key in img.tag_v2}
 
                 # reading georef data from tif metadata or ref world file
-                if 'ModelTiepointTag' in meta_dict.keys() and 'ModelPixelScaleTag' in meta_dict.keys():
-                    self.geodata.append(float(meta_dict['ModelPixelScaleTag'][0]))
-                    self.geodata.append(0)
-                    self.geodata.append(0)
-                    self.geodata.append(0)
-                    self.geodata.append(float(meta_dict['ModelTiepointTag'][3]))
-                    self.geodata.append(float(meta_dict['ModelTiepointTag'][4]))
-                    available_geodata = True
-                elif os.path.isfile(refName):
+                # if 'ModelTiepointTag' in meta_dict.keys() and 'ModelPixelScaleTag' in meta_dict.keys():
+                self.geodata.append(float(meta_dict['ModelPixelScaleTag'][0]))
+                self.geodata.append(0)
+                self.geodata.append(0)
+                self.geodata.append(0)
+                self.geodata.append(float(meta_dict['ModelTiepointTag'][3]))
+                self.geodata.append(float(meta_dict['ModelTiepointTag'][4]))
+                available_geodata = True
+            except (AttributeError, KeyError):
+                if os.path.isfile(refName):
                     with open(refName, 'r') as refFile:
                         refString = refFile.readlines()
                     for line in refString:
@@ -792,12 +799,12 @@ class MainWindow(QtWidgets.QMainWindow, _UI_Control.Ui_CONTROL):
                 else:
                     self.showwarn('No geodata available\ngeoimage not loaded')
 
-                if available_geodata:
-                    # load image to plan view
-                    cellsize = mc.geodata[0]
-                    o_left, o_top = mc.geodata[4], mc.geodata[5]
-                    pv.pview.setImage(mc.geoimage, scale=(cellsize, -cellsize), pos=(o_left - cellsize, o_top + cellsize))
-                    pv.UpdateP()
+            if available_geodata:
+                # load image to plan view
+                cellsize = mc.geodata[0]
+                o_left, o_top = mc.geodata[4], mc.geodata[5]
+                pv.pview.setImage(mc.geoimage, scale=(cellsize, -cellsize), pos=(o_left - cellsize, o_top + cellsize))
+                pv.UpdateP()
 
     def loadtide(self, fName):
         if not self.ProfileFlag:
@@ -1934,6 +1941,7 @@ class LV(QtWidgets.QMainWindow, _UI_Lview.Ui_LVIEW):
 
             self.winrange = self.lview.viewRange()[0]
 
+
 def key_pressed(e):
     if e.type() == 6:
         if e.modifiers() & Qt.ControlModifier:  # 'Ctrl + S' -----MODIFIER
@@ -2048,8 +2056,8 @@ def AutoPipe():
         mc.high = mc.low = mc.min_cz = mc.flush[mc.prno, 4]
 
         # AutoPipe only runs if: profile not visited AND no ManualPipe selected
-        # DoPipe runs only if unvisited, reset to unvisited to rerun
-        if not mc.flush[mc.prno, 11] and not mc.ManualPipe:
+        # or DoPipe - autopipe
+        if (not mc.flush[mc.prno, 11] and not mc.ManualPipe) or mc.DoPipe:
             # profile window (part of profile used for TOP search = xini +- HWin/2 +- pipeR)
             prof_win = np.where((mc.xini - mc.HWin / 2 - mc.pipeR <= mc.profile[:, 0]) &
                                 (mc.profile[:, 0] <= mc.xini + mc.HWin / 2 + mc.pipeR))[0]

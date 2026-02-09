@@ -1,14 +1,14 @@
 '''
 Calculates KP of points based on reference line KP
 
-:copyright: 2024 Aleksandr Kaiurin <akayurin@gmail.com>
+:copyright: 2026 Aleksandr Kaiurin <akayurin@gmail.com>
 :license: MIT, see LICENSE.txt for more details.
 '''
 
 import numpy as np
 import math
 
-np.set_printoptions(precision=3, suppress=True)
+# np.set_printoptions(precision=3, suppress=True)
 
 
 class T_calc:
@@ -17,7 +17,6 @@ class T_calc:
     Input format is numpy array [[de, dn], ..., [de,dn]]
     Output format is numpy array [t, ..., t]
     '''
-    @staticmethod
     def t(de, dn):
         grbrg = np.zeros((len(de), 3))
         grbrg[:, 0] = de
@@ -53,7 +52,7 @@ class T_calc:
 
 class RefLineCalc:
     '''
-    Calculates reference line segments parameters: Delta KP, length, KP scale, grid bearing
+    Calculates reference line segments parameters: Segment Length, KP Scale, Grid Bearing
     Input format is numpy array [[e, n, kp], ..., [e, n, kp]]
     Output format is list of 3 x numpy arrays [length, ..., length], [kp scale, ..., kp scale], [t, ..., t]
     '''
@@ -65,7 +64,7 @@ class RefLineCalc:
         self.refarr = self.refarr[self.refarr[:, 2].argsort()]
 
     def calcline(self):
-        # reverse / sort
+        # sort
         self.__sort_refarr()
 
         # easting diff in ref array
@@ -103,19 +102,21 @@ class Kp_to_Point:
         self.n = point[1]
 
     def calckp(self):
+        # ref line vertex to point distance
+        self.vertex_to_point = ((self.refarr[:, 0] - self.e) ** 2 + (self.refarr[:, 1] - self.n) ** 2) ** 0.5
         # sides form point to start/end of ref segment
-        self.side1 = ((self.e - self.refarr[:-1, 0]) ** 2 + (self.n - self.refarr[:-1, 1]) ** 2) ** 0.5
-        self.side2 = ((self.e - self.refarr[1:, 0]) ** 2 + (self.n - self.refarr[1:, 1]) ** 2) ** 0.5
+        self.side1 = self.vertex_to_point[:-1]
+        self.side2 = self.vertex_to_point[1:]
 
-        # distance from point to ref segment (closest = height)
+        # distance from point to ref line segments (closest projection)
         self.dist_to_segm = (abs((self.refarr[1:, 1] - self.refarr[:-1, 1]) * self.e -
                                 (self.refarr[1:, 0] - self.refarr[:-1, 0]) * self.n +
                                 self.refarr[1:, 0] * self.refarr[:-1, 1] - self.refarr[1:, 1] * self.refarr[:-1, 0])) / self.segm_l
 
-        # distance from point to ref segment centre
+        # distance from point to ref line segment centres
         self.dist_to_cent = ((self.e - (self.refarr[:-1, 0] + self.refarr[1:, 0]) / 2) ** 2 + (self.n - (self.refarr[:-1, 1] + self.refarr[1:, 1]) / 2) ** 2) ** 0.5
-               
-        # check if both triangle angles are acute (point belongs to ref segment)
+
+        # check if both triangle angles are acute (point belongs to ref line segment)
         self.param = self.side1 ** 2 - self.side2 ** 2
         self.p1 = np.sign(self.segm_l ** 2 + self.param)
         self.p2 = np.sign(self.segm_l ** 2 - self.param)
@@ -127,28 +128,49 @@ class Kp_to_Point:
         self.p1[self.p1[:] == -1] = 0
         self.p2[self.p2[:] == -1] = 0
 
-        # if both triangle angles are not acute - dist_to_segm = 0 - leaving only correct segment (note there may be several segments)
+        '''
+        Set dist_to_segm = 0 if both triangle angles are not acute (p1 or p2 == 0).
+            This leaves only dist_to_segm != 0 for segments that include point. Note that same point may belong to 
+            multiple segments.      
+        '''
         self.dist_to_segm = self.dist_to_segm * self.p1 * self.p2
-        # set dist_to_segm to max of dist_to_cent where dist_to_segm == 0
-        # this allows for selecting min from dist_to_segm / dist_to_cent
-        # if dist_to _cent < dist_to_segm - then wrong far segment was selected even though angles are acute
-        # it may also mean that point is ahead the first or after the last points of ref. line
-        self.dist_to_segm[self.dist_to_segm[:] == 0] = np.max(self.dist_to_cent)
-        # select minimum of dist_to_segm / dist_to_cent
-        self.near_segm = np.argmin(np.minimum(self.dist_to_segm, self.dist_to_cent))
 
-        # start of ref segment to point de & dn
-        self.de = np.array([self.e - self.refarr[self.near_segm, 0]])
-        self.dn = np.array([self.n - self.refarr[self.near_segm, 1]])
-        # start of ref segment to point t & dt
-        self.vector_t = T_calc.t(self.de, self.dn)[0]
-        self.dt = self.segm_t[self.near_segm] - self.vector_t
-        # start of ref segment to point distance
-        self.vector_l = ((self.de ** 2 + self.dn ** 2) ** 0.5)[0]
-        # start of ref segment to point projection length (to ref segment)
-        self.vector_proj = self.vector_l * math.cos(self.dt) * self.segm_kpscale[self.near_segm]
-        # point kp
-        self.point_kp = self.refarr[self.near_segm, 2] + self.vector_proj
+        if np.sum(self.dist_to_segm) == 0 and (np.argmin(self.vertex_to_point) != 0 and
+                                               np.argmin(self.vertex_to_point) != self.dist_to_segm.size):
+            '''
+            If all dist_to_segm == 0 (point does not belong to any segment) 
+                and nearest ref vertex is neither first nor the last (not SOL/EOL):
+            Find the nearest ref vertex and take its KP
+            '''
+            self.near_vertex = np.argmin(self.vertex_to_point)
+            self.point_kp = self.refarr[self.near_vertex, 2]
+        else:
+            '''
+            If some of dist_to_segm != 0 (point belongs to segment) or
+                all dist_to_segm == 0 (point does not belong to any segment) 
+                    but nearest ref vertex is either first or last (SOL/EOL)
+            Set dist_to_segm == 0 to max of dist_to_cent and then find argmin of elementwise comparison
+                if min is in dist_to_segm np, point belongs to this segment
+                if min is in dist_to_cent np, point does not belong to any segment
+                    then it takes KP of the point projection on the segment with the nearest centre 
+                    (this is either first or last - SOL/EOL)    
+            '''
+            self.dist_to_segm[self.dist_to_segm[:] == 0] = np.max(self.dist_to_cent)
+            # print(self.dist_to_segm, self.dist_to_cent, self.vertex_to_point)
+            # select minimum of dist_to_segm / dist_to_cent
+            self.near_segm = np.argmin(np.minimum(self.dist_to_segm, self.dist_to_cent))
+            # start of ref segment to point de & dn
+            self.de = np.array([self.e - self.refarr[self.near_segm, 0]])
+            self.dn = np.array([self.n - self.refarr[self.near_segm, 1]])
+            # start of ref segment to point t & dt
+            self.vector_t = T_calc.t(self.de, self.dn)[0]
+            self.dt = self.segm_t[self.near_segm] - self.vector_t
+            # start of ref segment to point distance
+            self.vector_l = ((self.de ** 2 + self.dn ** 2) ** 0.5)[0]
+            # start of ref segment to point projection length (to ref segment)
+            self.vector_proj = self.vector_l * math.cos(self.dt) * self.segm_kpscale[self.near_segm]
+            # point kp
+            self.point_kp = self.refarr[self.near_segm, 2] + self.vector_proj
 
         return (np.array([self.e, self.n, self.point_kp]))
 
@@ -159,11 +181,17 @@ def go(refarr, pointarr):
         reference line numpy array [[e, n, kp], ..., [e, n, kp]]
         points numpy array [[e, n], ..., [e, n]]
     Output format is numpy array [[e, n, kp], ..., [e, n, kp]]
-    '''
-    ref = RefLineCalc(refarr).calcline()
 
-    newarr = []
+    echo - runtime progress printing
+    '''
+    #  calc ref arrays: segm length, segm kp scale, segm t
+    ref = RefLineCalc(refarr).calcline()
+    # get calculated kp
+    pointarr_kp = []
     for p in pointarr:
-        newarr.append(Kp_to_Point(refarr, ref, p).calckp())
-    return (np.array(newarr))
+        pointarr_kp.append( Kp_to_Point(refarr, ref, p).calckp())
+
+    return (np.array(pointarr_kp))
+
+
 
