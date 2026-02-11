@@ -1,7 +1,6 @@
 """
 06 Feb 2026 global v 2.1
 """
-from cffi.backend_ctypes import xrange
 
 """
 EIVA EXPORT STRING:
@@ -185,9 +184,9 @@ from PIL import Image
 from PIL.TiffTags import TAGS
 import numpy as np
 from PySide6 import QtWidgets, QtCore, QtGui
-from PySide6.QtWidgets import QFileDialog, QMessageBox, QColorDialog
+from PySide6.QtWidgets import QFileDialog, QMessageBox, QColorDialog, QWidget, QGridLayout
 from PySide6.QtCore import Qt, QThread, QObject, QEvent
-from PySide6.QtGui import QWheelEvent
+# from PySide6.QtGui import QWheelEvent
 import pyqtgraph as pg
 # from pyqtgraph import Vector
 import _UI_Control
@@ -199,7 +198,6 @@ import _F_funcs
 import _F_kp_to_point
 import _F_playList
 import _QtPl
-
 
 # override PIL max image size
 PIL.Image.MAX_IMAGE_PIXELS = 10000000000
@@ -431,6 +429,7 @@ class MainWindow(QtWidgets.QMainWindow, _UI_Control.Ui_CONTROL):
         pv.close()
         lv.close()
         opt.close()
+        fv.close()
 
     def set_editmode(self):
         if self.Ptflag and not(self.rb_Pt.isChecked()):  # remove last selector circle disable widgets
@@ -1941,6 +1940,32 @@ class LV(QtWidgets.QMainWindow, _UI_Lview.Ui_LVIEW):
 
             self.winrange = self.lview.viewRange()[0]
 
+'''
+class FV(QtWidgets.QMainWindow):
+    # evf function widget
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle('TOP Function')
+        self.setWindowIcon(ic_app)
+        self.setGeometry(100, 100, 600, 500)
+        self.UiComponents()
+
+    def UiComponents(self):
+        widget = QWidget()
+        self.imv = pg.ImageView()
+        self.imv.ui.roiBtn.hide()
+        self.imv.ui.menuBtn.hide()
+        self.imv.ui.roiPlot.hide()
+        self.imv.ui.histogram.hide()
+        self.imv.getView().setMenuEnabled(False)
+        self.imv.getView().invertX(False)
+        self.imv.getView().invertY(False)
+
+        layout = QGridLayout()
+        widget.setLayout(layout)
+        layout.addWidget(self.imv, 0, 1, 3, 1)
+        self.setCentralWidget(widget)
+'''
 
 def key_pressed(e):
     if e.type() == 6:
@@ -2091,12 +2116,12 @@ def AutoPipe():
                     point_to_c = ((cx - mc.profile[prof_win, 0][mc.profile[prof_win, 1] >= cz]) ** 2 +
                                   (cz - mc.profile[prof_win, 1][mc.profile[prof_win, 1] >= cz]) ** 2) ** 0.5
                     # distances array where points are within wall
-                    point_to_c_wall = point_to_c[(mc.inWall * mc.pipeR <= point_to_c) &
+                    point_to_c_within_wall = point_to_c[(mc.inWall * mc.pipeR <= point_to_c) &
                                                                (point_to_c <= mc.outWall * mc.pipeR)]
                     # filling evf array
-                    evf[cell, 0] = len(point_to_c_wall)
-                    evf[cell, 1] = Decimal(np.sum((point_to_c_wall - mc.inWall * mc.pipeR) ** 2))
-                    evf[cell, 2] = Decimal(np.sum(point_to_c_wall ** 2))
+                    evf[cell, 0] = len(point_to_c_within_wall)
+                    evf[cell, 1] = Decimal(np.sum((point_to_c_within_wall - mc.inWall * mc.pipeR) ** 2))
+                    evf[cell, 2] = Decimal(np.sum(point_to_c_within_wall ** 2))
 
                     row += 1
                 col += 1
@@ -2107,6 +2132,16 @@ def AutoPipe():
 
             evf[:, 3] = ((evf[:, 1] * evf[:, 2]) / evf[:, 0]) ** evf[:, 0]
             min_evf = np.argmin(evf[:, 3])
+
+            '''
+            ###################### this is for function widget
+            # evf function widget
+            evf_3 = np.log10(evf[:, 3]).reshape(len(x_grid), len(z_grid))
+            cmap = pg.colormap.get('CET-L17')
+            fv.imv.setImage(evf_3)
+            fv.imv.setColorMap(cmap)
+            ######################
+            '''
 
             # calc min cx/cz node (pipe C)
             min_col = math.floor(min_evf / len(z_grid))
@@ -2610,6 +2645,7 @@ def main():
     global pv
     global lv
     global opt
+    global fv
     global ic_app
 
     # executable parent folder and path to config.bin
@@ -2628,7 +2664,8 @@ def main():
     xv = XV()
     pv = PV()
     lv = LV()
-    for win in [opt, mc, xv, pv, lv,]:
+
+    for win in [opt, mc, xv, pv, lv]:
         win.setWindowIcon(ic_app)
 
     # check if config folder and config file exist / read config if exists
@@ -2669,6 +2706,12 @@ def main():
     lv.show()
     pv.show()
     xv.show()
+
+    '''
+    # evf function widget
+    fv = FV()
+    fv.show()
+    '''
 
     sys.exit(app.exec())
 
