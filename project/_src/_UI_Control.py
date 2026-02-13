@@ -1,4 +1,4 @@
-﻿# -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 
 ################################################################################
 ## Form generated from reading UI file '_Control.ui'
@@ -767,8 +767,6 @@ class Ui_CONTROL(object):
         self.menuView.addAction(self.actionLView)
         self.menuView.addAction(self.actionDV_Control)
         self.menuSettings.addAction(self.actionSettings)
-        self.menuSettings.addAction(self.actionSave_layout)
-        self.menuSettings.addAction(self.actionLoad_layout)
         self.menuAbout.addAction(self.actionManual)
         self.menuAbout.addAction(self.actionVersion)
         self.menuAbout.addAction(self.actionInfo)

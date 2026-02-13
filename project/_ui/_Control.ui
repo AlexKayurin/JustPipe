@@ -1595,8 +1595,6 @@
      <string>Workspace</string>
     </property>
     <addaction name="actionSettings"/>
-    <addaction name="actionSave_layout"/>
-    <addaction name="actionLoad_layout"/>
    </widget>
    <widget class="QMenu" name="menuAbout">
     <property name="title">

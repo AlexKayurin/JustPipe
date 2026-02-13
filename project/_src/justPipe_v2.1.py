@@ -58,19 +58,6 @@ GENERATED FILETYPES (all files can be drag'n'dropped into Xview):
     .spt pipetracker file - 'pipetracker':
         dump = pipetracker
 
-    .lyt 'layout' file - work & UI settings:
-        dump = [views_geometry,
-        self.pipeD, self.pipeR, self.inWall, self.outWall,
-        self.HWin, self.VWin, self.Res,
-        self.FlD, self.FlP, self.AntiSpoof,
-        self.FoDist, self.FoPers,
-        self.cProfile, self.cPipe, self.cLeftM, self.cRightM,
-        self.cNotVis, self.cVis, self.cMADJ, self.cMSBL, self.cPipetracker, self.cCurrentProf, self.cBackground]
-
-    .plt 'palette' file - UI color settings:
-        dump = [mc.cProfile, mc.cPipe, mc.cLeftM, mc.cRightM,
-            mc.cNotVis, mc.cVis, mc.cMADJ, mc.cMSBL, mc.cPipetracker, mc.cCurrentProf, self.cBackground]
-
     .pll 'playlist' file - DV data:
         [[os.path.join(root, fname), duration, tstamp, tstamp + duration, parsed_fname[-2]], channelset]
 
@@ -139,10 +126,6 @@ DRAG&DROP (to Xview):
         tid
     Work:
         wrk (internal) - layout, settings, profiles, tide
-    Layout:
-        lyt (internal) - layout, settings
-    Palette:
-        plt (internal) - colors
     Playlist:
         pll (internal) - DV palylist
 
@@ -184,8 +167,8 @@ from PIL import Image
 from PIL.TiffTags import TAGS
 import numpy as np
 from PySide6 import QtWidgets, QtCore, QtGui
-from PySide6.QtWidgets import QFileDialog, QMessageBox, QColorDialog, QWidget, QGridLayout
-from PySide6.QtCore import Qt, QThread, QObject, QEvent
+from PySide6.QtWidgets import QFileDialog, QMessageBox, QColorDialog #, QWidget, QGridLayout
+from PySide6.QtCore import Qt, QThread #, QObject, QEvent
 # from PySide6.QtGui import QWheelEvent
 import pyqtgraph as pg
 # from pyqtgraph import Vector
@@ -196,11 +179,12 @@ import _UI_Lview
 import _UI_Options
 import _F_funcs
 import _F_kp_to_point
-import _F_playList
+import _F_makePlayList
 import _QtPl
 
-# override PIL max image size
+
 PIL.Image.MAX_IMAGE_PIXELS = 10000000000
+OPTIONS = QFileDialog.Options()
 
 
 class BuildDVPlaylistThread(QThread):
@@ -211,16 +195,7 @@ class BuildDVPlaylistThread(QThread):
         self.fName = fName
 
     def run(self):
-        data = _F_playList.buildplaylist(self.foldName, self.convention)
-        # fileslist = data[0]
-        # chlist = data[1]
-
-        if self.fName:
-            dumpfilename = self.fName
-
-            with open(dumpfilename, 'wb') as dumpfile:
-                dump = data
-                pickle.dump(dump, dumpfile)
+        _F_makePlayList.run(self.foldName, self.convention, self.fName)
 
 
 class Colors(QtWidgets.QMainWindow, _UI_Options.Ui_Dialog):
@@ -315,7 +290,7 @@ class MainWindow(QtWidgets.QMainWindow, _UI_Control.Ui_CONTROL):
         self.extlist = ['.xpa', '.XPA', '.cr2', '.CR2',     # file extensions list
                         '.pip', '.PIP', '.fug', '.FUG', '.spt', '.SPT',
                         '.tid', '.TID', '.tif', '.TIF', '.tiff', '.TIFF', '.png', '.PNG',
-                        '.wrk', '.WRK', '.bin', '.BIN', '.pll', '.PLL']
+                        '.wrk', '.WRK', '.pll', '.PLL']
 
         # connect widgets
         self.actionLoad_profiles.triggered.connect(self.menu_select)
@@ -323,19 +298,22 @@ class MainWindow(QtWidgets.QMainWindow, _UI_Control.Ui_CONTROL):
         self.actionLoad_tide.triggered.connect(self.menu_select)
         self.actionLoad_pipetracker.triggered.connect(self.menu_select)
         self.actionLoad_saved_work.triggered.connect(self.menu_select)
-        self.actionLoad_layout.triggered.connect(self.menu_select)
         self.actionSave_work.triggered.connect(self.menu_select)
-        self.actionSave_layout.triggered.connect(self.menu_select)
         self.actionExport_EIVA.triggered.connect(self.menu_select)
         self.actionExport_SFX.triggered.connect(self.menu_select)
         self.actionBuild_Playlist.triggered.connect(self.menu_select)
         self.actionLoad_playlist.triggered.connect(self.menu_select)
-        for widget in [self.actionXView, self.actionPView, self.actionLView, self.actionSettings, self.actionDV_Control]:
-            widget.triggered.connect(self.menu_view_win)
+
+        self.actionXView.triggered.connect(self.menu_view_win)
+        self.actionPView.triggered.connect(self.menu_view_win)
+        self.actionLView.triggered.connect(self.menu_view_win)
+        self.actionSettings.triggered.connect(self.menu_view_win)
+        self.actionDV_Control.triggered.connect(self.menu_view_win)
+        
         self.actionManual.triggered.connect(self.open_manual)
 
         self.b_Pause.clicked.connect(self.dvPause)
-        self.t_D.textEdited.connect(self.set_goAutoPipe)  # textEdited only when typed / textChanged if changed (by programm)
+        self.t_D.textEdited.connect(self.set_goAutoPipe)
         self.t_IW.textEdited.connect(self.set_goAutoPipe)
         self.t_OW.textEdited.connect(self.set_goAutoPipe)
         self.t_HW.textEdited.connect(self.set_goAutoPipe)
@@ -429,7 +407,7 @@ class MainWindow(QtWidgets.QMainWindow, _UI_Control.Ui_CONTROL):
         pv.close()
         lv.close()
         opt.close()
-        fv.close()
+        # fv.close()
 
     def set_editmode(self):
         if self.Ptflag and not(self.rb_Pt.isChecked()):  # remove last selector circle disable widgets
@@ -512,50 +490,6 @@ class MainWindow(QtWidgets.QMainWindow, _UI_Control.Ui_CONTROL):
 
         AutoFlags()
 
-    def menu_select(self):
-        options = QFileDialog.Options()
-
-        menus_LoadFile = ['Load profiles', 'Load geoimage', 'Load tide', 'Load pipetracker', 'Load saved work', 'Load workspace', 'Load playlist']
-        menus_SaveFile = ['Save workspace', 'Export EIVA', 'Export SFX']
-        menus_LoadFolder = ['Build playlist']
-        menus_SaveFolder = ['Save work']
-
-        loadfile_exts = ['SITRAS profiles (*.cr2);;XPA profiles (*.xpa);;All Files (*)',
-                         'GeoTiff files (*.tif);;GeoTiff files (*.tiff);;PNG files (*.png);;All Files (*)',
-                         'Tide files (*.tid);;All Files (*)',
-                         'justPipe Pipetracker files (*.spt);;EIVA Pipetracker files (*.pip);;SFX Pipetracker files (*.fug);;All Files (*)',
-                         'Work files (*.wrk);;All Files (*)',
-                         'Workspace files (*.bin);;All Files (*)',
-                         'Palylists (*.pll);;All files (*)']
-        savefile_exts = ['Workspace files (*.bin);;All Files (*)',
-                         'EIVA line files (*.dig);;All Files (*)',
-                         'SFX files (*.csv);;All Files (*)']
-        loadfile_funcs = ['self.loadprof', 'self.loadtif', 'self.loadtide', 'self.loadpt', 'self.loadwork', 'self.loadlayout', 'self.loadDV']
-        savefile_funcs = ['self.savelayout', 'self.exporteiva', 'self.exportsfx']
-        loadfold_funcs = ['self.buildDVplaylist']
-        savefold_funcs = ['self.savework']
-
-        sender = self.sender().text()
-        if sender in menus_LoadFile:
-            ix = menus_LoadFile.index(sender)
-            fName, _ = QFileDialog.getOpenFileName(self, menus_LoadFile[ix], '',
-                                                      loadfile_exts[ix], options=options)
-            exec(f'{loadfile_funcs[ix]}(fName)')
-        elif sender in menus_SaveFile:
-            ix = menus_SaveFile.index(sender)
-            fName, _ = QFileDialog.getSaveFileName(self, menus_SaveFile[ix], '',
-                                                      savefile_exts[ix], options=options)
-            exec(f'{savefile_funcs[ix]}(fName)')
-        elif sender in menus_LoadFolder:
-            ix = menus_LoadFolder.index(sender)
-            foldName = QFileDialog.getExistingDirectory(self, options=options)
-            exec(f'{loadfold_funcs[ix]}(foldName)')
-        elif sender in menus_SaveFolder:
-            ix = menus_SaveFolder.index(sender)
-            foldName = QFileDialog.getExistingDirectory(self, options=options)
-            opt = '\'\''
-            exec(f'{savefold_funcs[ix]}(foldName,{opt})')
-
     def menu_view_win(self):
         sender = self.sender().objectName()
         if sender == 'actionXView':
@@ -571,19 +505,64 @@ class MainWindow(QtWidgets.QMainWindow, _UI_Control.Ui_CONTROL):
                 for player in mc.players:
                     player.show()
 
-    def buildDVplaylist(self, foldName):
-        options = QFileDialog.Options()
+    def menu_select(self):
+        menus = ['Load profiles',
+                 'Load geoimage',
+                 'Load tide',
+                 'Load pipetracker',
+                 'Load saved work',
+                 'Load playlist',
+                 'Export EIVA',
+                 'Export SFX',
+                 'Build playlist',
+                 'Save work']
+
+        funcs = ['self.loadprof',
+                 'self.loadtif',
+                 'self.loadtide',
+                 'self.loadpt',
+                 'self.loadwork',
+                 'self.loadplaylist',
+                 'self.exporteiva',
+                 'self.exportsfx',
+                 'self.buildDVplaylistfile',
+                 'self.savework']
+
+        exts = ['SITRAS profiles (*.cr2);;XPA profiles (*.xpa);;All Files (*)',
+                'GeoTiff files (*.tif);;GeoTiff files (*.tiff);;PNG files (*.png);;All Files (*)',
+                'Tide files (*.tid);;All Files (*)',
+                'justPipe Pipetracker files (*.spt);;EIVA Pipetracker files (*.pip);;SFX Pipetracker files (*.fug);;All Files (*)',
+                'Work files (*.wrk);;All Files (*)',
+                'Palylists (*.pll);;All files (*)',
+                'EIVA line files (*.dig);;All Files (*)',
+                'SFX files (*.csv);;All Files (*)']
+
+        sender = self.sender().text()
+        ix = menus.index(sender)
+        # selct option
+        if ix < 6:              # open files
+            Name, _ = QFileDialog.getOpenFileName(self, menus[ix], '', exts[ix], options=OPTIONS)
+        if 5 < ix < 8:          # save files
+            Name, _ = QFileDialog.getSaveFileName(self, menus[ix], '', exts[ix], options=OPTIONS)
+        if 7 < ix:              # select folder
+            Name = QFileDialog.getExistingDirectory(self, options=OPTIONS)
+        # execute function
+        exec(f'{funcs[ix]}(Name)')
+
+    def buildDVplaylistfile(self, foldName):
         fName, _ = QFileDialog.getSaveFileName(self, 'Save playlist', '',
-                                               'Palylists (*.pll);;All files (*)', options=options)
+                                               'Palylists (*.pll);;All files (*)', options=OPTIONS)
+        if fName:
+            self.thread = BuildDVPlaylistThread(foldName, self.spb_Convention.value(), fName)
+            self.thread.finished.connect(self.thread.deleteLater)
+            self.thread.finished.connect(lambda: self.showwarn('Playlist built'))
+            self.thread.start()
 
+            self.showwarn('Building playlist\n'
+                          'It may take a while\n'
+                          'Application is fully functional during building\n'
+                          'Message will pop once playlist has been built')
 
-        self.thread = BuildDVPlaylistThread(foldName, self.spb_Convention.value(), (fName))
-        self.thread.finished.connect(self.thread.deleteLater)
-        self.thread.finished.connect(lambda: self.showwarn('Playlist built'))
-        self.thread.start()
-
-        self.showwarn('Building playlist\nIt may take a while\nApplication is fully functional during building\nMessage will pop once playlist has been built')
-       
     def dvPause(self):
         if self.Pausedflag:
             # set to Playing
@@ -599,25 +578,7 @@ class MainWindow(QtWidgets.QMainWindow, _UI_Control.Ui_CONTROL):
         xv.xview.setFocus()
         xv.xview.activateWindow()    
 
-    def savelayout(self, fName):
-        views_geometry = []
-        for view in [mc, xv, pv, lv]:
-            views_geometry.append([view.rect(), view.pos()])
-
-        if fName:
-            dumpfilename = fName
-
-            with open(dumpfilename, 'wb') as dumpfile:
-                dump = [views_geometry,
-                        self.pipeD, self.pipeR, self.inWall, self.outWall,
-                        self.HWin, self.VWin, self.Res,
-                        self.FlD, self.FlP, self.AntiSpoof,
-                        self.FoDist, self.FoPers,
-                        self.cProfile, self.cPipe, self.cLeftM, self.cRightM,
-                        self.cNotVis, self.cVis, self.cMADJ, self.cMSBL, self.cPipetracker, self.cCurrentProf, self.cBackground]
-                pickle.dump(dump, dumpfile)
-
-    def savework(self, foldName, saveopt):
+    def savework(self, foldName):
         views_geometry = []
         for view in [mc, xv, pv, lv]:
             views_geometry.append([view.rect(), view.pos()])
@@ -637,7 +598,7 @@ class MainWindow(QtWidgets.QMainWindow, _UI_Control.Ui_CONTROL):
                         self.cProfile, self.cPipe, self.cLeftM, self.cRightM,
                         self.cNotVis, self.cVis, self.cMADJ, self.cMSBL, self.cPipetracker, self.cCurrentProf, self.cBackground]
                 pickle.dump(dump, dumpfile)
-                self.l_Saved.setText(f'LAST SAVED: {saving_time}{saveopt}')
+                self.l_Saved.setText(f'LAST SAVED: {saving_time}')
 
             if self.Ptflag:
                 pt_dumpfilename = os.path.join(foldName, Path(os.path.basename(self.profName)).stem) + '_PT_' + saving_time + '.spt'
@@ -943,37 +904,7 @@ class MainWindow(QtWidgets.QMainWindow, _UI_Control.Ui_CONTROL):
         self.ProfileFlag = True
         AutoPipe()
 
-    def loadlayout(self, fName):
-        with open(fName, 'rb') as loadfile:
-            [views_geometry,
-             self.pipeD, self.pipeR, self.inWall, self.outWall,
-             self.HWin, self.VWin, self.Res,
-             self.FlD, self.FlP, self.AntiSpoof,
-             self.FoDist, self.FoPers,
-             self.cProfile, self.cPipe, self.cLeftM, self.cRightM,
-             self.cNotVis, self.cVis, self.cMADJ, self.cMSBL, self.cPipetracker, self.cCurrentProf, self.cBackground] = pickle.load(loadfile)
-
-        pg.GraphicsView.setBackground(xv.xview, mc.cBackground)
-        pg.GraphicsView.setBackground(lv.lview, mc.cBackground)
-        pv.pview.getView().setBackgroundColor(mc.cBackground)
-
-        for i, view in enumerate([mc, xv, pv, lv]):
-            view.resize(views_geometry[i][0].width(), views_geometry[i][0].height())
-            view.move(views_geometry[i][1].x(), views_geometry[i][1].y())
-
-        self.t_D.setText(str(self.pipeD))
-        self.t_IW.setText(str(self.inWall))
-        self.t_OW.setText(str(self.outWall))
-        self.t_HW.setText(str(self.HWin))
-        self.t_VW.setText(str(self.VWin))
-        self.t_RES.setText(str(self.Res))
-        self.t_Fl.setText(str(self.FlD))
-        self.t_FlPt.setText(str(self.FlP))
-        self.t_AntiSpoof.setText(str(self.AntiSpoof))
-
-        Update_PT()
-
-    def loadDV(self, fName):
+    def loadplaylist(self, fName):
         # read built playlist
         with open(fName, 'rb') as loadfile:
             # data[0]
@@ -1940,6 +1871,7 @@ class LV(QtWidgets.QMainWindow, _UI_Lview.Ui_LVIEW):
 
             self.winrange = self.lview.viewRange()[0]
 
+
 '''
 class FV(QtWidgets.QMainWindow):
     # evf function widget
@@ -1967,13 +1899,14 @@ class FV(QtWidgets.QMainWindow):
         self.setCentralWidget(widget)
 '''
 
+
 def key_pressed(e):
     if e.type() == 6:
         if e.modifiers() & Qt.ControlModifier:  # 'Ctrl + S' -----MODIFIER
             # save work
             if e.key() == Qt.Key_S:
                 foldName = os.path.dirname(mc.profName)
-                mc.savework(foldName, '(Fastsave)')
+                mc.savework(foldName)
             # autodigiize
             if e.key() == Qt.Key_A:
                 AutoRun()
@@ -2056,14 +1989,12 @@ def dropToViewEvent(e, fName):
         mc.loadtide(fName)
     elif Path(fName).suffix.strip().lower() in ['.wrk']:
         mc.loadwork(fName)
-    elif Path(fName).suffix.strip().lower() in ['.bin']:
-        mc.loadlayout(fName)
     elif Path(fName).suffix.strip().lower() in ['.pip', '.fug', '.spt']:
         mc.loadpt(fName)
     elif Path(fName).suffix.strip().lower() in ['.tif', '.tiff','.png']:
         mc.loadtif(fName)
     elif Path(fName).suffix.strip().lower() in ['.pll']:
-        mc.loadDV(fName)
+        mc.loadplaylist(fName)
 
 
 def AutoPipe():
@@ -2080,7 +2011,7 @@ def AutoPipe():
         mc.port = mc.stbd = mc.min_cx = mc.flush[mc.prno, 3]
         mc.high = mc.low = mc.min_cz = mc.flush[mc.prno, 4]
 
-        # AutoPipe only runs if: profile not visited AND no ManualPipe selected
+        # AutoPipe only runs if: profile not visited AND no ManualPipe selected OR Autorun
         # or DoPipe - autopipe
         if (not mc.flush[mc.prno, 11] and not mc.ManualPipe) or mc.DoPipe:
             # profile window (part of profile used for TOP search = xini +- HWin/2 +- pipeR)
@@ -2133,6 +2064,13 @@ def AutoPipe():
             evf[:, 3] = ((evf[:, 1] * evf[:, 2]) / evf[:, 0]) ** evf[:, 0]
             min_evf = np.argmin(evf[:, 3])
 
+            # calc min cx/cz node (pipe C)
+            min_col = math.floor(min_evf / len(z_grid))
+            min_row = min_evf - min_col * len(z_grid)
+
+            mc.min_cx = round(x_grid[min_col], 4)
+            mc.min_cz = round(z_grid[min_row], 4)
+
             '''
             ###################### this is for function widget
             # evf function widget
@@ -2143,12 +2081,6 @@ def AutoPipe():
             ######################
             '''
 
-            # calc min cx/cz node (pipe C)
-            min_col = math.floor(min_evf / len(z_grid))
-            min_row = min_evf - min_col * len(z_grid)
-
-            mc.min_cx = round(x_grid[min_col], 4)
-            mc.min_cz = round(z_grid[min_row], 4)
 
             # write to flush: top_e, top_n
             ref_east, ref_north, hdg = mc.flush[mc.prno, 0], mc.flush[mc.prno, 1], mc.flush[mc.prno, 2]
@@ -2249,7 +2181,7 @@ def AutoFlags():
                                     flagdetected = True
                             else:
                                 # if closest profile point z is lower than pipe (& AntiSpoof)
-                                # takes closest point ot min_cx where z < lower than pipe wall (& antispoof)
+                                # takes closest point to min_cx where z < lower than pipe wall (& antispoof)
                                 if len(flagspot[:, 0][flagspot[:, 1] < mc.min_cz - mc.pipeR]) != 0:
                                     fl_ix = np.argmin(np.abs(flagspot[:, 0][flagspot[:, 1] < mc.min_cz - mc.pipeR] - mc.min_cx))
                                     fl_x = (flagspot[:][flagspot[:, 1] < mc.min_cz - mc.pipeR])[fl_ix, 0]
