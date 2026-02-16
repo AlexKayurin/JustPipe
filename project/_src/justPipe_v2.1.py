@@ -184,7 +184,7 @@ import _QtPl
 
 
 PIL.Image.MAX_IMAGE_PIXELS = 10000000000
-OPTIONS = QFileDialog.Options()
+# OPTIONS = QFileDialog.Options()
 
 
 class BuildDVPlaylistThread(QThread):
@@ -541,17 +541,17 @@ class MainWindow(QtWidgets.QMainWindow, _UI_Control.Ui_CONTROL):
         ix = menus.index(sender)
         # selct option
         if ix < 6:              # open files
-            Name, _ = QFileDialog.getOpenFileName(self, menus[ix], '', exts[ix], options=OPTIONS)
+            Name, _ = QFileDialog.getOpenFileName(self, menus[ix], '', exts[ix]) #, options=OPTIONS)
         if 5 < ix < 8:          # save files
-            Name, _ = QFileDialog.getSaveFileName(self, menus[ix], '', exts[ix], options=OPTIONS)
+            Name, _ = QFileDialog.getSaveFileName(self, menus[ix], '', exts[ix]) #, options=OPTIONS)
         if 7 < ix:              # select folder
-            Name = QFileDialog.getExistingDirectory(self, options=OPTIONS)
+            Name = QFileDialog.getExistingDirectory(self) #, options=OPTIONS)
         # execute function
         exec(f'{funcs[ix]}(Name)')
 
     def buildDVplaylistfile(self, foldName):
         fName, _ = QFileDialog.getSaveFileName(self, 'Save playlist', '',
-                                               'Palylists (*.pll);;All files (*)', options=OPTIONS)
+                                               'Palylists (*.pll);;All files (*)') #, options=OPTIONS)
         if fName:
             self.thread = BuildDVPlaylistThread(foldName, self.spb_Convention.value(), fName)
             self.thread.finished.connect(self.thread.deleteLater)
