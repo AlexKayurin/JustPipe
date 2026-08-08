@@ -1,9 +1,9 @@
-﻿# -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 
 ################################################################################
-## Form generated from reading UI file '_Xview.ui'
+## Form generated from reading UI file '_UI_Xview.ui'
 ##
-## Created by: Qt User Interface Compiler version 6.9.2
+## Created by: Qt User Interface Compiler version 6.11.1
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
@@ -15,9 +15,10 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QFont, QFontDatabase, QGradient, QIcon,
     QImage, QKeySequence, QLinearGradient, QPainter,
     QPalette, QPixmap, QRadialGradient, QTransform)
-from PySide6.QtWidgets import (QApplication, QCheckBox, QGridLayout, QHBoxLayout,
-    QLabel, QLayout, QMainWindow, QPushButton,
-    QSizePolicy, QSpacerItem, QVBoxLayout, QWidget)
+from PySide6.QtWidgets import (QApplication, QCheckBox, QGridLayout, QGroupBox,
+    QHBoxLayout, QLabel, QLayout, QMainWindow,
+    QPushButton, QSizePolicy, QSpacerItem, QVBoxLayout,
+    QWidget)
 
 from pyqtgraph import PlotWidget
 
@@ -38,15 +39,23 @@ class Ui_XVIEW(object):
         self.centralwidget = QWidget(XVIEW)
         self.centralwidget.setObjectName(u"centralwidget")
         self.verticalLayout = QVBoxLayout(self.centralwidget)
-        self.verticalLayout.setSpacing(10)
+        self.verticalLayout.setSpacing(5)
         self.verticalLayout.setObjectName(u"verticalLayout")
         self.verticalLayout.setContentsMargins(5, 5, 5, 5)
         self.Layout0 = QHBoxLayout()
-        self.Layout0.setSpacing(10)
+        self.Layout0.setSpacing(5)
         self.Layout0.setObjectName(u"Layout0")
-        self.Layout0.setSizeConstraint(QLayout.SetMinimumSize)
+        self.Layout0.setSizeConstraint(QLayout.SizeConstraint.SetMinimumSize)
         self.Layout0.setContentsMargins(0, 0, 0, 0)
-        self.b_POI = QPushButton(self.centralwidget)
+        self.groupBox = QGroupBox(self.centralwidget)
+        self.groupBox.setObjectName(u"groupBox")
+        self.groupBox.setMinimumSize(QSize(590, 50))
+        self.groupBox.setMaximumSize(QSize(590, 50))
+        self.horizontalLayout_2 = QHBoxLayout(self.groupBox)
+        self.horizontalLayout_2.setSpacing(5)
+        self.horizontalLayout_2.setObjectName(u"horizontalLayout_2")
+        self.horizontalLayout_2.setContentsMargins(5, 0, 5, 0)
+        self.b_POI = QPushButton(self.groupBox)
         self.b_POI.setObjectName(u"b_POI")
         self.b_POI.setMinimumSize(QSize(40, 40))
         self.b_POI.setMaximumSize(QSize(40, 40))
@@ -55,17 +64,17 @@ class Ui_XVIEW(object):
         font1.setBold(True)
         self.b_POI.setFont(font1)
 
-        self.Layout0.addWidget(self.b_POI)
+        self.horizontalLayout_2.addWidget(self.b_POI)
 
-        self.b_fbwd = QPushButton(self.centralwidget)
+        self.b_fbwd = QPushButton(self.groupBox)
         self.b_fbwd.setObjectName(u"b_fbwd")
         self.b_fbwd.setMinimumSize(QSize(40, 40))
         self.b_fbwd.setMaximumSize(QSize(40, 40))
         self.b_fbwd.setFont(font1)
 
-        self.Layout0.addWidget(self.b_fbwd)
+        self.horizontalLayout_2.addWidget(self.b_fbwd)
 
-        self.b_bwd = QPushButton(self.centralwidget)
+        self.b_bwd = QPushButton(self.groupBox)
         self.b_bwd.setObjectName(u"b_bwd")
         sizePolicy1 = QSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
         sizePolicy1.setHorizontalStretch(0)
@@ -77,9 +86,9 @@ class Ui_XVIEW(object):
         self.b_bwd.setFont(font1)
         self.b_bwd.setToolTipDuration(-1)
 
-        self.Layout0.addWidget(self.b_bwd)
+        self.horizontalLayout_2.addWidget(self.b_bwd)
 
-        self.b_fwd = QPushButton(self.centralwidget)
+        self.b_fwd = QPushButton(self.groupBox)
         self.b_fwd.setObjectName(u"b_fwd")
         sizePolicy1.setHeightForWidth(self.b_fwd.sizePolicy().hasHeightForWidth())
         self.b_fwd.setSizePolicy(sizePolicy1)
@@ -87,79 +96,82 @@ class Ui_XVIEW(object):
         self.b_fwd.setMaximumSize(QSize(40, 40))
         self.b_fwd.setFont(font1)
 
-        self.Layout0.addWidget(self.b_fwd)
+        self.horizontalLayout_2.addWidget(self.b_fwd)
 
-        self.b_ffwd = QPushButton(self.centralwidget)
+        self.b_ffwd = QPushButton(self.groupBox)
         self.b_ffwd.setObjectName(u"b_ffwd")
         self.b_ffwd.setMinimumSize(QSize(40, 40))
         self.b_ffwd.setMaximumSize(QSize(40, 40))
         self.b_ffwd.setFont(font1)
 
-        self.Layout0.addWidget(self.b_ffwd)
+        self.horizontalLayout_2.addWidget(self.b_ffwd)
 
-        self.b_endvisit = QPushButton(self.centralwidget)
+        self.b_endvisit = QPushButton(self.groupBox)
         self.b_endvisit.setObjectName(u"b_endvisit")
         self.b_endvisit.setMinimumSize(QSize(40, 40))
         self.b_endvisit.setMaximumSize(QSize(40, 40))
         self.b_endvisit.setFont(font1)
 
-        self.Layout0.addWidget(self.b_endvisit)
+        self.horizontalLayout_2.addWidget(self.b_endvisit)
 
-        self.b_resetfwd = QPushButton(self.centralwidget)
+        self.b_resetfwd = QPushButton(self.groupBox)
         self.b_resetfwd.setObjectName(u"b_resetfwd")
         self.b_resetfwd.setMinimumSize(QSize(40, 40))
         self.b_resetfwd.setMaximumSize(QSize(40, 40))
         self.b_resetfwd.setFont(font1)
 
-        self.Layout0.addWidget(self.b_resetfwd)
+        self.horizontalLayout_2.addWidget(self.b_resetfwd)
 
-        self.b_assist = QPushButton(self.centralwidget)
+        self.b_assist = QPushButton(self.groupBox)
         self.b_assist.setObjectName(u"b_assist")
         self.b_assist.setMinimumSize(QSize(40, 40))
         self.b_assist.setMaximumSize(QSize(40, 40))
         self.b_assist.setFont(font1)
 
-        self.Layout0.addWidget(self.b_assist)
+        self.horizontalLayout_2.addWidget(self.b_assist)
 
-        self.b_hwm = QPushButton(self.centralwidget)
+        self.b_hwm = QPushButton(self.groupBox)
         self.b_hwm.setObjectName(u"b_hwm")
         self.b_hwm.setMinimumSize(QSize(40, 40))
         self.b_hwm.setMaximumSize(QSize(40, 40))
         self.b_hwm.setFont(font1)
 
-        self.Layout0.addWidget(self.b_hwm)
+        self.horizontalLayout_2.addWidget(self.b_hwm)
 
-        self.b_hwp = QPushButton(self.centralwidget)
+        self.b_hwp = QPushButton(self.groupBox)
         self.b_hwp.setObjectName(u"b_hwp")
         self.b_hwp.setMinimumSize(QSize(40, 40))
         self.b_hwp.setMaximumSize(QSize(40, 40))
         self.b_hwp.setFont(font1)
 
-        self.Layout0.addWidget(self.b_hwp)
+        self.horizontalLayout_2.addWidget(self.b_hwp)
 
-        self.b_vwm = QPushButton(self.centralwidget)
+        self.b_vwm = QPushButton(self.groupBox)
         self.b_vwm.setObjectName(u"b_vwm")
         self.b_vwm.setMinimumSize(QSize(40, 40))
         self.b_vwm.setMaximumSize(QSize(40, 40))
         self.b_vwm.setFont(font1)
 
-        self.Layout0.addWidget(self.b_vwm)
+        self.horizontalLayout_2.addWidget(self.b_vwm)
 
-        self.b_vwp = QPushButton(self.centralwidget)
+        self.b_vwp = QPushButton(self.groupBox)
         self.b_vwp.setObjectName(u"b_vwp")
         self.b_vwp.setMinimumSize(QSize(40, 40))
         self.b_vwp.setMaximumSize(QSize(40, 40))
         self.b_vwp.setFont(font1)
 
-        self.Layout0.addWidget(self.b_vwp)
+        self.horizontalLayout_2.addWidget(self.b_vwp)
 
-        self.b_Auto = QPushButton(self.centralwidget)
+        self.b_Auto = QPushButton(self.groupBox)
         self.b_Auto.setObjectName(u"b_Auto")
         self.b_Auto.setMinimumSize(QSize(40, 40))
         self.b_Auto.setMaximumSize(QSize(40, 40))
         self.b_Auto.setFont(font1)
 
-        self.Layout0.addWidget(self.b_Auto)
+        self.horizontalLayout_2.addWidget(self.b_Auto)
+
+
+        self.Layout0.addWidget(self.groupBox)
 
         self.horizontalSpacer = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
 
@@ -169,10 +181,11 @@ class Ui_XVIEW(object):
         self.verticalLayout.addLayout(self.Layout0)
 
         self.Layout1 = QGridLayout()
-        self.Layout1.setSpacing(10)
         self.Layout1.setObjectName(u"Layout1")
-        self.Layout1.setSizeConstraint(QLayout.SetMaximumSize)
-        self.Layout1.setContentsMargins(5, 5, 5, 5)
+        self.Layout1.setSizeConstraint(QLayout.SizeConstraint.SetMaximumSize)
+        self.Layout1.setHorizontalSpacing(0)
+        self.Layout1.setVerticalSpacing(5)
+        self.Layout1.setContentsMargins(0, 0, 0, 0)
         self.xview = PlotWidget(self.centralwidget)
         self.xview.setObjectName(u"xview")
         self.l_Tide = QLabel(self.xview)
@@ -211,15 +224,15 @@ class Ui_XVIEW(object):
         self.verticalLayout.addLayout(self.Layout1)
 
         self.horizontalLayout = QHBoxLayout()
-        self.horizontalLayout.setSpacing(10)
+        self.horizontalLayout.setSpacing(5)
         self.horizontalLayout.setObjectName(u"horizontalLayout")
-        self.horizontalLayout.setSizeConstraint(QLayout.SetMinimumSize)
+        self.horizontalLayout.setSizeConstraint(QLayout.SizeConstraint.SetMinimumSize)
         self.horizontalLayout.setContentsMargins(0, 0, 0, 0)
         self.ch_Center = QCheckBox(self.centralwidget)
         self.ch_Center.setObjectName(u"ch_Center")
         self.ch_Center.setMinimumSize(QSize(150, 20))
         self.ch_Center.setMaximumSize(QSize(150, 20))
-        self.ch_Center.setFont(font3)
+        self.ch_Center.setFont(font)
         self.ch_Center.setChecked(True)
 
         self.horizontalLayout.addWidget(self.ch_Center)
@@ -233,8 +246,8 @@ class Ui_XVIEW(object):
         self.ch_ShowPatch.setSizePolicy(sizePolicy2)
         self.ch_ShowPatch.setMinimumSize(QSize(150, 20))
         self.ch_ShowPatch.setMaximumSize(QSize(150, 20))
-        self.ch_ShowPatch.setFont(font3)
-        self.ch_ShowPatch.setChecked(False)
+        self.ch_ShowPatch.setFont(font)
+        self.ch_ShowPatch.setChecked(True)
 
         self.horizontalLayout.addWidget(self.ch_ShowPatch)
 
@@ -242,7 +255,7 @@ class Ui_XVIEW(object):
         self.ch_ShowAntiSpoof.setObjectName(u"ch_ShowAntiSpoof")
         self.ch_ShowAntiSpoof.setMinimumSize(QSize(150, 20))
         self.ch_ShowAntiSpoof.setMaximumSize(QSize(150, 20))
-        self.ch_ShowAntiSpoof.setFont(font3)
+        self.ch_ShowAntiSpoof.setFont(font)
 
         self.horizontalLayout.addWidget(self.ch_ShowAntiSpoof)
 
@@ -273,6 +286,7 @@ class Ui_XVIEW(object):
 
     def retranslateUi(self, XVIEW):
         XVIEW.setWindowTitle(QCoreApplication.translate("XVIEW", u"XVIEW", None))
+        self.groupBox.setTitle("")
         self.b_POI.setText(QCoreApplication.translate("XVIEW", u"POI", None))
         self.b_fbwd.setText(QCoreApplication.translate("XVIEW", u"FB", None))
 #if QT_CONFIG(tooltip)

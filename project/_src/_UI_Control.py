@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 
 ################################################################################
-## Form generated from reading UI file '_Control.ui'
+## Form generated from reading UI file '_UI_Control.ui'
 ##
-## Created by: Qt User Interface Compiler version 6.9.2
+## Created by: Qt User Interface Compiler version 6.11.1
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
@@ -501,87 +501,15 @@ class Ui_CONTROL(object):
         self.verticalLayout_5.addWidget(self.groupBox_2)
 
         self.tabWidget.addTab(self.tabFlags, "")
-        self.tab = QWidget()
-        self.tab.setObjectName(u"tab")
-        self.verticalLayout_6 = QVBoxLayout(self.tab)
-        self.verticalLayout_6.setObjectName(u"verticalLayout_6")
-        self.Edit = QGroupBox(self.tab)
-        self.Edit.setObjectName(u"Edit")
-        self.verticalLayout_2 = QVBoxLayout(self.Edit)
-        self.verticalLayout_2.setObjectName(u"verticalLayout_2")
-        self.rb_Pr = QRadioButton(self.Edit)
-        self.rb_Pr.setObjectName(u"rb_Pr")
-        self.rb_Pr.setChecked(True)
-
-        self.verticalLayout_2.addWidget(self.rb_Pr)
-
-        self.rb_Pt = QRadioButton(self.Edit)
-        self.rb_Pt.setObjectName(u"rb_Pt")
-        self.rb_Pt.setEnabled(False)
-
-        self.verticalLayout_2.addWidget(self.rb_Pt)
-
-        self.PT = QGroupBox(self.Edit)
-        self.PT.setObjectName(u"PT")
-        self.PT.setEnabled(False)
-        self.verticalLayout_3 = QVBoxLayout(self.PT)
-        self.verticalLayout_3.setObjectName(u"verticalLayout_3")
-        self.rb_RejectPT = QRadioButton(self.PT)
-        self.rb_RejectPT.setObjectName(u"rb_RejectPT")
-        self.rb_RejectPT.setChecked(True)
-
-        self.verticalLayout_3.addWidget(self.rb_RejectPT)
-
-        self.rb_AcceptPT = QRadioButton(self.PT)
-        self.rb_AcceptPT.setObjectName(u"rb_AcceptPT")
-
-        self.verticalLayout_3.addWidget(self.rb_AcceptPT)
-
-
-        self.verticalLayout_2.addWidget(self.PT)
-
-        self.horizontalLayout_4 = QHBoxLayout()
-        self.horizontalLayout_4.setObjectName(u"horizontalLayout_4")
-        self.l14 = QLabel(self.Edit)
-        self.l14.setObjectName(u"l14")
-        self.l14.setMaximumSize(QSize(140, 35))
-        self.l14.setAlignment(Qt.AlignmentFlag.AlignRight|Qt.AlignmentFlag.AlignTrailing|Qt.AlignmentFlag.AlignVCenter)
-
-        self.horizontalLayout_4.addWidget(self.l14)
-
-        self.t_PtGap = QLineEdit(self.Edit)
-        self.t_PtGap.setObjectName(u"t_PtGap")
-        sizePolicy.setHeightForWidth(self.t_PtGap.sizePolicy().hasHeightForWidth())
-        self.t_PtGap.setSizePolicy(sizePolicy)
-        self.t_PtGap.setMinimumSize(QSize(80, 25))
-        self.t_PtGap.setMaximumSize(QSize(80, 25))
-
-        self.horizontalLayout_4.addWidget(self.t_PtGap)
-
-        self.horizontalSpacer_3 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
-
-        self.horizontalLayout_4.addItem(self.horizontalSpacer_3)
-
-
-        self.verticalLayout_2.addLayout(self.horizontalLayout_4)
-
-        self.verticalSpacer_2 = QSpacerItem(20, 40, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
-
-        self.verticalLayout_2.addItem(self.verticalSpacer_2)
-
-
-        self.verticalLayout_6.addWidget(self.Edit)
-
-        self.tabWidget.addTab(self.tab, "")
-        self.tab_2 = QWidget()
-        self.tab_2.setObjectName(u"tab_2")
-        self.verticalLayout_7 = QVBoxLayout(self.tab_2)
+        self.tabDV = QWidget()
+        self.tabDV.setObjectName(u"tabDV")
+        self.verticalLayout_7 = QVBoxLayout(self.tabDV)
         self.verticalLayout_7.setObjectName(u"verticalLayout_7")
         self.gridLayout_3 = QGridLayout()
         self.gridLayout_3.setSpacing(10)
         self.gridLayout_3.setObjectName(u"gridLayout_3")
         self.gridLayout_3.setContentsMargins(5, 5, 5, 5)
-        self.l11 = QLabel(self.tab_2)
+        self.l11 = QLabel(self.tabDV)
         self.l11.setObjectName(u"l11")
         self.l11.setEnabled(True)
         self.l11.setMinimumSize(QSize(80, 25))
@@ -590,7 +518,7 @@ class Ui_CONTROL(object):
 
         self.gridLayout_3.addWidget(self.l11, 3, 0, 1, 1)
 
-        self.l15 = QLabel(self.tab_2)
+        self.l15 = QLabel(self.tabDV)
         self.l15.setObjectName(u"l15")
         self.l15.setMinimumSize(QSize(80, 25))
         self.l15.setMaximumSize(QSize(80, 25))
@@ -598,7 +526,7 @@ class Ui_CONTROL(object):
 
         self.gridLayout_3.addWidget(self.l15, 1, 0, 1, 1)
 
-        self.spb_Convention = QSpinBox(self.tab_2)
+        self.spb_Convention = QSpinBox(self.tabDV)
         self.spb_Convention.setObjectName(u"spb_Convention")
         self.spb_Convention.setMinimumSize(QSize(80, 25))
         self.spb_Convention.setMaximumSize(QSize(80, 25))
@@ -607,21 +535,21 @@ class Ui_CONTROL(object):
 
         self.gridLayout_3.addWidget(self.spb_Convention, 0, 1, 1, 1)
 
-        self.l16 = QLabel(self.tab_2)
+        self.l16 = QLabel(self.tabDV)
         self.l16.setObjectName(u"l16")
         self.l16.setMinimumSize(QSize(80, 25))
         self.l16.setMaximumSize(QSize(80, 25))
 
         self.gridLayout_3.addWidget(self.l16, 2, 0, 1, 1)
 
-        self.ch_ShowCamOffset = QCheckBox(self.tab_2)
+        self.ch_ShowCamOffset = QCheckBox(self.tabDV)
         self.ch_ShowCamOffset.setObjectName(u"ch_ShowCamOffset")
         self.ch_ShowCamOffset.setMinimumSize(QSize(200, 25))
         self.ch_ShowCamOffset.setMaximumSize(QSize(200, 25))
 
         self.gridLayout_3.addWidget(self.ch_ShowCamOffset, 3, 2, 1, 1)
 
-        self.spb_Timezone = QDoubleSpinBox(self.tab_2)
+        self.spb_Timezone = QDoubleSpinBox(self.tabDV)
         self.spb_Timezone.setObjectName(u"spb_Timezone")
         self.spb_Timezone.setMinimumSize(QSize(80, 25))
         self.spb_Timezone.setMaximumSize(QSize(80, 25))
@@ -636,7 +564,7 @@ class Ui_CONTROL(object):
 
         self.gridLayout_3.addItem(self.horizontalSpacer_6, 0, 2, 1, 1)
 
-        self.label_2 = QLabel(self.tab_2)
+        self.label_2 = QLabel(self.tabDV)
         self.label_2.setObjectName(u"label_2")
         self.label_2.setMinimumSize(QSize(80, 25))
         self.label_2.setMaximumSize(QSize(80, 25))
@@ -644,7 +572,7 @@ class Ui_CONTROL(object):
 
         self.gridLayout_3.addWidget(self.label_2, 0, 0, 1, 1)
 
-        self.t_CamOffset = QLineEdit(self.tab_2)
+        self.t_CamOffset = QLineEdit(self.tabDV)
         self.t_CamOffset.setObjectName(u"t_CamOffset")
         self.t_CamOffset.setEnabled(True)
         self.t_CamOffset.setMinimumSize(QSize(80, 25))
@@ -652,7 +580,7 @@ class Ui_CONTROL(object):
 
         self.gridLayout_3.addWidget(self.t_CamOffset, 3, 1, 1, 1)
 
-        self.l17 = QLabel(self.tab_2)
+        self.l17 = QLabel(self.tabDV)
         self.l17.setObjectName(u"l17")
         self.l17.setMinimumSize(QSize(80, 25))
         self.l17.setMaximumSize(QSize(80, 25))
@@ -660,7 +588,7 @@ class Ui_CONTROL(object):
 
         self.gridLayout_3.addWidget(self.l17, 4, 0, 1, 1)
 
-        self.spb_CamSize = QSpinBox(self.tab_2)
+        self.spb_CamSize = QSpinBox(self.tabDV)
         self.spb_CamSize.setObjectName(u"spb_CamSize")
         self.spb_CamSize.setMinimumSize(QSize(80, 25))
         self.spb_CamSize.setMaximumSize(QSize(80, 25))
@@ -679,7 +607,7 @@ class Ui_CONTROL(object):
 
         self.horizontalLayout_3.addItem(self.horizontalSpacer_5)
 
-        self.b_Pause = QPushButton(self.tab_2)
+        self.b_Pause = QPushButton(self.tabDV)
         self.b_Pause.setObjectName(u"b_Pause")
         self.b_Pause.setEnabled(False)
         sizePolicy.setHeightForWidth(self.b_Pause.sizePolicy().hasHeightForWidth())
@@ -696,7 +624,7 @@ class Ui_CONTROL(object):
 
         self.verticalLayout_7.addItem(self.verticalSpacer_3)
 
-        self.tabWidget.addTab(self.tab_2, "")
+        self.tabWidget.addTab(self.tabDV, "")
 
         self.verticalLayout_8.addWidget(self.tabWidget)
 
@@ -772,24 +700,24 @@ class Ui_CONTROL(object):
         self.menuAbout.addAction(self.actionInfo)
 
         self.retranslateUi(CONTROL)
+        self.t_RES.editingFinished.connect(CONTROL.setFocus)
+        self.t_VW.editingFinished.connect(CONTROL.setFocus)
+        self.ch_ApplyTide.stateChanged.connect(CONTROL.setFocus)
+        self.ch_FoSnap.stateChanged.connect(CONTROL.setFocus)
+        self.t_Fl.editingFinished.connect(CONTROL.setFocus)
+        self.t_OW.editingFinished.connect(CONTROL.setFocus)
+        self.gB1.toggled.connect(CONTROL.setFocus)
+        self.t_FoPers.editingFinished.connect(CONTROL.setFocus)
+        self.rb_FoPers.toggled.connect(CONTROL.setFocus)
         self.t_D.editingFinished.connect(CONTROL.setFocus)
         self.t_IW.editingFinished.connect(CONTROL.setFocus)
-        self.t_OW.editingFinished.connect(CONTROL.setFocus)
-        self.t_HW.editingFinished.connect(CONTROL.setFocus)
-        self.t_VW.editingFinished.connect(CONTROL.setFocus)
-        self.t_RES.editingFinished.connect(CONTROL.setFocus)
-        self.ch_ApplyTide.stateChanged.connect(CONTROL.setFocus)
-        self.t_Fl.editingFinished.connect(CONTROL.setFocus)
-        self.t_FlPt.editingFinished.connect(CONTROL.setFocus)
-        self.t_AntiSpoof.editingFinished.connect(CONTROL.setFocus)
-        self.gB1.toggled.connect(CONTROL.setFocus)
-        self.t_FoDist.editingFinished.connect(CONTROL.setFocus)
-        self.t_FoPers.editingFinished.connect(CONTROL.setFocus)
         self.ch_FiSnap.stateChanged.connect(CONTROL.setFocus)
+        self.t_FoDist.editingFinished.connect(CONTROL.setFocus)
+        self.t_FlPt.editingFinished.connect(CONTROL.setFocus)
         self.rb_FoDist.toggled.connect(CONTROL.setFocus)
-        self.rb_FoPers.toggled.connect(CONTROL.setFocus)
-        self.ch_FoSnap.stateChanged.connect(CONTROL.setFocus)
         self.t_AdPad.editingFinished.connect(CONTROL.setFocus)
+        self.t_AntiSpoof.editingFinished.connect(CONTROL.setFocus)
+        self.t_HW.editingFinished.connect(CONTROL.setFocus)
 
         self.tabWidget.setCurrentIndex(0)
 
@@ -838,7 +766,7 @@ class Ui_CONTROL(object):
         self.t_HW.setText(QCoreApplication.translate("CONTROL", u"1.0", None))
         self.t_IW.setText(QCoreApplication.translate("CONTROL", u"0.98", None))
         self.t_OW.setText(QCoreApplication.translate("CONTROL", u"1.05", None))
-        self.l12.setText(QCoreApplication.translate("CONTROL", u"Weed:", None))
+        self.l12.setText(QCoreApplication.translate("CONTROL", u"Weed profile:", None))
         self.ch_ApplyTide.setText(QCoreApplication.translate("CONTROL", u"Apply tide", None))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tabPipe), QCoreApplication.translate("CONTROL", u"Pipe", None))
         self.groupBox.setTitle(QCoreApplication.translate("CONTROL", u"Inner flags", None))
@@ -864,15 +792,6 @@ class Ui_CONTROL(object):
         self.ch_FoSnap.setText(QCoreApplication.translate("CONTROL", u"Snap to data", None))
         self.ch_FoShow.setText(QCoreApplication.translate("CONTROL", u"Show flags", None))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tabFlags), QCoreApplication.translate("CONTROL", u"Flags", None))
-        self.Edit.setTitle(QCoreApplication.translate("CONTROL", u"Edit", None))
-        self.rb_Pr.setText(QCoreApplication.translate("CONTROL", u"Pipe", None))
-        self.rb_Pt.setText(QCoreApplication.translate("CONTROL", u"Pipetracker", None))
-        self.PT.setTitle("")
-        self.rb_RejectPT.setText(QCoreApplication.translate("CONTROL", u"Reject (ALT key)", None))
-        self.rb_AcceptPT.setText(QCoreApplication.translate("CONTROL", u"Accept (ALT key)", None))
-        self.l14.setText(QCoreApplication.translate("CONTROL", u"Max PT gap (m):", None))
-        self.t_PtGap.setText(QCoreApplication.translate("CONTROL", u"5", None))
-        self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab), QCoreApplication.translate("CONTROL", u"Edit", None))
         self.l11.setText(QCoreApplication.translate("CONTROL", u"Cam offset:", None))
         self.l15.setText(QCoreApplication.translate("CONTROL", u"Time zone:", None))
         self.l16.setText("")
@@ -881,7 +800,7 @@ class Ui_CONTROL(object):
         self.t_CamOffset.setText(QCoreApplication.translate("CONTROL", u"0.0", None))
         self.l17.setText(QCoreApplication.translate("CONTROL", u"Symb. size:", None))
         self.b_Pause.setText(QCoreApplication.translate("CONTROL", u"No DV loaded", None))
-        self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_2), QCoreApplication.translate("CONTROL", u"Video", None))
+        self.tabWidget.setTabText(self.tabWidget.indexOf(self.tabDV), QCoreApplication.translate("CONTROL", u"Video", None))
         self.l_Coord.setText(QCoreApplication.translate("CONTROL", u"C:", None))
         self.l_Saved.setText(QCoreApplication.translate("CONTROL", u"LAST SAVED:", None))
         self.menuFile.setTitle(QCoreApplication.translate("CONTROL", u"File", None))

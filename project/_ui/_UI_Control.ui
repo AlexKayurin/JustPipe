@@ -457,7 +457,7 @@
              </size>
             </property>
             <property name="text">
-             <string>Weed:</string>
+             <string>Weed profile:</string>
             </property>
             <property name="alignment">
              <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
@@ -1035,143 +1035,7 @@
         </item>
        </layout>
       </widget>
-      <widget class="QWidget" name="tab">
-       <attribute name="title">
-        <string>Edit</string>
-       </attribute>
-       <layout class="QVBoxLayout" name="verticalLayout_6">
-        <item>
-         <widget class="QGroupBox" name="Edit">
-          <property name="title">
-           <string>Edit</string>
-          </property>
-          <layout class="QVBoxLayout" name="verticalLayout_2">
-           <item>
-            <widget class="QRadioButton" name="rb_Pr">
-             <property name="text">
-              <string>Pipe</string>
-             </property>
-             <property name="checked">
-              <bool>true</bool>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QRadioButton" name="rb_Pt">
-             <property name="enabled">
-              <bool>false</bool>
-             </property>
-             <property name="text">
-              <string>Pipetracker</string>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QGroupBox" name="PT">
-             <property name="enabled">
-              <bool>false</bool>
-             </property>
-             <property name="title">
-              <string/>
-             </property>
-             <layout class="QVBoxLayout" name="verticalLayout_3">
-              <item>
-               <widget class="QRadioButton" name="rb_RejectPT">
-                <property name="text">
-                 <string>Reject (ALT key)</string>
-                </property>
-                <property name="checked">
-                 <bool>true</bool>
-                </property>
-               </widget>
-              </item>
-              <item>
-               <widget class="QRadioButton" name="rb_AcceptPT">
-                <property name="text">
-                 <string>Accept (ALT key)</string>
-                </property>
-               </widget>
-              </item>
-             </layout>
-            </widget>
-           </item>
-           <item>
-            <layout class="QHBoxLayout" name="horizontalLayout_4">
-             <item>
-              <widget class="QLabel" name="l14">
-               <property name="maximumSize">
-                <size>
-                 <width>140</width>
-                 <height>35</height>
-                </size>
-               </property>
-               <property name="text">
-                <string>Max PT gap (m):</string>
-               </property>
-               <property name="alignment">
-                <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QLineEdit" name="t_PtGap">
-               <property name="sizePolicy">
-                <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-                 <horstretch>0</horstretch>
-                 <verstretch>0</verstretch>
-                </sizepolicy>
-               </property>
-               <property name="minimumSize">
-                <size>
-                 <width>80</width>
-                 <height>25</height>
-                </size>
-               </property>
-               <property name="maximumSize">
-                <size>
-                 <width>80</width>
-                 <height>25</height>
-                </size>
-               </property>
-               <property name="text">
-                <string>5</string>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <spacer name="horizontalSpacer_3">
-               <property name="orientation">
-                <enum>Qt::Orientation::Horizontal</enum>
-               </property>
-               <property name="sizeHint" stdset="0">
-                <size>
-                 <width>40</width>
-                 <height>20</height>
-                </size>
-               </property>
-              </spacer>
-             </item>
-            </layout>
-           </item>
-           <item>
-            <spacer name="verticalSpacer_2">
-             <property name="orientation">
-              <enum>Qt::Orientation::Vertical</enum>
-             </property>
-             <property name="sizeHint" stdset="0">
-              <size>
-               <width>20</width>
-               <height>40</height>
-              </size>
-             </property>
-            </spacer>
-           </item>
-          </layout>
-         </widget>
-        </item>
-       </layout>
-      </widget>
-      <widget class="QWidget" name="tab_2">
+      <widget class="QWidget" name="tabDV">
        <attribute name="title">
         <string>Video</string>
        </attribute>
@@ -1861,6 +1725,150 @@
  <resources/>
  <connections>
   <connection>
+   <sender>t_RES</sender>
+   <signal>editingFinished()</signal>
+   <receiver>CONTROL</receiver>
+   <slot>setFocus()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>327</x>
+     <y>125</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>304</x>
+     <y>-9</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>t_VW</sender>
+   <signal>editingFinished()</signal>
+   <receiver>CONTROL</receiver>
+   <slot>setFocus()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>351</x>
+     <y>92</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>345</x>
+     <y>-17</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>ch_ApplyTide</sender>
+   <signal>stateChanged(int)</signal>
+   <receiver>CONTROL</receiver>
+   <slot>setFocus()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>61</x>
+     <y>301</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>372</x>
+     <y>-3</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>ch_FoSnap</sender>
+   <signal>stateChanged(int)</signal>
+   <receiver>CONTROL</receiver>
+   <slot>setFocus()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>51</x>
+     <y>291</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>2</x>
+     <y>300</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>t_Fl</sender>
+   <signal>editingFinished()</signal>
+   <receiver>CONTROL</receiver>
+   <slot>setFocus()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>179</x>
+     <y>83</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>196</x>
+     <y>-10</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>t_OW</sender>
+   <signal>editingFinished()</signal>
+   <receiver>CONTROL</receiver>
+   <slot>setFocus()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>162</x>
+     <y>120</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>85</x>
+     <y>-11</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>gB1</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>CONTROL</receiver>
+   <slot>setFocus()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>309</x>
+     <y>72</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>1</x>
+     <y>38</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>t_FoPers</sender>
+   <signal>editingFinished()</signal>
+   <receiver>CONTROL</receiver>
+   <slot>setFocus()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>262</x>
+     <y>262</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>2</x>
+     <y>143</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>rb_FoPers</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>CONTROL</receiver>
+   <slot>setFocus()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>74</x>
+     <y>256</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>3</x>
+     <y>270</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
    <sender>t_D</sender>
    <signal>editingFinished()</signal>
    <receiver>CONTROL</receiver>
@@ -1893,146 +1901,18 @@
    </hints>
   </connection>
   <connection>
-   <sender>t_OW</sender>
-   <signal>editingFinished()</signal>
-   <receiver>CONTROL</receiver>
-   <slot>setFocus()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>162</x>
-     <y>120</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>85</x>
-     <y>-11</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>t_HW</sender>
-   <signal>editingFinished()</signal>
-   <receiver>CONTROL</receiver>
-   <slot>setFocus()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>334</x>
-     <y>66</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>321</x>
-     <y>-19</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>t_VW</sender>
-   <signal>editingFinished()</signal>
-   <receiver>CONTROL</receiver>
-   <slot>setFocus()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>351</x>
-     <y>92</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>345</x>
-     <y>-17</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>t_RES</sender>
-   <signal>editingFinished()</signal>
-   <receiver>CONTROL</receiver>
-   <slot>setFocus()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>327</x>
-     <y>125</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>304</x>
-     <y>-9</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>ch_ApplyTide</sender>
+   <sender>ch_FiSnap</sender>
    <signal>stateChanged(int)</signal>
    <receiver>CONTROL</receiver>
    <slot>setFocus()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>61</x>
-     <y>301</y>
+     <x>79</x>
+     <y>172</y>
     </hint>
     <hint type="destinationlabel">
-     <x>372</x>
-     <y>-3</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>t_Fl</sender>
-   <signal>editingFinished()</signal>
-   <receiver>CONTROL</receiver>
-   <slot>setFocus()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>179</x>
-     <y>83</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>196</x>
-     <y>-10</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>t_FlPt</sender>
-   <signal>editingFinished()</signal>
-   <receiver>CONTROL</receiver>
-   <slot>setFocus()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>162</x>
-     <y>108</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>220</x>
-     <y>-17</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>t_AntiSpoof</sender>
-   <signal>editingFinished()</signal>
-   <receiver>CONTROL</receiver>
-   <slot>setFocus()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>187</x>
-     <y>147</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>358</x>
-     <y>-13</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>gB1</sender>
-   <signal>toggled(bool)</signal>
-   <receiver>CONTROL</receiver>
-   <slot>setFocus()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>309</x>
-     <y>72</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>1</x>
-     <y>38</y>
+     <x>-2</x>
+     <y>194</y>
     </hint>
    </hints>
   </connection>
@@ -2053,34 +1933,18 @@
    </hints>
   </connection>
   <connection>
-   <sender>t_FoPers</sender>
+   <sender>t_FlPt</sender>
    <signal>editingFinished()</signal>
    <receiver>CONTROL</receiver>
    <slot>setFocus()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>262</x>
-     <y>262</y>
+     <x>162</x>
+     <y>108</y>
     </hint>
     <hint type="destinationlabel">
-     <x>2</x>
-     <y>143</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>ch_FiSnap</sender>
-   <signal>stateChanged(int)</signal>
-   <receiver>CONTROL</receiver>
-   <slot>setFocus()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>79</x>
-     <y>172</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>-2</x>
-     <y>194</y>
+     <x>220</x>
+     <y>-17</y>
     </hint>
    </hints>
   </connection>
@@ -2101,38 +1965,6 @@
    </hints>
   </connection>
   <connection>
-   <sender>rb_FoPers</sender>
-   <signal>toggled(bool)</signal>
-   <receiver>CONTROL</receiver>
-   <slot>setFocus()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>74</x>
-     <y>256</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>3</x>
-     <y>270</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>ch_FoSnap</sender>
-   <signal>stateChanged(int)</signal>
-   <receiver>CONTROL</receiver>
-   <slot>setFocus()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>51</x>
-     <y>291</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>2</x>
-     <y>300</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
    <sender>t_AdPad</sender>
    <signal>editingFinished()</signal>
    <receiver>CONTROL</receiver>
@@ -2145,6 +1977,38 @@
     <hint type="destinationlabel">
      <x>423</x>
      <y>140</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>t_AntiSpoof</sender>
+   <signal>editingFinished()</signal>
+   <receiver>CONTROL</receiver>
+   <slot>setFocus()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>187</x>
+     <y>147</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>358</x>
+     <y>-13</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>t_HW</sender>
+   <signal>editingFinished()</signal>
+   <receiver>CONTROL</receiver>
+   <slot>setFocus()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>334</x>
+     <y>66</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>321</x>
+     <y>-19</y>
     </hint>
    </hints>
   </connection>
