@@ -711,6 +711,9 @@
         <property name="text">
          <string>Show AntiSpoof</string>
         </property>
+        <property name="checked">
+         <bool>true</bool>
+        </property>
        </widget>
       </item>
       <item>

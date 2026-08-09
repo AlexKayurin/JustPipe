@@ -256,6 +256,7 @@ class Ui_XVIEW(object):
         self.ch_ShowAntiSpoof.setMinimumSize(QSize(150, 20))
         self.ch_ShowAntiSpoof.setMaximumSize(QSize(150, 20))
         self.ch_ShowAntiSpoof.setFont(font)
+        self.ch_ShowAntiSpoof.setChecked(True)
 
         self.horizontalLayout.addWidget(self.ch_ShowAntiSpoof)
 

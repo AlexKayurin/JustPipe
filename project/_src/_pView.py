@@ -1,5 +1,4 @@
-from PySide6 import QtWidgets
-# from PySide6.QtCore import Qt
+from PySide6 import QtWidgets, QtCore
 from PySide6.QtGui import QIntValidator, QDoubleValidator
 import pyqtgraph as pg
 import _UI_Pview
@@ -13,7 +12,8 @@ class PV(QtWidgets.QMainWindow, _UI_Pview.Ui_PVIEW):
         self.setMouseTracking(True)
         # set form
         self.move(int(544 + (screen_resolution.width() - 544) / 2), 0)
-        # self.setWindowFlag(self.windowFlags() | Qt.WindowStaysOnTopHint)
+        self.setWindowFlags(self.windowFlags() & QtCore.Qt.CustomizeWindowHint)
+        # self.setWindowFlag(self.windowFlags() | QtCore.Qt.WindowStaysOnTopHint)
         self.resize(int((screen_resolution.width() - 544) / 2), int(screen_resolution.height() / 2))
         self.pview.ui.roiBtn.hide()
         self.pview.ui.menuBtn.hide()

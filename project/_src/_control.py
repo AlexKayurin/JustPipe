@@ -68,8 +68,8 @@ class Controller:
                 [self.views_geometry,
                  self._model.pipeD, self._model.pipeR, self._model.inWall, self._model.outWall,
                  self._model.HWin, self._model.VWin, self._model.Res,
-                 self._model.FlD, self._model.FlP, self._model.AntiSpoof,
-                 self._model.FoDist, self._model.FoPers,
+                 self._model.FlD, self._model.FlP, self._model.AntiSpoof, self._model.AntiSpoof_A,
+                 self._model.FoDist,
                  self.cProfile, self.cPipe, self.cLeftM, self.cRightM,
                  self.cNotVis, self.cVis, self.cMADJ, self.cMSBL,
                  self.cPipetracker, self.cCurrentProf,
@@ -95,7 +95,7 @@ class Controller:
         for _w in [self._mainWin, self._xv, self._pv, self._lv, self._config]:
             _w.setWindowIcon(self._icon)
         # set up mainWin
-        self._mainWin.setWindowTitle(f'justPipe v.2 - akayurin@gmail.com \u00A9 2026')
+        self._mainWin.setWindowTitle(f'jP')
         # set up xView------------------------------------------------------------------------------------------
         self._xv.setWindowTitle(f'Profile View')
         self._xv.xview.setAspectLocked()
@@ -122,13 +122,13 @@ class Controller:
         self._pv.here.setSymbolBrush(self.cCurrentProf)
         self._pv.notvisited.setSymbolBrush(self.cNotVis)
         self._pv.visited.setPen(self.cVis.getRgb(), width=2.5)
-        self._pv.li.setPen(self.cLeftM.getRgb(), width=0.75)
+        self._pv.li.setPen(self.cLeftM.getRgb(), width=0.75, style=QtCore.Qt.DotLine)
         self._pv.li.setSymbolBrush(self.cLeftM)
-        self._pv.ri.setPen(self.cRightM.getRgb(), width=0.75)
+        self._pv.ri.setPen(self.cRightM.getRgb(), width=0.75, style=QtCore.Qt.DotLine)
         self._pv.ri.setSymbolBrush(self.cRightM)
-        self._pv.lo.setPen(self.cLeftM.getRgb(), width=0.75)
+        self._pv.lo.setPen(self.cLeftM.getRgb(), width=0.75, style=QtCore.Qt.DotLine)
         self._pv.lo.setSymbolBrush(self.cLeftM)
-        self._pv.ro.setPen(self.cRightM.getRgb(), width=0.75)
+        self._pv.ro.setPen(self.cRightM.getRgb(), width=0.75, style=QtCore.Qt.DotLine)
         self._pv.ro.setSymbolBrush(self.cRightM)
         self._pv.pt_acc.setPen(self.cPipetracker.getRgb(), width=2)
         self._pv.pt_acc.setSymbolBrush(self.cPipetracker)
@@ -139,8 +139,8 @@ class Controller:
         self._lv.notvisited_top.setSymbolBrush(self.cNotVis)
         self._lv.visited_top.setPen(self.cVis.getRgb(), width = 2.5)
         self._lv.visited_bot.setPen(self.cVis.getRgb(), width = 2.5)
-        self._lv.madj.setPen(self.cMADJ.getRgb(), width=2)
-        self._lv.msbl.setPen(self.cMSBL.getRgb(), width=2)
+        self._lv.madj.setPen(self.cMADJ.getRgb(), width=1.5, style=QtCore.Qt.DotLine)
+        self._lv.msbl.setPen(self.cMSBL.getRgb(), width=1.5, style=QtCore.Qt.DotLine)
         self._lv.pt_acc.setPen(self.cPipetracker.getRgb(), width=2)
         self._lv.pt_acc.setSymbolBrush(self.cPipetracker)
         # set up config------------------------------------------------------------------------------------------
@@ -181,8 +181,8 @@ class Controller:
         self._mainWin.t_Fl.setText(str(self._model.FlD))
         self._mainWin.t_FlPt.setText(str(self._model.FlP))
         self._mainWin.t_AntiSpoof.setText(str(self._model.AntiSpoof))
+        self._mainWin.t_AntiSpoof_A.setText(str(self._model.AntiSpoof_A))
         self._mainWin.t_FoDist.setText(str(self._model.FoDist))
-        self._mainWin.t_FoPers.setText(str(self._model.FoPers))
 
 
     def get_vals(self):
@@ -197,8 +197,8 @@ class Controller:
         self._model.FlD = float(self._mainWin.t_Fl.text())                  # inner flag distance from TOP
         self._model.FlP = float(self._mainWin.t_FlPt.text())                # inner flag patch (from flag distance)
         self._model.FoDist = float(self._mainWin.t_FoDist.text())           # outer flag distance from TOP
-        self._model.FoPers = int(self._mainWin.t_FoPers.text())             # outer flag persentage from TOP
         self._model.AntiSpoof = float(self._mainWin.t_AntiSpoof.text())     # antisppofing pillow for adaptive flags - min distance to pipe wall
+        self._model.AntiSpoof_A = float(self._mainWin.t_AntiSpoof_A.text()) # antisppofing sector angle
         self._model.AdPad = float(self._mainWin.t_AdPad.text())             # center pad (left blank) for adaptive flags
         self._model.CamOffset = float(self._mainWin.t_CamOffset.text())     # camera offset relative to profile
         self._model.Tzone = self._mainWin.spb_Timezone.value()              # time zone (diff DV - timestamps)
@@ -211,7 +211,10 @@ class Controller:
         self._model.pt_Level = float(self._lv.t_Lev.text())                 # long view PT levelling value
 
         # tide apply/unapply text
-        if self._mainWin.ch_ApplyTide.isChecked():
+        if not self.Tideflag:
+            self._xv.l_Tide.setText('TIDE NOT LOADED')
+            self._xv.l_Tide.setStyleSheet('color: red')
+        elif self.Tideflag and self._mainWin.ch_ApplyTide.isChecked():
             self._xv.l_Tide.setText('TIDE LOADED - APPLIED')
             self._xv.l_Tide.setStyleSheet('color: forestgreen')
             self.Appliedflag = True
@@ -225,14 +228,6 @@ class Controller:
             self._xv.pipe_A.setVisible(True)
         else:
             self._xv.pipe_A.setVisible(False)
-
-        # show/hide outer flags on xView
-        if self._mainWin.ch_FoShow.isChecked():
-            self._xv.x_l_outer.setVisible(True)
-            self._xv.x_r_outer.setVisible(True)
-        else:
-            self._xv.x_l_outer.setVisible(False)
-            self._xv.x_r_outer.setVisible(False)
 
         # show/hide flags patches on xView
         if self._xv.ch_ShowPatch.isChecked():
@@ -323,8 +318,8 @@ class Controller:
                     self._model.pipeD, self._model.pipeR,
                     self._model.inWall, self._model.outWall,
                     self._model.HWin, self._model.VWin, self._model.Res,
-                    self._model.FlD, self._model.FlP, self._model.AntiSpoof,
-                    self._model.FoDist, self._model.FoPers,
+                    self._model.FlD, self._model.FlP, self._model.AntiSpoof, self._model.AntiSpoof_A,
+                    self._model.FoDist,
                     self.cProfile, self.cPipe,
                     self.cLeftM, self.cRightM,
                     self.cNotVis, self.cVis,
@@ -381,8 +376,8 @@ class Controller:
             if e.modifiers() & Qt.ControlModifier:  # 'Ctrl + S' -----MODIFIER
                 # save work
                 if e.key() == Qt.Key_S:
-                    saving_time = self._model.save_work(os.path.dirname(self.profName))
-                    self._mainWin.l_Saved.setText(f'LAST SAVED: {saving_time}')
+                    saving_time = self._model.save_work(os.path.dirname(self._model.profName))
+                    self._mainWin.l_Saved.setText(f'SAVED: {saving_time}')
             # autodigiize
             if e.key() == Qt.Key_A:
                 self._model.auto_run()
@@ -626,7 +621,6 @@ class Controller:
         if _ext in ['.xpa', '.cr2']:
             self.profName, self._model.prno, self._model.no_of_prof = self._model.loadprof(_ext, fName)
             self.ProfileFlag = True
-            self._mainWin.setWindowTitle(f'justPipe v.2 - {os.path.basename(self.profName)}')
 
         # tide
         elif _ext in ['.tid']:
@@ -655,7 +649,6 @@ class Controller:
                 self._xv.l_Tide.setText('TIDE LOADED - APPLIED')
                 self._xv.l_Tide.setStyleSheet('color: forestgreen')
             self.ProfileFlag = True
-            self._mainWin.setWindowTitle(f'justPipe v.2 - {os.path.basename(self._model.profName)}')
             self._model.make_shapes()
 
         # pipetracker
@@ -700,7 +693,7 @@ class Controller:
     def handle_save_data(self, function, fNname):
         if function == 'savework':
             saving_time = self._model.save_work(fNname)
-            self._mainWin.l_Saved.setText(f'LAST SAVED: {saving_time}')
+            self._mainWin.l_Saved.setText(f'SAVED: {saving_time}')
         if function in ['exporteiva', 'exportsfx']:
             self._model.save_result(function, fNname)
             self.messagepop('Files saved')
@@ -818,11 +811,8 @@ class Controller:
         # flags
         self._xv.x_l_inner.setPos(l_inner_coord[0], l_inner_coord[1] + TXC)
         self._xv.x_r_inner.setPos(r_inner_coord[0], r_inner_coord[1] + TXC)
-        if self._mainWin.ch_FoShow.isChecked():
-            self._xv.x_l_outer.setPos(l_outer_coord[0], l_outer_coord[1] + TXC)
-            self._xv.x_r_outer.setPos(r_outer_coord[0], r_outer_coord[1] + TXC)
-        else:
-            pass
+        self._xv.x_l_outer.setPos(l_outer_coord[0], l_outer_coord[1] + TXC)
+        self._xv.x_r_outer.setPos(r_outer_coord[0], r_outer_coord[1] + TXC)
         # flag patches
         if self._xv.ch_ShowPatch.isChecked():
             try:
@@ -879,13 +869,10 @@ class Controller:
                                 self._model.flush[:, 21], connect=visited_mask)
             self._pv.ri.setData(self._model.flush[:, 22],
                                 self._model.flush[:, 23], connect=visited_mask)
-            if self._mainWin.ch_FoShow.isChecked():
-                self._pv.lo.setData(self._model.flush[:, 24],
-                                    self._model.flush[:, 25], connect=visited_mask)
-                self._pv.ro.setData(self._model.flush[:, 26],
-                                    self._model.flush[:, 27], connect=visited_mask)
-            else:
-                pass
+            self._pv.lo.setData(self._model.flush[:, 24],
+                                self._model.flush[:, 25], connect=visited_mask)
+            self._pv.ro.setData(self._model.flush[:, 26],
+                                self._model.flush[:, 27], connect=visited_mask)
         else:
             pass
         # POI
@@ -1019,12 +1006,9 @@ class Controller:
 
         if sender == 'actionManual':
             # open application manual
-            appfolder = os.path.dirname(os.path.realpath(sys.argv[0]))
-            helpfile = os.path.join(appfolder, '_internal', 'justPipe.pdf')
-
             platf = platform.system()
             if platf == 'Linux':
-                subprocess.call(['xdg-open', helpfile])  # , check=True)
+                subprocess.call(['xdg-open', self._manualfile])  # , check=True)
             if platf == 'Windows':
                 os.startfile(self._manualfile)
 

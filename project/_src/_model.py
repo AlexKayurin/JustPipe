@@ -19,7 +19,7 @@ class Model:
         # empty selection chunk (first & last profile nos)
         self.chunk = [-1, -1]
         # set pipe shape - spaced points array for plotting pipe (360 deg / 50 pts)
-        pipeshape = np.linspace(0, 2 * np.pi, 50)
+        pipeshape = np.linspace(-0.5 * np.pi, -2.5 * np.pi, 360)
         self.pipeshape_cos = np.cos(pipeshape)
         self.pipeshape_sin = np.sin(pipeshape)
 
@@ -194,8 +194,8 @@ class Model:
              self.profName, self.no_of_prof, self.profiles, self.flush,
              self.pipeD, self.pipeR, self.inWall, self.outWall,
              self.HWin, self.VWin, self.Res,
-             self.FlD, self.FlP, self.AntiSpoof,
-             self.FoDist, self.FoPers,
+             self.FlD, self.FlP, self.AntiSpoof, self.AntiSpoof_A,
+             self.FoDist,
              self._controller.Tideflag, self._controller.Appliedflag,
              self._controller.cProfile, self._controller.cPipe,
              self._controller.cLeftM, self._controller.cRightM,
@@ -318,8 +318,8 @@ class Model:
                     self.profName, self.no_of_prof, self.profiles, self.flush,
                     self.pipeD, self.pipeR, self.inWall, self.outWall,
                     self.HWin, self.VWin, self.Res,
-                    self.FlD, self.FlP, self.AntiSpoof,
-                    self.FoDist, self.FoPers,
+                    self.FlD, self.FlP, self.AntiSpoof, self.AntiSpoof_A,
+                    self.FoDist,
                     self._controller.Tideflag, self._controller.Appliedflag,
                     self._controller.cProfile, self._controller.cPipe,
                     self._controller.cLeftM, self._controller.cRightM,
@@ -616,8 +616,14 @@ class Model:
                       self.inWall * self.pipeR * self.pipeshape_sin]
         pipe_O_pts = [self.outWall * self.pipeR * self.pipeshape_cos,
                       self.outWall * self.pipeR * self.pipeshape_sin]
-        pipe_A_pts = [(self.pipeR + self.AntiSpoof) * self.pipeshape_cos,
-                      (self.pipeR + self.AntiSpoof) * self.pipeshape_sin]
+        # -------------------------antispoof
+        ax = ((self.pipeR + self.AntiSpoof) *
+              self.pipeshape_cos[(180 - int(self.AntiSpoof_A)):(180 + int(self.AntiSpoof_A))])
+        ay = ((self.pipeR + self.AntiSpoof) *
+              self.pipeshape_sin[(180 - int(self.AntiSpoof_A)):(180 + int(self.AntiSpoof_A))])
+        pipe_A_pts = [np.hstack((np.zeros((1)), ax, np.zeros((1)))),
+                      np.hstack((np.zeros((1)), ay, np.zeros((1))))]
+        # -------------------------antispoof
         assist_pts = [self.pipeR * self.pipeshape_cos,
                       self.pipeR * self.pipeshape_sin]
         pt_sel_pts_p = [[-self.p_EditSpot / 2, -self.p_EditSpot / 2, self.p_EditSpot / 2,
@@ -864,14 +870,25 @@ class Model:
                                                     self.profile[self.ri_spot][self.ri_ix, 1])
 
                     elif self._controller._mainWin.rb_Fadapt.isChecked():
-                        # distances from point to pipe centre
+                        # distances and vertical angles from pipe centre to profile points
                         li_d = ((self.profile[self.li_spot][:, 0] - self.min_cx) ** 2 + (
                                     self.profile[self.li_spot][:, 1] - self.min_cz) ** 2) ** 0.5
                         ri_d = ((self.profile[self.ri_spot][:, 0] - self.min_cx) ** 2 + (
                                     self.profile[self.ri_spot][:, 1] - self.min_cz) ** 2) ** 0.5
-                        # set d == 1000 if within pipe + anti-spoof (to reject from min dist)
-                        li_d[:][li_d[:] < (self.AntiSpoof + self.pipeR)] = 10000
-                        ri_d[:][ri_d[:] < (self.AntiSpoof + self.pipeR)] = 10000
+                        li_a = np.rad2deg(_F_funcs.Bearing(self.profile[self.li_spot][:, 0] - self.min_cx,
+                                                           self.profile[self.li_spot][:, 1] - self.min_cz)) - 360
+                        ri_a = np.rad2deg(_F_funcs.Bearing(self.profile[self.ri_spot][:, 0] - self.min_cx,
+                                                           self.profile[self.ri_spot][:, 1] - self.min_cz))
+
+                        # set d == 1000 if within pipe + anti-spoof sector (to reject from min dist)
+                        li_d[:][li_d[:] <= self.pipeR] = 100000
+                        ri_d[:][ri_d[:] <= self.pipeR] = 100000
+
+                        li_d[:][(li_d[:] <= (self.AntiSpoof + self.pipeR)) &
+                                (li_a[:] >= -self.AntiSpoof_A)] = 100000
+                        ri_d[:][(ri_d[:] <= (self.AntiSpoof + self.pipeR)) &
+                                (ri_a[:] <= self.AntiSpoof_A)] = 100000
+
 
                         flagdetected = False  # !!! True if adaptive algo works; False otherwise
                         for dist, flagspot, side in zip([li_d, ri_d],
@@ -912,20 +929,12 @@ class Model:
                                 self.ri_x, self.ri_z = fl_x, fl_z
 
                 # outer flags
-                # define D of outer flag
-                l_end, r_end = self.profile[0, 0], self.profile[-1, 0]
-                if self._controller._mainWin.rb_FoDist.isChecked():
-                    l_Dist = r_Dist = self.FoDist
-                if self._controller._mainWin.rb_FoPers.isChecked():
-                    l_Dist, r_Dist = (self.FoPers * (self.min_cx - l_end) / 100,
-                                      self.FoPers * (r_end - self.min_cx) / 100)
-
-                self.lo_ix = np.argmin(np.abs(self.profile[:, 0] - (self.min_cx - l_Dist)))
-                self.ro_ix = np.argmin(np.abs(self.profile[:, 0] - (self.min_cx + r_Dist)))
+                self.lo_ix = np.argmin(np.abs(self.profile[:, 0] - (self.min_cx - self.FoDist)))
+                self.ro_ix = np.argmin(np.abs(self.profile[:, 0] - (self.min_cx + self.FoDist)))
                 self.lo_z, self.ro_z = self.profile[self.lo_ix, 1], self.profile[self.ro_ix, 1]
 
                 if not self._controller._mainWin.ch_FoSnap.isChecked():
-                    self.lo_x, self.ro_x = self.min_cx - l_Dist, self.min_cx + r_Dist
+                    self.lo_x, self.ro_x = self.min_cx - self.FoDist, self.min_cx + self.FoDist
                 else:
                     self.lo_x, self.ro_x = self.profile[self.lo_ix, 0], self.profile[self.ro_ix, 0]
 

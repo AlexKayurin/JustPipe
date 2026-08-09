@@ -1,6 +1,5 @@
-from PySide6 import QtWidgets
-# from PySide6.QtCore import Qt
-from PySide6.QtGui import QDoubleValidator
+from PySide6 import QtWidgets, QtCore, QtGui
+from PySide6.QtGui import QDoubleValidator, QIntValidator
 from PySide6.QtWidgets import QFileDialog
 import _UI_Control
 
@@ -12,13 +11,16 @@ class MainWin(QtWidgets.QMainWindow, _UI_Control.Ui_CONTROL):
         self.setupUi(self)
         # set form
         self.move(0, 0)
-        # self.setWindowFlag(self.windowFlags() | Qt.WindowStaysOnTopHint)
+        self.setWindowFlags(self.windowFlags() & QtCore.Qt.CustomizeWindowHint)
+        self.setWindowFlag(self.windowFlags() | QtCore.Qt.WindowStaysOnTopHint)
 
         # set up le validators
         for _te in [self.t_D, self.t_IW, self.t_OW, self.t_HW, self.t_VW, self.t_RES,
-                    self.t_Fl, self.t_FlPt, self.t_AntiSpoof, self.t_AdPad, self.t_FoDist, self.t_FoPers,
+                    self.t_Fl, self.t_FlPt, self.t_AntiSpoof, self.t_AdPad, self.t_FoDist,
                     self.t_CamOffset]:
             _te.setValidator(QDoubleValidator())
+        self.t_AntiSpoof_A.setValidator(QIntValidator())
+
 
         # # set up signals
         self.actionLoad_profiles.triggered.connect(self.menu_loadfile)
@@ -36,9 +38,7 @@ class MainWin(QtWidgets.QMainWindow, _UI_Control.Ui_CONTROL):
         self.actionLView.triggered.connect(self.menu_show_view)
         self.actionSettings.triggered.connect(self.menu_show_view)
         self.actionDV_Control.triggered.connect(self.menu_show_view)
-        #
         self.actionManual.triggered.connect(self.menu_show_view)
-        #
         # self.b_Pause.clicked.connect(self.dvPause)
         self.t_D.textEdited.connect(self.val_changed)
         self.t_IW.textEdited.connect(self.val_changed)
@@ -50,8 +50,8 @@ class MainWin(QtWidgets.QMainWindow, _UI_Control.Ui_CONTROL):
         self.t_Fl.textEdited.connect(self.val_changed)
         self.t_FlPt.textEdited.connect(self.val_changed)
         self.t_FoDist.textEdited.connect(self.val_changed)
-        self.t_FoPers.textEdited.connect(self.val_changed)
         self.t_AntiSpoof.textEdited.connect(self.val_changed)
+        self.t_AntiSpoof_A.textEdited.connect(self.val_changed)
         self.t_AdPad.textEdited.connect(self.val_changed)
         self.t_CamOffset.textEdited.connect(self.val_changed)
         self.spb_Timezone.valueChanged.connect(self.val_changed)
@@ -60,11 +60,12 @@ class MainWin(QtWidgets.QMainWindow, _UI_Control.Ui_CONTROL):
         self.rb_Fmax.clicked.connect(self.val_changed)
         self.rb_Fmean.clicked.connect(self.val_changed)
         self.rb_Fadapt.clicked.connect(self.val_changed)
-        self.rb_FoDist.clicked.connect(self.val_changed)
-        self.rb_FoPers.clicked.connect(self.val_changed)
         self.ch_FoSnap.stateChanged.connect(self.val_changed)
-        self.ch_FoShow.stateChanged.connect(self.val_changed)
         self.ch_ApplyTide.stateChanged.connect(self.val_changed)
+
+        self.toolBoxPipe.currentChanged.connect(self.toolbox_select)
+        self.toolBoxFlags.currentChanged.connect(self.toolbox_select)
+        self.toolBoxVideo.currentChanged.connect(self.toolbox_select)
 
 
     def subscribe_controller(self, controller) -> None:
@@ -73,6 +74,22 @@ class MainWin(QtWidgets.QMainWindow, _UI_Control.Ui_CONTROL):
 
     def closeEvent(self, e):
         self._controller.handle_close_ui()
+
+
+    def toolbox_select(self):
+        _sender = self.sender()
+        _ix = _sender.currentIndex()
+
+        if _sender.objectName() == 'toolBoxPipe':
+            _widgets = [self.t_D, self.t_IW, self.t_OW,
+                            self.t_HW, self.t_VW, self.t_RES, self.sp_Weed,]
+            _widgets[_ix].selectAll()
+            _widgets[_ix].setFocus()
+        elif _sender.objectName() == 'toolBoxFlags':
+            _widgets = [self.t_Fl, self.t_FlPt, self.t_AdPad,
+                            self.t_AntiSpoof, self.t_AntiSpoof_A, self.t_FoDist,]
+            _widgets[_ix].selectAll()
+            _widgets[_ix].setFocus()
 
 
     def keyPressEvent(self, e):

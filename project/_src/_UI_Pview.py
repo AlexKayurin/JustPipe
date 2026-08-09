@@ -155,6 +155,7 @@ class Ui_PVIEW(object):
         self.sp_Pt_Weed.setMinimumSize(QSize(70, 20))
         self.sp_Pt_Weed.setMaximumSize(QSize(70, 20))
         self.sp_Pt_Weed.setFont(font)
+        self.sp_Pt_Weed.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.sp_Pt_Weed.setMinimum(1)
         self.sp_Pt_Weed.setMaximum(1000)
         self.sp_Pt_Weed.setValue(5)

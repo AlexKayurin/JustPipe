@@ -1,5 +1,4 @@
 from PySide6 import QtCore, QtWidgets
-# from PySide6.QtCore import Qt
 from PySide6.QtGui import QIntValidator, QDoubleValidator
 import pyqtgraph as pg
 import _UI_Lview
@@ -14,7 +13,8 @@ class LV(QtWidgets.QMainWindow, _UI_Lview.Ui_LVIEW):
         self.lview.setMenuEnabled(False)
         # set form
         self.move(544, int(screen_resolution.height() / 1.9))
-        # self.setWindowFlag(self.windowFlags() | Qt.WindowStaysOnTopHint)
+        self.setWindowFlags(self.windowFlags() & QtCore.Qt.CustomizeWindowHint)
+        # self.setWindowFlag(self.windowFlags() | QtCore.Qt.WindowStaysOnTopHint)
         self.resize(int(screen_resolution.width() - 544), int(screen_resolution.height() / 3))
         self.vb_lview = self.lview.plotItem.vb              # for correct mouse tracking
         self.lview.viewport().installEventFilter(self)      # eventFilter for tracking mouse wheel scroll

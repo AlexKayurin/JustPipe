@@ -1,5 +1,4 @@
-from PySide6 import QtWidgets
-# from PySide6.QtCore import Qt
+from PySide6 import QtWidgets, QtCore
 import pyqtgraph as pg
 import _UI_Xview
 
@@ -12,7 +11,8 @@ class XV(QtWidgets.QMainWindow, _UI_Xview.Ui_XVIEW):
         self.xview.setMenuEnabled(False)
         # set form
         self.move(544, 0)
-        # self.setWindowFlag(self.windowFlags() | Qt.WindowStaysOnTopHint)
+        self.setWindowFlags(self.windowFlags() & QtCore.Qt.CustomizeWindowHint)
+        # self.setWindowFlag(self.windowFlags() | QtCore.Qt.WindowStaysOnTopHint)
         self.resize(int((screen_resolution.width() - 544) / 2), int(screen_resolution.height() / 2))
 
         # set up appearance

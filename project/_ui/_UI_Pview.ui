@@ -392,6 +392,9 @@
                <pointsize>10</pointsize>
               </font>
              </property>
+             <property name="alignment">
+              <set>Qt::AlignmentFlag::AlignCenter</set>
+             </property>
              <property name="minimum">
               <number>1</number>
              </property>
