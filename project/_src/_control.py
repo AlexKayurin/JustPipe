@@ -9,7 +9,6 @@ import platform
 import subprocess
 from pathlib import Path
 import numpy as np
-
 from PySide6 import QtCore, QtGui
 from PySide6.QtWidgets import QMessageBox
 from PySide6.QtCore import Qt

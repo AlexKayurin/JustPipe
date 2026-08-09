@@ -10,6 +10,7 @@ import _F_kp_to_point
 from PIL import Image
 from PIL.TiffTags import TAGS
 
+Image.MAX_IMAGE_PIXELS = 10000000000
 
 class Model:
     def __init__(self):
