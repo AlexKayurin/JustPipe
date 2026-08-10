@@ -15,11 +15,24 @@ class MainWin(QtWidgets.QMainWindow, _UI_Control.Ui_CONTROL):
         self.setWindowFlag(self.windowFlags() | QtCore.Qt.WindowStaysOnTopHint)
 
         # set up le validators
-        for _te in [self.t_D, self.t_IW, self.t_OW, self.t_HW, self.t_VW, self.t_RES,
+        for _le in [self.t_D, self.t_IW, self.t_OW, self.t_HW, self.t_VW, self.t_RES,
                     self.t_Fl, self.t_FlPt, self.t_AntiSpoof, self.t_AdPad, self.t_FoDist,
+                    self.t_PtGap, self.t_EdSpot,
                     self.t_CamOffset]:
-            _te.setValidator(QDoubleValidator())
-        self.t_AntiSpoof_A.setValidator(QIntValidator())
+            _le.setValidator(QDoubleValidator())
+        for _le in [self.t_AntiSpoof_A, self.t_smW]:
+            _le.setValidator(QIntValidator())
+
+        # set up tooldox colors
+        self.toolBoxPipe.setStyleSheet('color: darkblue')
+        self.toolBoxFlags.setStyleSheet('color: darkgreen')
+        self.gB1.setStyleSheet('color: darkgreen')
+        self.ch_ApplyTide.setStyleSheet('color: darkred')
+        self.b_EditMode.setText('\U0001F5FB')
+        self.b_smoothPT_p.setText('S\u02E3\u02B8')
+        self.b_smoothPT_l.setText('S\u1DBB')
+        self.b_levelPT.setText('\u21F3')
+        self.b_savePT.setText('\U0001F4BE')
 
 
         # # set up signals
@@ -62,7 +75,17 @@ class MainWin(QtWidgets.QMainWindow, _UI_Control.Ui_CONTROL):
         self.rb_Fadapt.clicked.connect(self.val_changed)
         self.ch_FoSnap.stateChanged.connect(self.val_changed)
         self.ch_ApplyTide.stateChanged.connect(self.val_changed)
+        self.b_EditMode.clicked.connect(self.val_changed)
+        self.sp_Pt_Weed.valueChanged.connect(self.val_changed)
+        self.t_EdSpot.textEdited.connect(self.val_changed)
+        self.t_smW.textEdited.connect(self.val_changed)
+        self.b_smoothPT_p.clicked.connect(self.val_changed)
+        self.b_smoothPT_l.clicked.connect(self.val_changed)
+        self.t_Lev.textEdited.connect(self.val_changed)
+        self.b_levelPT.clicked.connect(self.val_changed)
+        self.b_savePT.clicked.connect(self.val_changed)
 
+        # pipe tab
         self.toolBoxPipe.currentChanged.connect(self.toolbox_select)
         self.toolBoxFlags.currentChanged.connect(self.toolbox_select)
         self.toolBoxVideo.currentChanged.connect(self.toolbox_select)
@@ -107,7 +130,7 @@ class MainWin(QtWidgets.QMainWindow, _UI_Control.Ui_CONTROL):
         _exts = ['SITRAS profiles (*.cr2);;XPA profiles (*.xpa);;All Files (*)',
                  'GeoTiff files (*.tif);;GeoTiff files (*.tiff);;PNG files (*.png);;All Files (*)',
                  'Tide files (*.tid);;All Files (*)',
-                 'justPipe Pipetracker files (*.spt);;EIVA Pipetracker files (*.pip);;SFX Pipetracker files (*.fug);;All Files (*)',
+                 'justPipe Pipetracker files (*.ptr);;EIVA Pipetracker files (*.pip);;SFX Pipetracker files (*.fug);;All Files (*)',
                  'Work files (*.wrk);;All Files (*)',
                  'Palylists (*.pll);;All files (*)',
                  ]

@@ -185,8 +185,8 @@ class Model:
 
             if self._controller.Ptflag:
                 # interpolating tide from flush to pipetracker filed 7
-                self.pipetracker[:, 7] = np.interp(self.pipetracker[:, 0], self.flush[:, 14],
-                                                   self.flush[:, 15])
+                self.pipetracker_W[:, 7] = np.interp(self.pipetracker_W[:, 0], self.flush[:, 14],
+                                                     self.flush[:, 15])
 
 
     def loadwork(self, _ext, fName):
@@ -210,51 +210,51 @@ class Model:
         if not self._controller.ProfileFlag:
             self._controller.messagepop('Load profiles first')
         else:
-            if not self._controller.Ptflag:
-                if _ext == '.pip':
-                    pipetracker_file = np.loadtxt(fName, skiprows=0, delimiter='\t',
-                                                  converters={0: lambda x: datetime.strptime(x,
-                                                                                             '%Y:%m:%d:%H:%M:%S.%f').replace(
-                                                      tzinfo=timezone.utc).timestamp(),
-                                                              1: float, 2: float, 3: float, 4: float, 5: float})
-                    self.pipetracker = np.concatenate((pipetracker_file, np.zeros((len(pipetracker_file), 8))),
-                                                      axis=1)
+            # if not self._controller.Ptflag:
+            if _ext == '.pip':
+                pipetracker_file = np.loadtxt(fName, skiprows=0, delimiter='\t',
+                                              converters={0: lambda x: datetime.strptime(x,
+                                                                                         '%Y:%m:%d:%H:%M:%S.%f').replace(
+                                                  tzinfo=timezone.utc).timestamp(),
+                                                          1: float, 2: float, 3: float, 4: float, 5: float})
+                self.pipetracker = np.concatenate((pipetracker_file, np.zeros((len(pipetracker_file), 8))),
+                                                  axis=1)
 
-                    # depth to field 3 from field 4 (and negating Z)
-                    self.pipetracker[:, 3] = -self.pipetracker[:, 4]
-                    # populating 'smoothed' fields from 'raw'
-                    self.pipetracker[:, 4:7] = self.pipetracker[:, 1:4]
+                # depth to field 3 from field 4 (and negating Z)
+                self.pipetracker[:, 3] = -self.pipetracker[:, 4]
+                # populating 'smoothed' fields from 'raw'
+                self.pipetracker[:, 4:7] = self.pipetracker[:, 1:4]
 
-                    self._rechain_pipetracker(self.pipetracker)
+                self._rechain_pipetracker(self.pipetracker)
 
-                if _ext == '.fug':
-                    pipetracker_file = np.loadtxt(fName, skiprows=1, delimiter=',',
-                                                  converters={0: lambda x: datetime.strptime(x,
-                                                                                             '%d/%m/%Y %H:%M:%S.%f').replace(
-                                                      tzinfo=timezone.utc).timestamp(),
-                                                              1: float, 2: float, 3: float})
-                    self.pipetracker = np.concatenate((pipetracker_file, np.zeros((len(pipetracker_file), 10))),
-                                                      axis=1)
+            if _ext == '.fug':
+                pipetracker_file = np.loadtxt(fName, skiprows=1, delimiter=',',
+                                              converters={0: lambda x: datetime.strptime(x,
+                                                                                         '%d/%m/%Y %H:%M:%S.%f').replace(
+                                                  tzinfo=timezone.utc).timestamp(),
+                                                          1: float, 2: float, 3: float})
+                self.pipetracker = np.concatenate((pipetracker_file, np.zeros((len(pipetracker_file), 10))),
+                                                  axis=1)
 
-                    # negating Z
-                    self.pipetracker[:, 3] *= -1
-                    # populating 'smoothed' fields from 'raw'
-                    self.pipetracker[:, 4:7] = self.pipetracker[:, 1:4]
+                # negating Z
+                self.pipetracker[:, 3] *= -1
+                # populating 'smoothed' fields from 'raw'
+                self.pipetracker[:, 4:7] = self.pipetracker[:, 1:4]
 
-                    self._rechain_pipetracker(self.pipetracker)
+                self._rechain_pipetracker(self.pipetracker)
 
-                if _ext == '.spt':
-                    with open(fName, 'rb') as loadfile:
-                        self.pipetracker = pickle.load(loadfile)
+            if _ext == '.ptr':
+                with open(fName, 'rb') as loadfile:
+                    self.pipetracker = pickle.load(loadfile)
 
-                # FOR ALL PT TYPES
-                # interpolating tide from flush to pipetracker filed 7
-                if self._controller.Tideflag:
-                    self.pipetracker[:, 7] = np.interp(self.pipetracker[:, 0], self.flush[:, 14],
-                                                       self.flush[:, 15])
+            # FOR ALL PT TYPES
+            # interpolating tide from flush to pipetracker filed 7
+            if self._controller.Tideflag:
+                self.pipetracker[:, 7] = np.interp(self.pipetracker[:, 0], self.flush[:, 14],
+                                                   self.flush[:, 15])
 
-                self.weed_pipetracker()
-                self._controller.Ptflag = True
+            self.weed_pipetracker()
+            self._controller.Ptflag = True
 
 
     def loadtif(self, _ext, fName):
@@ -331,11 +331,18 @@ class Model:
             pickle.dump(dump, dumpfile)
 
         if self._controller.Ptflag:
-            pt_dumpfilename = os.path.join(foldName, Path(os.path.basename(self.profName)).stem) + '_PT_' + saving_time + '.spt'
+            self.save_pipetracker(saving_time, foldName)
+            return saving_time
+        else:
+            return saving_time
 
-            with open(pt_dumpfilename, 'wb') as dumpfile:
-                dump = self.pipetracker
-                pickle.dump(dump, dumpfile)
+
+    def save_pipetracker(self, saving_time, foldName):
+        pt_dumpfilename = os.path.join(foldName, Path(os.path.basename(self.profName)).stem) + '_' + saving_time + '.ptr'
+
+        with open(pt_dumpfilename, 'wb') as dumpfile:
+            dump = self.pipetracker_W
+            pickle.dump(dump, dumpfile)
 
         return saving_time
 
@@ -469,7 +476,6 @@ class Model:
 
 
     def level_pipetracker(self):
-        self.pipetracker[:, 11] = self.pt_Level
         self.pipetracker_W[:, 11] = self.pt_Level
 
 
@@ -477,7 +483,7 @@ class Model:
         acc_starts_ix, acc_ends_ix = self._find_gaps_on_pipetracker_W()
 
         # smoothing window
-        sm_win = self.p_SmoothWin if sender == 'b_smoothPT_p'  else self.l_SmoothWin
+        sm_win = self.SmoothWin
         filt = np.ones(sm_win)
         mov = sm_win // 2
 
@@ -504,7 +510,6 @@ class Model:
             self.pipetracker_W[:, 4] = self.pipetracker_W[:, 1]
             self.pipetracker_W[:, 5] = self.pipetracker_W[:, 2]
             self.pipetracker_W[:, 6] = self.pipetracker_W[:, 3] + self.pipetracker_W[:, 11]
-            # self.pipetracker_W[:, 11] = 0
 
         self._rechain_pipetracker(self.pipetracker_W)
 
@@ -567,7 +572,7 @@ class Model:
 
 
     def weed_pipetracker(self):
-        self.pipetracker_W = self.pipetracker.copy()[::self.weed_pt]
+        self.pipetracker_W = self.pipetracker.copy()[::self.weed_pt_val]
 
 
     def interpolate_chunk(self):
@@ -627,20 +632,20 @@ class Model:
         # -------------------------antispoof
         assist_pts = [self.pipeR * self.pipeshape_cos,
                       self.pipeR * self.pipeshape_sin]
-        pt_sel_pts_p = [[-self.p_EditSpot / 2, -self.p_EditSpot / 2, self.p_EditSpot / 2,
-                       self.p_EditSpot / 2, -self.p_EditSpot / 2],
-                      [-self.p_EditSpot / 2, self.p_EditSpot / 2, self.p_EditSpot / 2,
-                       -self.p_EditSpot / 2, -self.p_EditSpot / 2]]
-        pt_sel_pts_l = [[-self.l_EditSpot / 2,
-                       -self.l_EditSpot / 2,
-                       self.l_EditSpot / 2,
-                       self.l_EditSpot / 2,
-                       -self.l_EditSpot / 2],
-                      [-self.l_EditSpot / (2 / self._controller._lv.aspect),
-                       self.l_EditSpot / (2 / self._controller._lv.aspect),
-                       self.l_EditSpot / (2 / self._controller._lv.aspect),
-                       -self.l_EditSpot / (2 / self._controller._lv.aspect),
-                       -self.l_EditSpot / (2 / self._controller._lv.aspect)]]
+        pt_sel_pts_p = [[-self.EditSpot / 2, -self.EditSpot / 2, self.EditSpot / 2,
+                       self.EditSpot / 2, -self.EditSpot / 2],
+                      [-self.EditSpot / 2, self.EditSpot / 2, self.EditSpot / 2,
+                       -self.EditSpot / 2, -self.EditSpot / 2]]
+        pt_sel_pts_l = [[-self.EditSpot / 2,
+                       -self.EditSpot / 2,
+                       self.EditSpot / 2,
+                       self.EditSpot / 2,
+                       -self.EditSpot / 2],
+                      [-self.EditSpot / (2 / self._controller._lv.aspect),
+                       self.EditSpot / (2 / self._controller._lv.aspect),
+                       self.EditSpot / (2 / self._controller._lv.aspect),
+                       -self.EditSpot / (2 / self._controller._lv.aspect),
+                       -self.EditSpot / (2 / self._controller._lv.aspect)]]
 
         # set shapes of view elements (pipe, walls, antispoof), points are calculate in _model.make_shapes
         self._controller._xv.pipe_P.setData(pipe_P_pts[0], pipe_P_pts[1])
@@ -654,7 +659,7 @@ class Model:
 
     def make_profile(self):
         # read profile array (for AutoPipe and AutoFlag)
-        self.profile = self.profiles[self.prno][::(self.weed)]
+        self.profile = self.profiles[self.prno][::(self.weed_prof_val)]
 
         # reset xini to centre of profile if profile is far from xini (wrong profile export)
         if not(np.min(self.profile[:, 0]) < self.xini < np.max(self.profile[:, 0])):
@@ -877,7 +882,7 @@ class Model:
                         ri_d = ((self.profile[self.ri_spot][:, 0] - self.min_cx) ** 2 + (
                                     self.profile[self.ri_spot][:, 1] - self.min_cz) ** 2) ** 0.5
                         li_a = np.rad2deg(_F_funcs.Bearing(self.profile[self.li_spot][:, 0] - self.min_cx,
-                                                           self.profile[self.li_spot][:, 1] - self.min_cz)) - 360
+                                                           self.profile[self.li_spot][:, 1] - self.min_cz)) - 361
                         ri_a = np.rad2deg(_F_funcs.Bearing(self.profile[self.ri_spot][:, 0] - self.min_cx,
                                                            self.profile[self.ri_spot][:, 1] - self.min_cz))
 

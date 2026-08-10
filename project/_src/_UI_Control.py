@@ -17,10 +17,10 @@ from PySide6.QtGui import (QAction, QBrush, QColor, QConicalGradient,
     QPainter, QPalette, QPixmap, QRadialGradient,
     QTransform)
 from PySide6.QtWidgets import (QApplication, QCheckBox, QDoubleSpinBox, QFrame,
-    QGroupBox, QLabel, QLineEdit, QMainWindow,
-    QMenu, QMenuBar, QPushButton, QRadioButton,
-    QSizePolicy, QSpacerItem, QSpinBox, QTabWidget,
-    QToolBox, QVBoxLayout, QWidget)
+    QGroupBox, QHBoxLayout, QLabel, QLineEdit,
+    QMainWindow, QMenu, QMenuBar, QPushButton,
+    QRadioButton, QSizePolicy, QSpacerItem, QSpinBox,
+    QTabWidget, QToolBox, QVBoxLayout, QWidget)
 
 class Ui_CONTROL(object):
     def setupUi(self, CONTROL):
@@ -111,8 +111,12 @@ class Ui_CONTROL(object):
         self.verticalLayout_2.setObjectName(u"verticalLayout_2")
         self.tabWidget = QTabWidget(self.centralwidget)
         self.tabWidget.setObjectName(u"tabWidget")
-        self.tabWidget.setMinimumSize(QSize(155, 720))
-        self.tabWidget.setMaximumSize(QSize(155, 720))
+        self.tabWidget.setMinimumSize(QSize(170, 720))
+        self.tabWidget.setMaximumSize(QSize(170, 720))
+        font1 = QFont()
+        font1.setPointSize(10)
+        font1.setBold(True)
+        self.tabWidget.setFont(font1)
         self.tabPipe = QWidget()
         self.tabPipe.setObjectName(u"tabPipe")
         self.tabPipe.setLocale(QLocale(QLocale.English, QLocale.UnitedStates))
@@ -127,16 +131,13 @@ class Ui_CONTROL(object):
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.toolBoxPipe.sizePolicy().hasHeightForWidth())
         self.toolBoxPipe.setSizePolicy(sizePolicy)
-        self.toolBoxPipe.setMinimumSize(QSize(140, 242))
-        self.toolBoxPipe.setMaximumSize(QSize(140, 242))
-        font1 = QFont()
-        font1.setPointSize(10)
-        font1.setBold(True)
+        self.toolBoxPipe.setMinimumSize(QSize(155, 242))
+        self.toolBoxPipe.setMaximumSize(QSize(155, 242))
         self.toolBoxPipe.setFont(font1)
         self.toolBoxPipe.setFrameShape(QFrame.Shape.Panel)
         self.p0 = QWidget()
         self.p0.setObjectName(u"p0")
-        self.p0.setGeometry(QRect(0, 0, 138, 30))
+        self.p0.setGeometry(QRect(0, 0, 153, 30))
         self.p0.setLayoutDirection(Qt.LayoutDirection.LeftToRight)
         self.t_D = QLineEdit(self.p0)
         self.t_D.setObjectName(u"t_D")
@@ -155,7 +156,7 @@ class Ui_CONTROL(object):
         self.toolBoxPipe.addItem(self.p0, u"Pipe D")
         self.p1 = QWidget()
         self.p1.setObjectName(u"p1")
-        self.p1.setGeometry(QRect(0, 0, 138, 30))
+        self.p1.setGeometry(QRect(0, 0, 153, 30))
         self.t_IW = QLineEdit(self.p1)
         self.t_IW.setObjectName(u"t_IW")
         self.t_IW.setGeometry(QRect(0, 0, 80, 30))
@@ -168,7 +169,7 @@ class Ui_CONTROL(object):
         self.toolBoxPipe.addItem(self.p1, u"in Wall * D")
         self.p2 = QWidget()
         self.p2.setObjectName(u"p2")
-        self.p2.setGeometry(QRect(0, 0, 138, 30))
+        self.p2.setGeometry(QRect(0, 0, 153, 30))
         self.t_OW = QLineEdit(self.p2)
         self.t_OW.setObjectName(u"t_OW")
         self.t_OW.setGeometry(QRect(0, 0, 80, 30))
@@ -181,7 +182,7 @@ class Ui_CONTROL(object):
         self.toolBoxPipe.addItem(self.p2, u"out Wall * D")
         self.p3 = QWidget()
         self.p3.setObjectName(u"p3")
-        self.p3.setGeometry(QRect(0, 0, 138, 30))
+        self.p3.setGeometry(QRect(0, 0, 153, 30))
         self.t_HW = QLineEdit(self.p3)
         self.t_HW.setObjectName(u"t_HW")
         self.t_HW.setGeometry(QRect(0, 0, 80, 30))
@@ -194,7 +195,7 @@ class Ui_CONTROL(object):
         self.toolBoxPipe.addItem(self.p3, u"H window")
         self.p4 = QWidget()
         self.p4.setObjectName(u"p4")
-        self.p4.setGeometry(QRect(0, 0, 138, 30))
+        self.p4.setGeometry(QRect(0, 0, 153, 30))
         self.t_VW = QLineEdit(self.p4)
         self.t_VW.setObjectName(u"t_VW")
         self.t_VW.setGeometry(QRect(0, 0, 80, 30))
@@ -207,7 +208,7 @@ class Ui_CONTROL(object):
         self.toolBoxPipe.addItem(self.p4, u"V Window")
         self.p5 = QWidget()
         self.p5.setObjectName(u"p5")
-        self.p5.setGeometry(QRect(0, 0, 138, 30))
+        self.p5.setGeometry(QRect(0, 0, 153, 30))
         self.t_RES = QLineEdit(self.p5)
         self.t_RES.setObjectName(u"t_RES")
         self.t_RES.setGeometry(QRect(0, 0, 80, 30))
@@ -220,7 +221,7 @@ class Ui_CONTROL(object):
         self.toolBoxPipe.addItem(self.p5, u"Resolution")
         self.p6 = QWidget()
         self.p6.setObjectName(u"p6")
-        self.p6.setGeometry(QRect(0, 0, 138, 30))
+        self.p6.setGeometry(QRect(0, 0, 153, 30))
         self.sp_Weed = QSpinBox(self.p6)
         self.sp_Weed.setObjectName(u"sp_Weed")
         self.sp_Weed.setGeometry(QRect(0, 0, 130, 30))
@@ -232,19 +233,19 @@ class Ui_CONTROL(object):
         self.sp_Weed.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.sp_Weed.setMinimum(1)
         self.sp_Weed.setMaximum(10)
-        self.toolBoxPipe.addItem(self.p6, u"Weed")
+        self.toolBoxPipe.addItem(self.p6, u"Decimate")
 
         self.verticalLayout_4.addWidget(self.toolBoxPipe)
 
         self.toolBoxFlags = QToolBox(self.tabPipe)
         self.toolBoxFlags.setObjectName(u"toolBoxFlags")
-        self.toolBoxFlags.setMinimumSize(QSize(140, 212))
-        self.toolBoxFlags.setMaximumSize(QSize(140, 212))
+        self.toolBoxFlags.setMinimumSize(QSize(155, 212))
+        self.toolBoxFlags.setMaximumSize(QSize(155, 212))
         self.toolBoxFlags.setFont(font1)
         self.toolBoxFlags.setFrameShape(QFrame.Shape.Box)
         self.f0 = QWidget()
         self.f0.setObjectName(u"f0")
-        self.f0.setGeometry(QRect(0, 0, 138, 30))
+        self.f0.setGeometry(QRect(0, 0, 153, 30))
         self.t_Fl = QLineEdit(self.f0)
         self.t_Fl.setObjectName(u"t_Fl")
         self.t_Fl.setGeometry(QRect(0, 0, 80, 30))
@@ -257,7 +258,7 @@ class Ui_CONTROL(object):
         self.toolBoxFlags.addItem(self.f0, u"TOP>in Flag")
         self.f1 = QWidget()
         self.f1.setObjectName(u"f1")
-        self.f1.setGeometry(QRect(0, 0, 138, 30))
+        self.f1.setGeometry(QRect(0, 0, 153, 30))
         self.t_FlPt = QLineEdit(self.f1)
         self.t_FlPt.setObjectName(u"t_FlPt")
         self.t_FlPt.setGeometry(QRect(0, 0, 80, 30))
@@ -270,7 +271,7 @@ class Ui_CONTROL(object):
         self.toolBoxFlags.addItem(self.f1, u"Patch")
         self.f2 = QWidget()
         self.f2.setObjectName(u"f2")
-        self.f2.setGeometry(QRect(0, 0, 138, 30))
+        self.f2.setGeometry(QRect(0, 0, 153, 30))
         self.t_AdPad = QLineEdit(self.f2)
         self.t_AdPad.setObjectName(u"t_AdPad")
         self.t_AdPad.setGeometry(QRect(0, 0, 80, 30))
@@ -283,7 +284,7 @@ class Ui_CONTROL(object):
         self.toolBoxFlags.addItem(self.f2, u"Pad")
         self.f3 = QWidget()
         self.f3.setObjectName(u"f3")
-        self.f3.setGeometry(QRect(0, 0, 138, 30))
+        self.f3.setGeometry(QRect(0, 0, 153, 30))
         self.t_AntiSpoof = QLineEdit(self.f3)
         self.t_AntiSpoof.setObjectName(u"t_AntiSpoof")
         self.t_AntiSpoof.setGeometry(QRect(0, 0, 80, 30))
@@ -296,7 +297,7 @@ class Ui_CONTROL(object):
         self.toolBoxFlags.addItem(self.f3, u"AS Mask D")
         self.f4 = QWidget()
         self.f4.setObjectName(u"f4")
-        self.f4.setGeometry(QRect(0, 0, 138, 30))
+        self.f4.setGeometry(QRect(0, 0, 153, 30))
         self.t_AntiSpoof_A = QLineEdit(self.f4)
         self.t_AntiSpoof_A.setObjectName(u"t_AntiSpoof_A")
         self.t_AntiSpoof_A.setGeometry(QRect(0, 0, 80, 30))
@@ -307,7 +308,7 @@ class Ui_CONTROL(object):
         self.toolBoxFlags.addItem(self.f4, u"As Mask A")
         self.f5 = QWidget()
         self.f5.setObjectName(u"f5")
-        self.f5.setGeometry(QRect(0, 0, 138, 30))
+        self.f5.setGeometry(QRect(0, 0, 153, 30))
         self.t_FoDist = QLineEdit(self.f5)
         self.t_FoDist.setObjectName(u"t_FoDist")
         self.t_FoDist.setGeometry(QRect(0, 0, 80, 30))
@@ -323,8 +324,9 @@ class Ui_CONTROL(object):
         self.gB1.setObjectName(u"gB1")
         sizePolicy.setHeightForWidth(self.gB1.sizePolicy().hasHeightForWidth())
         self.gB1.setSizePolicy(sizePolicy)
-        self.gB1.setMinimumSize(QSize(140, 170))
-        self.gB1.setMaximumSize(QSize(140, 170))
+        self.gB1.setMinimumSize(QSize(155, 170))
+        self.gB1.setMaximumSize(QSize(155, 170))
+        self.gB1.setFont(font1)
         self.verticalLayout = QVBoxLayout(self.gB1)
         self.verticalLayout.setSpacing(5)
         self.verticalLayout.setObjectName(u"verticalLayout")
@@ -401,13 +403,234 @@ class Ui_CONTROL(object):
         self.ch_ApplyTide.setEnabled(False)
         sizePolicy.setHeightForWidth(self.ch_ApplyTide.sizePolicy().hasHeightForWidth())
         self.ch_ApplyTide.setSizePolicy(sizePolicy)
-        self.ch_ApplyTide.setMinimumSize(QSize(140, 20))
-        self.ch_ApplyTide.setMaximumSize(QSize(140, 20))
+        self.ch_ApplyTide.setMinimumSize(QSize(155, 20))
+        self.ch_ApplyTide.setMaximumSize(QSize(155, 20))
+        self.ch_ApplyTide.setFont(font1)
         self.ch_ApplyTide.setChecked(True)
 
         self.verticalLayout_4.addWidget(self.ch_ApplyTide)
 
         self.tabWidget.addTab(self.tabPipe, "")
+        self.tabPT = QWidget()
+        self.tabPT.setObjectName(u"tabPT")
+        self.verticalLayout_3 = QVBoxLayout(self.tabPT)
+        self.verticalLayout_3.setSpacing(15)
+        self.verticalLayout_3.setObjectName(u"verticalLayout_3")
+        self.verticalLayout_3.setContentsMargins(5, 5, 5, 5)
+        self.horizontalLayout = QHBoxLayout()
+        self.horizontalLayout.setSpacing(5)
+        self.horizontalLayout.setObjectName(u"horizontalLayout")
+        self.label_2 = QLabel(self.tabPT)
+        self.label_2.setObjectName(u"label_2")
+        self.label_2.setMinimumSize(QSize(90, 20))
+        self.label_2.setMaximumSize(QSize(90, 20))
+        self.label_2.setFont(font1)
+        self.label_2.setAlignment(Qt.AlignmentFlag.AlignLeading|Qt.AlignmentFlag.AlignLeft|Qt.AlignmentFlag.AlignVCenter)
+
+        self.horizontalLayout.addWidget(self.label_2)
+
+        self.sp_Pt_Weed = QSpinBox(self.tabPT)
+        self.sp_Pt_Weed.setObjectName(u"sp_Pt_Weed")
+        self.sp_Pt_Weed.setEnabled(False)
+        self.sp_Pt_Weed.setMinimumSize(QSize(70, 30))
+        self.sp_Pt_Weed.setMaximumSize(QSize(70, 30))
+        self.sp_Pt_Weed.setFont(font2)
+        self.sp_Pt_Weed.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.sp_Pt_Weed.setMinimum(1)
+        self.sp_Pt_Weed.setMaximum(1000)
+        self.sp_Pt_Weed.setValue(1)
+
+        self.horizontalLayout.addWidget(self.sp_Pt_Weed)
+
+
+        self.verticalLayout_3.addLayout(self.horizontalLayout)
+
+        self.horizontalLayout_2 = QHBoxLayout()
+        self.horizontalLayout_2.setObjectName(u"horizontalLayout_2")
+        self.l14 = QLabel(self.tabPT)
+        self.l14.setObjectName(u"l14")
+        self.l14.setMinimumSize(QSize(90, 20))
+        self.l14.setMaximumSize(QSize(90, 20))
+        self.l14.setFont(font1)
+        self.l14.setAlignment(Qt.AlignmentFlag.AlignLeading|Qt.AlignmentFlag.AlignLeft|Qt.AlignmentFlag.AlignVCenter)
+
+        self.horizontalLayout_2.addWidget(self.l14)
+
+        self.t_PtGap = QLineEdit(self.tabPT)
+        self.t_PtGap.setObjectName(u"t_PtGap")
+        self.t_PtGap.setEnabled(False)
+        sizePolicy.setHeightForWidth(self.t_PtGap.sizePolicy().hasHeightForWidth())
+        self.t_PtGap.setSizePolicy(sizePolicy)
+        self.t_PtGap.setMinimumSize(QSize(70, 30))
+        self.t_PtGap.setMaximumSize(QSize(70, 30))
+        self.t_PtGap.setFont(font2)
+        self.t_PtGap.setAlignment(Qt.AlignmentFlag.AlignCenter)
+
+        self.horizontalLayout_2.addWidget(self.t_PtGap)
+
+
+        self.verticalLayout_3.addLayout(self.horizontalLayout_2)
+
+        self.horizontalLayout_4 = QHBoxLayout()
+        self.horizontalLayout_4.setObjectName(u"horizontalLayout_4")
+        self.l0 = QLabel(self.tabPT)
+        self.l0.setObjectName(u"l0")
+        self.l0.setMinimumSize(QSize(90, 20))
+        self.l0.setMaximumSize(QSize(90, 20))
+        self.l0.setFont(font1)
+        self.l0.setAlignment(Qt.AlignmentFlag.AlignLeading|Qt.AlignmentFlag.AlignLeft|Qt.AlignmentFlag.AlignVCenter)
+
+        self.horizontalLayout_4.addWidget(self.l0)
+
+        self.t_smW = QLineEdit(self.tabPT)
+        self.t_smW.setObjectName(u"t_smW")
+        self.t_smW.setEnabled(False)
+        self.t_smW.setMinimumSize(QSize(70, 30))
+        self.t_smW.setMaximumSize(QSize(70, 30))
+        self.t_smW.setFont(font2)
+        self.t_smW.setAlignment(Qt.AlignmentFlag.AlignCenter)
+
+        self.horizontalLayout_4.addWidget(self.t_smW)
+
+
+        self.verticalLayout_3.addLayout(self.horizontalLayout_4)
+
+        self.horizontalLayout_6 = QHBoxLayout()
+        self.horizontalLayout_6.setObjectName(u"horizontalLayout_6")
+        self.b_smoothPT_p = QPushButton(self.tabPT)
+        self.b_smoothPT_p.setObjectName(u"b_smoothPT_p")
+        self.b_smoothPT_p.setEnabled(False)
+        sizePolicy1 = QSizePolicy(QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Fixed)
+        sizePolicy1.setHorizontalStretch(0)
+        sizePolicy1.setVerticalStretch(0)
+        sizePolicy1.setHeightForWidth(self.b_smoothPT_p.sizePolicy().hasHeightForWidth())
+        self.b_smoothPT_p.setSizePolicy(sizePolicy1)
+        self.b_smoothPT_p.setMinimumSize(QSize(70, 40))
+        self.b_smoothPT_p.setMaximumSize(QSize(70, 40))
+        self.b_smoothPT_p.setFont(font2)
+        self.b_smoothPT_p.setFlat(False)
+
+        self.horizontalLayout_6.addWidget(self.b_smoothPT_p)
+
+        self.b_smoothPT_l = QPushButton(self.tabPT)
+        self.b_smoothPT_l.setObjectName(u"b_smoothPT_l")
+        self.b_smoothPT_l.setEnabled(False)
+        self.b_smoothPT_l.setMinimumSize(QSize(70, 40))
+        self.b_smoothPT_l.setMaximumSize(QSize(70, 40))
+        self.b_smoothPT_l.setFont(font2)
+
+        self.horizontalLayout_6.addWidget(self.b_smoothPT_l)
+
+
+        self.verticalLayout_3.addLayout(self.horizontalLayout_6)
+
+        self.horizontalLayout_5 = QHBoxLayout()
+        self.horizontalLayout_5.setObjectName(u"horizontalLayout_5")
+        self.l2 = QLabel(self.tabPT)
+        self.l2.setObjectName(u"l2")
+        self.l2.setMinimumSize(QSize(90, 20))
+        self.l2.setMaximumSize(QSize(90, 20))
+        self.l2.setFont(font1)
+        self.l2.setAlignment(Qt.AlignmentFlag.AlignLeading|Qt.AlignmentFlag.AlignLeft|Qt.AlignmentFlag.AlignVCenter)
+
+        self.horizontalLayout_5.addWidget(self.l2)
+
+        self.t_Lev = QLineEdit(self.tabPT)
+        self.t_Lev.setObjectName(u"t_Lev")
+        self.t_Lev.setEnabled(False)
+        self.t_Lev.setMinimumSize(QSize(70, 30))
+        self.t_Lev.setMaximumSize(QSize(70, 30))
+        self.t_Lev.setFont(font2)
+        self.t_Lev.setAlignment(Qt.AlignmentFlag.AlignCenter)
+
+        self.horizontalLayout_5.addWidget(self.t_Lev)
+
+
+        self.verticalLayout_3.addLayout(self.horizontalLayout_5)
+
+        self.horizontalLayout_9 = QHBoxLayout()
+        self.horizontalLayout_9.setObjectName(u"horizontalLayout_9")
+        self.horizontalSpacer = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
+
+        self.horizontalLayout_9.addItem(self.horizontalSpacer)
+
+        self.b_levelPT = QPushButton(self.tabPT)
+        self.b_levelPT.setObjectName(u"b_levelPT")
+        self.b_levelPT.setEnabled(False)
+        self.b_levelPT.setMinimumSize(QSize(70, 40))
+        self.b_levelPT.setMaximumSize(QSize(70, 40))
+        self.b_levelPT.setFont(font2)
+
+        self.horizontalLayout_9.addWidget(self.b_levelPT)
+
+        self.horizontalSpacer_2 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
+
+        self.horizontalLayout_9.addItem(self.horizontalSpacer_2)
+
+
+        self.verticalLayout_3.addLayout(self.horizontalLayout_9)
+
+        self.verticalSpacer_2 = QSpacerItem(20, 40, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
+
+        self.verticalLayout_3.addItem(self.verticalSpacer_2)
+
+        self.horizontalLayout_3 = QHBoxLayout()
+        self.horizontalLayout_3.setObjectName(u"horizontalLayout_3")
+        self.l1 = QLabel(self.tabPT)
+        self.l1.setObjectName(u"l1")
+        self.l1.setMinimumSize(QSize(90, 20))
+        self.l1.setMaximumSize(QSize(90, 20))
+        self.l1.setFont(font1)
+        self.l1.setAlignment(Qt.AlignmentFlag.AlignLeading|Qt.AlignmentFlag.AlignLeft|Qt.AlignmentFlag.AlignVCenter)
+
+        self.horizontalLayout_3.addWidget(self.l1)
+
+        self.t_EdSpot = QLineEdit(self.tabPT)
+        self.t_EdSpot.setObjectName(u"t_EdSpot")
+        self.t_EdSpot.setEnabled(False)
+        self.t_EdSpot.setMinimumSize(QSize(70, 30))
+        self.t_EdSpot.setMaximumSize(QSize(70, 30))
+        self.t_EdSpot.setFont(font2)
+        self.t_EdSpot.setAlignment(Qt.AlignmentFlag.AlignCenter)
+
+        self.horizontalLayout_3.addWidget(self.t_EdSpot)
+
+
+        self.verticalLayout_3.addLayout(self.horizontalLayout_3)
+
+        self.horizontalLayout_7 = QHBoxLayout()
+        self.horizontalLayout_7.setObjectName(u"horizontalLayout_7")
+        self.b_EditMode = QPushButton(self.tabPT)
+        self.b_EditMode.setObjectName(u"b_EditMode")
+        self.b_EditMode.setEnabled(False)
+        self.b_EditMode.setMinimumSize(QSize(120, 40))
+        self.b_EditMode.setMaximumSize(QSize(120, 40))
+        self.b_EditMode.setFont(font2)
+
+        self.horizontalLayout_7.addWidget(self.b_EditMode)
+
+
+        self.verticalLayout_3.addLayout(self.horizontalLayout_7)
+
+        self.horizontalLayout_8 = QHBoxLayout()
+        self.horizontalLayout_8.setObjectName(u"horizontalLayout_8")
+        self.b_savePT = QPushButton(self.tabPT)
+        self.b_savePT.setObjectName(u"b_savePT")
+        self.b_savePT.setEnabled(False)
+        self.b_savePT.setMinimumSize(QSize(120, 40))
+        self.b_savePT.setMaximumSize(QSize(120, 40))
+        self.b_savePT.setFont(font2)
+
+        self.horizontalLayout_8.addWidget(self.b_savePT)
+
+
+        self.verticalLayout_3.addLayout(self.horizontalLayout_8)
+
+        self.verticalSpacer = QSpacerItem(20, 40, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
+
+        self.verticalLayout_3.addItem(self.verticalSpacer)
+
+        self.tabWidget.addTab(self.tabPT, "")
         self.tabDV = QWidget()
         self.tabDV.setObjectName(u"tabDV")
         self.verticalLayout_7 = QVBoxLayout(self.tabDV)
@@ -434,7 +657,7 @@ class Ui_CONTROL(object):
         self.toolBoxVideo.addItem(self.v0, u"TS digits")
         self.v1 = QWidget()
         self.v1.setObjectName(u"v1")
-        self.v1.setGeometry(QRect(0, 0, 138, 30))
+        self.v1.setGeometry(QRect(0, 0, 100, 30))
         self.spb_Timezone = QDoubleSpinBox(self.v1)
         self.spb_Timezone.setObjectName(u"spb_Timezone")
         self.spb_Timezone.setGeometry(QRect(0, 0, 130, 30))
@@ -449,6 +672,7 @@ class Ui_CONTROL(object):
         self.toolBoxVideo.addItem(self.v1, u"Time Zone")
         self.v2 = QWidget()
         self.v2.setObjectName(u"v2")
+        self.v2.setGeometry(QRect(0, 0, 100, 30))
         self.t_CamOffset = QLineEdit(self.v2)
         self.t_CamOffset.setObjectName(u"t_CamOffset")
         self.t_CamOffset.setEnabled(True)
@@ -460,6 +684,7 @@ class Ui_CONTROL(object):
         self.toolBoxVideo.addItem(self.v2, u"Cam offset")
         self.v3 = QWidget()
         self.v3.setObjectName(u"v3")
+        self.v3.setGeometry(QRect(0, 0, 100, 30))
         self.spb_CamSize = QSpinBox(self.v3)
         self.spb_CamSize.setObjectName(u"spb_CamSize")
         self.spb_CamSize.setGeometry(QRect(0, 0, 130, 30))
@@ -501,6 +726,8 @@ class Ui_CONTROL(object):
 
         self.line_3 = QFrame(self.centralwidget)
         self.line_3.setObjectName(u"line_3")
+        self.line_3.setMinimumSize(QSize(170, 3))
+        self.line_3.setMaximumSize(QSize(170, 3))
         self.line_3.setFrameShape(QFrame.Shape.HLine)
         self.line_3.setFrameShadow(QFrame.Shadow.Sunken)
 
@@ -508,16 +735,16 @@ class Ui_CONTROL(object):
 
         self.l_Coord = QLabel(self.centralwidget)
         self.l_Coord.setObjectName(u"l_Coord")
-        self.l_Coord.setMinimumSize(QSize(165, 20))
-        self.l_Coord.setMaximumSize(QSize(165, 20))
+        self.l_Coord.setMinimumSize(QSize(170, 20))
+        self.l_Coord.setMaximumSize(QSize(170, 20))
         self.l_Coord.setFont(font1)
 
         self.verticalLayout_2.addWidget(self.l_Coord)
 
         self.l_Saved = QLabel(self.centralwidget)
         self.l_Saved.setObjectName(u"l_Saved")
-        self.l_Saved.setMinimumSize(QSize(165, 20))
-        self.l_Saved.setMaximumSize(QSize(165, 20))
+        self.l_Saved.setMinimumSize(QSize(170, 20))
+        self.l_Saved.setMaximumSize(QSize(170, 20))
         self.l_Saved.setFont(font1)
 
         self.verticalLayout_2.addWidget(self.l_Saved)
@@ -623,7 +850,7 @@ class Ui_CONTROL(object):
         self.toolBoxPipe.setItemText(self.toolBoxPipe.indexOf(self.p4), QCoreApplication.translate("CONTROL", u"V Window", None))
         self.t_RES.setText(QCoreApplication.translate("CONTROL", u"0.01", None))
         self.toolBoxPipe.setItemText(self.toolBoxPipe.indexOf(self.p5), QCoreApplication.translate("CONTROL", u"Resolution", None))
-        self.toolBoxPipe.setItemText(self.toolBoxPipe.indexOf(self.p6), QCoreApplication.translate("CONTROL", u"Weed", None))
+        self.toolBoxPipe.setItemText(self.toolBoxPipe.indexOf(self.p6), QCoreApplication.translate("CONTROL", u"Decimate", None))
         self.t_Fl.setText(QCoreApplication.translate("CONTROL", u"0.26", None))
         self.toolBoxFlags.setItemText(self.toolBoxFlags.indexOf(self.f0), QCoreApplication.translate("CONTROL", u"TOP>in Flag", None))
         self.t_FlPt.setText(QCoreApplication.translate("CONTROL", u"0.1", None))
@@ -645,6 +872,21 @@ class Ui_CONTROL(object):
         self.ch_FoSnap.setText(QCoreApplication.translate("CONTROL", u"out Snap to data", None))
         self.ch_ApplyTide.setText(QCoreApplication.translate("CONTROL", u"Apply tide", None))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tabPipe), QCoreApplication.translate("CONTROL", u"Pipe", None))
+        self.label_2.setText(QCoreApplication.translate("CONTROL", u"Decimate", None))
+        self.l14.setText(QCoreApplication.translate("CONTROL", u"Max Gap", None))
+        self.t_PtGap.setText(QCoreApplication.translate("CONTROL", u"5", None))
+        self.l0.setText(QCoreApplication.translate("CONTROL", u"Sm. window", None))
+        self.t_smW.setText(QCoreApplication.translate("CONTROL", u"10", None))
+        self.b_smoothPT_p.setText(QCoreApplication.translate("CONTROL", u"Sm", None))
+        self.b_smoothPT_l.setText(QCoreApplication.translate("CONTROL", u"SmZ", None))
+        self.l2.setText(QCoreApplication.translate("CONTROL", u"Level", None))
+        self.t_Lev.setText(QCoreApplication.translate("CONTROL", u"0.0", None))
+        self.b_levelPT.setText(QCoreApplication.translate("CONTROL", u"L", None))
+        self.l1.setText(QCoreApplication.translate("CONTROL", u"Edit window", None))
+        self.t_EdSpot.setText(QCoreApplication.translate("CONTROL", u"0.5", None))
+        self.b_EditMode.setText(QCoreApplication.translate("CONTROL", u"Pt/P", None))
+        self.b_savePT.setText(QCoreApplication.translate("CONTROL", u"Save PT", None))
+        self.tabWidget.setTabText(self.tabWidget.indexOf(self.tabPT), QCoreApplication.translate("CONTROL", u"PT", None))
         self.toolBoxVideo.setItemText(self.toolBoxVideo.indexOf(self.v0), QCoreApplication.translate("CONTROL", u"TS digits", None))
         self.toolBoxVideo.setItemText(self.toolBoxVideo.indexOf(self.v1), QCoreApplication.translate("CONTROL", u"Time Zone", None))
         self.t_CamOffset.setText(QCoreApplication.translate("CONTROL", u"0.0", None))

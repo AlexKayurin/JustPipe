@@ -19,10 +19,6 @@ class LV(QtWidgets.QMainWindow, _UI_Lview.Ui_LVIEW):
         self.vb_lview = self.lview.plotItem.vb              # for correct mouse tracking
         self.lview.viewport().installEventFilter(self)      # eventFilter for tracking mouse wheel scroll
 
-        # set up le validators
-        self.t_EdSpot.setValidator(QDoubleValidator())
-        self.t_smW.setValidator(QIntValidator())
-
         # set variables
         self.aspect_change_flag = False                     # True if 'Ctrl' key held down / False if released
         # lock scale 1:1 / determine aspect
@@ -39,14 +35,9 @@ class LV(QtWidgets.QMainWindow, _UI_Lview.Ui_LVIEW):
         self.b_Interpolate.setText('I\u02E3\u02B8\u1DBB')
         self.b_Interpolate.setToolTip('Interpolate TOP 3D (I)')
         self.b_Interpolate.setToolTipDuration(2000)
-        self.b_levelPT.setText('\u21F3')
-        self.b_levelPT.setToolTip('Level pipetracker')
-        self.b_levelPT.setToolTipDuration(2000)
+
         self.l_scale.setStyleSheet('color: red')
         self.l_scale.setText(f'SCALE 1:{1 / self.aspect:.2f}')
-        self.b_smoothPT_l.setText('S\u1DBB')
-        self.b_smoothPT_l.setToolTip('Smooth pipetracker Z')
-        self.b_smoothPT_l.setToolTipDuration(2000)
         self.b_snap_v.setText('\u21F2\u1DBB')
         self.b_snap_v.setToolTip('Snap TOP Z to pipetracker')
         self.b_snap_v.setToolTipDuration(2000)
@@ -58,12 +49,8 @@ class LV(QtWidgets.QMainWindow, _UI_Lview.Ui_LVIEW):
         self.ch_Time_Chn.stateChanged.connect(self.val_changed)
         self.b_POI.clicked.connect(self.button_pressed)
         self.b_Interpolate.clicked.connect(self.button_pressed)
-        self.b_smoothPT_l.clicked.connect(self.val_changed)
         self.b_snap_v.clicked.connect(self.val_changed)
-        self.b_levelPT.clicked.connect(self.val_changed)
-        self.t_EdSpot.textEdited.connect(self.val_changed)
-        self.t_smW.textEdited.connect(self.val_changed)
-        self.t_Lev.textEdited.connect(self.val_changed)
+
         self.ch_ShowPT.stateChanged.connect(self.val_changed)
 
         # adding empty data graphs to plot parent_box

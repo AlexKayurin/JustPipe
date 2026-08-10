@@ -23,11 +23,6 @@ class PV(QtWidgets.QMainWindow, _UI_Pview.Ui_PVIEW):
         self.pview.getView().invertX(False)
         self.pview.getView().invertY(False)
 
-        # set up le validators
-        self.t_PtGap.setValidator(QDoubleValidator())
-        self.t_EdSpot.setValidator(QDoubleValidator())
-        self.t_smW.setValidator(QIntValidator())
-
         # set up appearance
         self.b_POI.setText('\u2714')
         self.b_POI.setStyleSheet('color: green')
@@ -36,12 +31,6 @@ class PV(QtWidgets.QMainWindow, _UI_Pview.Ui_PVIEW):
         self.b_Interpolate.setToolTip('Interpolate TOP 3D (I)')
         self.b_Interpolate.setToolTipDuration(2000)
         self.b_Interpolate.setText('I\u02E3\u02B8\u1DBB')
-        self.b_EditMode.setToolTip('Change edit mode Pipe/Pipetracker')
-        self.b_EditMode.setToolTipDuration(2000)
-        self.b_EditMode.setText('\u3030')
-        self.b_smoothPT_p.setToolTip('Smooth pipetracker XY')
-        self.b_smoothPT_p.setToolTipDuration(2000)
-        self.b_smoothPT_p.setText('S\u02E3\u02B8')
         self.b_snap_h.setText('\u21F2\u02E3\u02B8')
         self.b_snap_h.setToolTip('Snap TOP XY to pipetracker')
         self.b_snap_h.setToolTipDuration(2000)
@@ -51,16 +40,10 @@ class PV(QtWidgets.QMainWindow, _UI_Pview.Ui_PVIEW):
         self.pview.scene.sigMouseClicked.connect(self.mouse_pressed)
         self.b_POI.clicked.connect(self.button_pressed)
         self.b_Interpolate.clicked.connect(self.button_pressed)
-        self.b_EditMode.clicked.connect(self.val_changed)
-        self.sp_Pt_Weed.valueChanged.connect(self.val_changed)
-        self.b_smoothPT_p.clicked.connect(self.val_changed)
         self.b_snap_h.clicked.connect(self.val_changed)
-        self.t_EdSpot.textEdited.connect(self.val_changed)
-        self.t_smW.textEdited.connect(self.val_changed)
-        self.ch_ShowPT.stateChanged.connect(self.val_changed)
         self.rb_RejectPT.clicked.connect(self.val_changed)
         self.rb_AcceptPT.clicked.connect(self.val_changed)
-
+        self.ch_ShowPT.stateChanged.connect(self.val_changed)
         # adding empty data graphs to plot parent_box
         self.p_parent_box = pg.PlotDataItem()
         self.pview.addItem(self.p_parent_box)

@@ -49,8 +49,8 @@ class Ui_XVIEW(object):
         self.Layout0.setContentsMargins(0, 0, 0, 0)
         self.groupBox = QGroupBox(self.centralwidget)
         self.groupBox.setObjectName(u"groupBox")
-        self.groupBox.setMinimumSize(QSize(590, 50))
-        self.groupBox.setMaximumSize(QSize(590, 50))
+        self.groupBox.setMinimumSize(QSize(675, 50))
+        self.groupBox.setMaximumSize(QSize(675, 50))
         self.horizontalLayout_2 = QHBoxLayout(self.groupBox)
         self.horizontalLayout_2.setSpacing(5)
         self.horizontalLayout_2.setObjectName(u"horizontalLayout_2")
@@ -60,7 +60,7 @@ class Ui_XVIEW(object):
         self.b_POI.setMinimumSize(QSize(40, 40))
         self.b_POI.setMaximumSize(QSize(40, 40))
         font1 = QFont()
-        font1.setPointSize(10)
+        font1.setPointSize(14)
         font1.setBold(True)
         self.b_POI.setFont(font1)
 
@@ -161,6 +161,22 @@ class Ui_XVIEW(object):
         self.b_vwp.setFont(font1)
 
         self.horizontalLayout_2.addWidget(self.b_vwp)
+
+        self.b_asam = QPushButton(self.groupBox)
+        self.b_asam.setObjectName(u"b_asam")
+        self.b_asam.setMinimumSize(QSize(40, 40))
+        self.b_asam.setMaximumSize(QSize(40, 40))
+        self.b_asam.setFont(font1)
+
+        self.horizontalLayout_2.addWidget(self.b_asam)
+
+        self.b_asap = QPushButton(self.groupBox)
+        self.b_asap.setObjectName(u"b_asap")
+        self.b_asap.setMinimumSize(QSize(40, 40))
+        self.b_asap.setMaximumSize(QSize(40, 40))
+        self.b_asap.setFont(font1)
+
+        self.horizontalLayout_2.addWidget(self.b_asap)
 
         self.b_Auto = QPushButton(self.groupBox)
         self.b_Auto.setObjectName(u"b_Auto")
@@ -303,6 +319,8 @@ class Ui_XVIEW(object):
         self.b_hwp.setText(QCoreApplication.translate("XVIEW", u"H+", None))
         self.b_vwm.setText(QCoreApplication.translate("XVIEW", u"V-", None))
         self.b_vwp.setText(QCoreApplication.translate("XVIEW", u"V+", None))
+        self.b_asam.setText(QCoreApplication.translate("XVIEW", u"A-", None))
+        self.b_asap.setText(QCoreApplication.translate("XVIEW", u"A+", None))
         self.b_Auto.setText(QCoreApplication.translate("XVIEW", u"A", None))
         self.l_Tide.setText(QCoreApplication.translate("XVIEW", u"TIDE NOT LOADED", None))
         self.l_Progress.setText(QCoreApplication.translate("XVIEW", u"PROGRESS", None))

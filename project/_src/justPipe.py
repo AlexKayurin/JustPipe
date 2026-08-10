@@ -1,4 +1,4 @@
-# justPipe on MVP pattern v3; UI changed; still no DV; 09/08/2026; manual to update
+# justPipe on MVP pattern v3; 10/08/2026 further developments
 
 import os
 import sys

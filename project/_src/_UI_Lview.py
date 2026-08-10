@@ -16,9 +16,9 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QImage, QKeySequence, QLinearGradient, QPainter,
     QPalette, QPixmap, QRadialGradient, QTransform)
 from PySide6.QtWidgets import (QApplication, QCheckBox, QGridLayout, QGroupBox,
-    QHBoxLayout, QLabel, QLayout, QLineEdit,
-    QMainWindow, QPushButton, QSizePolicy, QSpacerItem,
-    QVBoxLayout, QWidget)
+    QHBoxLayout, QLabel, QLayout, QMainWindow,
+    QPushButton, QSizePolicy, QSpacerItem, QVBoxLayout,
+    QWidget)
 
 from pyqtgraph import PlotWidget
 
@@ -54,7 +54,7 @@ class Ui_LVIEW(object):
         self.b_POI.setMinimumSize(QSize(40, 40))
         self.b_POI.setMaximumSize(QSize(40, 40))
         font1 = QFont()
-        font1.setPointSize(10)
+        font1.setPointSize(14)
         font1.setBold(True)
         self.b_POI.setFont(font1)
 
@@ -79,110 +79,6 @@ class Ui_LVIEW(object):
 
 
         self.Layout1.addWidget(self.groupBox)
-
-        self.groupBox_2 = QGroupBox(self.centralwidget)
-        self.groupBox_2.setObjectName(u"groupBox_2")
-        self.groupBox_2.setMinimumSize(QSize(330, 50))
-        self.groupBox_2.setMaximumSize(QSize(330, 50))
-        self.horizontalLayout_2 = QHBoxLayout(self.groupBox_2)
-        self.horizontalLayout_2.setSpacing(5)
-        self.horizontalLayout_2.setObjectName(u"horizontalLayout_2")
-        self.horizontalLayout_2.setContentsMargins(5, 0, 5, 0)
-        self.verticalLayout_2 = QVBoxLayout()
-        self.verticalLayout_2.setSpacing(0)
-        self.verticalLayout_2.setObjectName(u"verticalLayout_2")
-        self.l1 = QLabel(self.groupBox_2)
-        self.l1.setObjectName(u"l1")
-        self.l1.setMinimumSize(QSize(70, 20))
-        self.l1.setMaximumSize(QSize(70, 20))
-        self.l1.setFont(font)
-        self.l1.setAlignment(Qt.AlignmentFlag.AlignCenter)
-
-        self.verticalLayout_2.addWidget(self.l1)
-
-        self.t_EdSpot = QLineEdit(self.groupBox_2)
-        self.t_EdSpot.setObjectName(u"t_EdSpot")
-        self.t_EdSpot.setEnabled(False)
-        self.t_EdSpot.setMinimumSize(QSize(70, 20))
-        self.t_EdSpot.setMaximumSize(QSize(70, 20))
-        self.t_EdSpot.setFont(font)
-        self.t_EdSpot.setAlignment(Qt.AlignmentFlag.AlignCenter)
-
-        self.verticalLayout_2.addWidget(self.t_EdSpot)
-
-
-        self.horizontalLayout_2.addLayout(self.verticalLayout_2)
-
-        self.verticalLayout_4 = QVBoxLayout()
-        self.verticalLayout_4.setSpacing(0)
-        self.verticalLayout_4.setObjectName(u"verticalLayout_4")
-        self.l2 = QLabel(self.groupBox_2)
-        self.l2.setObjectName(u"l2")
-        self.l2.setMinimumSize(QSize(70, 20))
-        self.l2.setMaximumSize(QSize(70, 20))
-        self.l2.setFont(font)
-        self.l2.setAlignment(Qt.AlignmentFlag.AlignCenter)
-
-        self.verticalLayout_4.addWidget(self.l2)
-
-        self.t_Lev = QLineEdit(self.groupBox_2)
-        self.t_Lev.setObjectName(u"t_Lev")
-        self.t_Lev.setEnabled(False)
-        self.t_Lev.setMinimumSize(QSize(70, 20))
-        self.t_Lev.setMaximumSize(QSize(70, 20))
-        self.t_Lev.setFont(font)
-        self.t_Lev.setAlignment(Qt.AlignmentFlag.AlignCenter)
-
-        self.verticalLayout_4.addWidget(self.t_Lev)
-
-
-        self.horizontalLayout_2.addLayout(self.verticalLayout_4)
-
-        self.b_levelPT = QPushButton(self.groupBox_2)
-        self.b_levelPT.setObjectName(u"b_levelPT")
-        self.b_levelPT.setEnabled(False)
-        self.b_levelPT.setMinimumSize(QSize(40, 40))
-        self.b_levelPT.setMaximumSize(QSize(40, 40))
-        self.b_levelPT.setFont(font1)
-
-        self.horizontalLayout_2.addWidget(self.b_levelPT)
-
-        self.verticalLayout_3 = QVBoxLayout()
-        self.verticalLayout_3.setSpacing(0)
-        self.verticalLayout_3.setObjectName(u"verticalLayout_3")
-        self.l0 = QLabel(self.groupBox_2)
-        self.l0.setObjectName(u"l0")
-        self.l0.setMinimumSize(QSize(70, 20))
-        self.l0.setMaximumSize(QSize(70, 20))
-        self.l0.setFont(font)
-        self.l0.setAlignment(Qt.AlignmentFlag.AlignCenter)
-
-        self.verticalLayout_3.addWidget(self.l0)
-
-        self.t_smW = QLineEdit(self.groupBox_2)
-        self.t_smW.setObjectName(u"t_smW")
-        self.t_smW.setEnabled(False)
-        self.t_smW.setMinimumSize(QSize(70, 20))
-        self.t_smW.setMaximumSize(QSize(70, 20))
-        self.t_smW.setFont(font)
-        self.t_smW.setAlignment(Qt.AlignmentFlag.AlignCenter)
-
-        self.verticalLayout_3.addWidget(self.t_smW)
-
-
-        self.horizontalLayout_2.addLayout(self.verticalLayout_3)
-
-        self.b_smoothPT_l = QPushButton(self.groupBox_2)
-        self.b_smoothPT_l.setObjectName(u"b_smoothPT_l")
-        self.b_smoothPT_l.setEnabled(False)
-        self.b_smoothPT_l.setMinimumSize(QSize(40, 40))
-        self.b_smoothPT_l.setMaximumSize(QSize(40, 40))
-        self.b_smoothPT_l.setFont(font1)
-
-        self.horizontalLayout_2.addWidget(self.b_smoothPT_l)
-
-
-        self.Layout1.addWidget(self.groupBox_2)
 
         self.horizontalSpacer = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
 
@@ -277,15 +173,6 @@ class Ui_LVIEW(object):
         self.b_POI.setText(QCoreApplication.translate("LVIEW", u"POI", None))
         self.b_Interpolate.setText(QCoreApplication.translate("LVIEW", u"I", None))
         self.b_snap_v.setText(QCoreApplication.translate("LVIEW", u"SnZ", None))
-        self.groupBox_2.setTitle("")
-        self.l1.setText(QCoreApplication.translate("LVIEW", u"Edit spot", None))
-        self.t_EdSpot.setText(QCoreApplication.translate("LVIEW", u"0.5", None))
-        self.l2.setText(QCoreApplication.translate("LVIEW", u"Level", None))
-        self.t_Lev.setText(QCoreApplication.translate("LVIEW", u"0.0", None))
-        self.b_levelPT.setText(QCoreApplication.translate("LVIEW", u"L", None))
-        self.l0.setText(QCoreApplication.translate("LVIEW", u"Smooth pts", None))
-        self.t_smW.setText(QCoreApplication.translate("LVIEW", u"10", None))
-        self.b_smoothPT_l.setText(QCoreApplication.translate("LVIEW", u"SmZ", None))
         self.l_scale.setText(QCoreApplication.translate("LVIEW", u"SCALE 1:", None))
         self.ch_Center.setText(QCoreApplication.translate("LVIEW", u"Follow", None))
         self.ch_Time_Chn.setText(QCoreApplication.translate("LVIEW", u"Time", None))
