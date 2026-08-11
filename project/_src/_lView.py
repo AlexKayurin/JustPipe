@@ -60,10 +60,8 @@ class LV(QtWidgets.QMainWindow, _UI_Lview.Ui_LVIEW):
         self.here = pg.PlotDataItem([], [],
                                     symbol='x', symbolSize=15)
         # pipe top visited/notvisited
-        self.notvisited_top = pg.PlotDataItem([], [],
-                                              pen=None, symbol='o', symbolSize=5)
         self.visited_top = pg.PlotDataItem([], [],
-                                           symbol=None)
+                                           symbol='o', symbolSize=3)
         self.visited_bot = pg.PlotDataItem([], [],
                                            symbol=None)
         # levels
@@ -75,11 +73,8 @@ class LV(QtWidgets.QMainWindow, _UI_Lview.Ui_LVIEW):
         self.POI = pg.PlotDataItem([], [],
                                    pen=None, symbol='x', symbolSize=20, symbolBrush='red')
         # pipetracker
-        self.pt_acc = pg.PlotDataItem([], [],symbol='o', symbolSize=4)
-        self.pt_rej = pg.PlotDataItem([], [],
-                                      pen=None, symbol='o', symbolSize=4, symbolBrush=(255, 0, 0, 255))
-        self.pt_all = pg.PlotDataItem([], [],
-                                      pen=None, symbol='o', symbolSize=1, symbolBrush=(100, 100, 100, 255))
+        self.pt_acc = pg.PlotDataItem([], [],
+                                      symbol='o', symbolSize=2)
         self.pt_selector = pg.PlotCurveItem([], [], width=2)
 
         # selected chunk
@@ -89,11 +84,11 @@ class LV(QtWidgets.QMainWindow, _UI_Lview.Ui_LVIEW):
         self.chunk = pg.PlotDataItem([], [],
                                      pen=pg.mkPen('yellow', width=5), symbol=None)
 
-        for item in [self.here, self.notvisited_top,
+        for item in [self.here,
                      self.visited_top, self.visited_bot,
                      self.madj, self.msbl,
                      self.POI,
-                     self.pt_acc, self.pt_rej, self.pt_all, self.pt_selector,
+                     self.pt_acc, self.pt_selector,
                      self.chunk_point, self.chunk]:
             item.setParentItem(self.l_parent_box)
 

@@ -191,6 +191,34 @@
        </widget>
       </item>
       <item>
+       <widget class="QPushButton" name="b_EditMode">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
+        <property name="minimumSize">
+         <size>
+          <width>120</width>
+          <height>40</height>
+         </size>
+        </property>
+        <property name="maximumSize">
+         <size>
+          <width>120</width>
+          <height>40</height>
+         </size>
+        </property>
+        <property name="font">
+         <font>
+          <pointsize>14</pointsize>
+          <bold>true</bold>
+         </font>
+        </property>
+        <property name="text">
+         <string>Pt/P</string>
+        </property>
+       </widget>
+      </item>
+      <item>
        <widget class="QGroupBox" name="gb_PT_Rej_Acc">
         <property name="enabled">
          <bool>false</bool>

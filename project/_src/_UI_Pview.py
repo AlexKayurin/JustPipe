@@ -87,6 +87,15 @@ class Ui_PVIEW(object):
 
         self.Layout0.addWidget(self.groupBox)
 
+        self.b_EditMode = QPushButton(self.centralwidget)
+        self.b_EditMode.setObjectName(u"b_EditMode")
+        self.b_EditMode.setEnabled(False)
+        self.b_EditMode.setMinimumSize(QSize(120, 40))
+        self.b_EditMode.setMaximumSize(QSize(120, 40))
+        self.b_EditMode.setFont(font1)
+
+        self.Layout0.addWidget(self.b_EditMode)
+
         self.gb_PT_Rej_Acc = QGroupBox(self.centralwidget)
         self.gb_PT_Rej_Acc.setObjectName(u"gb_PT_Rej_Acc")
         self.gb_PT_Rej_Acc.setEnabled(False)
@@ -192,6 +201,7 @@ class Ui_PVIEW(object):
 #endif // QT_CONFIG(whatsthis)
         self.b_Interpolate.setText(QCoreApplication.translate("PVIEW", u"I", None))
         self.b_snap_h.setText(QCoreApplication.translate("PVIEW", u"SnH", None))
+        self.b_EditMode.setText(QCoreApplication.translate("PVIEW", u"Pt/P", None))
         self.gb_PT_Rej_Acc.setTitle("")
         self.rb_RejectPT.setText(QCoreApplication.translate("PVIEW", u"Reject", None))
         self.rb_AcceptPT.setText(QCoreApplication.translate("PVIEW", u"Accept", None))

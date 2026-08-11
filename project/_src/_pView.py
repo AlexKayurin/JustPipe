@@ -34,6 +34,7 @@ class PV(QtWidgets.QMainWindow, _UI_Pview.Ui_PVIEW):
         self.b_snap_h.setText('\u21F2\u02E3\u02B8')
         self.b_snap_h.setToolTip('Snap TOP XY to pipetracker')
         self.b_snap_h.setToolTipDuration(2000)
+        self.b_EditMode.setText('\U0001F3A5')
 
         # # connecting signals
         self.pview.scene.sigMouseMoved.connect(self.mouse_moved)
@@ -41,6 +42,7 @@ class PV(QtWidgets.QMainWindow, _UI_Pview.Ui_PVIEW):
         self.b_POI.clicked.connect(self.button_pressed)
         self.b_Interpolate.clicked.connect(self.button_pressed)
         self.b_snap_h.clicked.connect(self.val_changed)
+        self.b_EditMode.clicked.connect(self.val_changed)
         self.rb_RejectPT.clicked.connect(self.val_changed)
         self.rb_AcceptPT.clicked.connect(self.val_changed)
         self.ch_ShowPT.stateChanged.connect(self.val_changed)
@@ -50,11 +52,9 @@ class PV(QtWidgets.QMainWindow, _UI_Pview.Ui_PVIEW):
         # current position
         self.here = pg.PlotDataItem([], [],
                                     symbol='x', symbolSize=15)
-        # pipe top visited/notvisited
-        self.notvisited = pg.PlotDataItem([], [],
-                                          pen=None, symbol='o', symbolSize=5)
+        # pipe top
         self.visited = pg.PlotDataItem([], [],
-                                       symbol=None)
+                                       symbol='o', symbolSize=3)
         # flags
         self.li = pg.PlotDataItem([], [],
                                   symbol='o', symbolSize=2)
@@ -69,11 +69,7 @@ class PV(QtWidgets.QMainWindow, _UI_Pview.Ui_PVIEW):
                                    pen=None, symbol='x', symbolSize=20, symbolBrush=(255, 0, 0, 255))
         # pipetracker
         self.pt_acc = pg.PlotDataItem([], [],
-                                      symbol='o', symbolSize=4)
-        self.pt_rej = pg.PlotDataItem([], [],
-                                      pen=None, symbol='o', symbolSize=4, symbolBrush=(255, 0, 0, 255))
-        self.pt_all = pg.PlotDataItem([], [],
-                                      pen=None, symbol='o', symbolSize=1, symbolBrush=(100, 100, 100, 255))
+                                      symbol='o', symbolSize=2)
         self.pt_selector = pg.PlotCurveItem([], [], width=2)
 
         # selected chunk
@@ -83,10 +79,10 @@ class PV(QtWidgets.QMainWindow, _UI_Pview.Ui_PVIEW):
         self.chunk = pg.PlotDataItem([], [],
                                      pen=pg.mkPen('yellow', width=5), symbol=None)
 
-        for item in [self.here, self.notvisited, self.visited,
+        for item in [self.here, self.visited,
                      self.li, self.ri, self.lo, self.ro,
                      self.POI,
-                     self.pt_acc, self.pt_rej, self.pt_all, self.pt_selector,
+                     self.pt_acc, self.pt_selector,
                      self.chunk_point, self.chunk]:
             item.setParentItem(self.p_parent_box)
 

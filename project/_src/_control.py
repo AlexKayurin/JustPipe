@@ -119,8 +119,8 @@ class Controller:
         self._pv.setWindowTitle(f'Plan View')
         self._pv.here.setPen(self.cCurrentProf, width=1)
         self._pv.here.setSymbolBrush(self.cCurrentProf)
-        self._pv.notvisited.setSymbolBrush(self.cNotVis)
         self._pv.visited.setPen(self.cVis.getRgb(), width=2.5)
+        self._pv.visited.setSymbolBrush(self.cVis)
         self._pv.li.setPen(self.cLeftM.getRgb(), width=0.75, style=QtCore.Qt.DotLine)
         self._pv.li.setSymbolBrush(self.cLeftM)
         self._pv.ri.setPen(self.cRightM.getRgb(), width=0.75, style=QtCore.Qt.DotLine)
@@ -135,14 +135,14 @@ class Controller:
         self._lv.setWindowTitle(f'Long View')
         self._lv.here.setPen(self.cCurrentProf.getRgb(), width=1)
         self._lv.here.setSymbolBrush(self.cCurrentProf)
-        self._lv.notvisited_top.setSymbolBrush(self.cNotVis)
         self._lv.visited_top.setPen(self.cVis.getRgb(), width = 2.5)
+        self._lv.visited_top.setSymbolBrush(self.cVis)
         self._lv.visited_bot.setPen(self.cVis.getRgb(), width = 2.5)
         self._lv.madj.setPen(self.cMADJ.getRgb(), width=1.5, style=QtCore.Qt.DotLine)
         self._lv.msbl.setPen(self.cMSBL.getRgb(), width=1.5, style=QtCore.Qt.DotLine)
         self._lv.pt_acc.setPen(self.cPipetracker.getRgb(), width=2)
         self._lv.pt_acc.setSymbolBrush(self.cPipetracker)
-        # set up config------------------------------------------------------------------------------------------
+        # set up colors------------------------------------------------------------------------------------------
         self._config.w_Profile.setStyleSheet(f'background-color: rgba{self.cProfile.getRgb()}')
         self._config.w_Pipe.setStyleSheet(f'background-color: rgba{self.cPipe.getRgb()}')
         self._config.w_LeftM.setStyleSheet(f'background-color: rgba{self.cLeftM.getRgb()}')
@@ -205,6 +205,8 @@ class Controller:
         self._model.PtGap = float(self._mainWin.t_PtGap.text())             # Min gap in PT data for smoothing
         self._model.EditSpot = float(self._mainWin.t_EdSpot.text())         # plan/long view PT edit rectangle size
         self._model.SmoothWin = int(self._mainWin.t_smW.text())             # plan/long view PT smooth window
+        self._model.SmoothWin_A = float(self._mainWin.sp_smW_A.value())
+        self._model.SmoothWin_B = float(self._mainWin.sp_smW_B.value())
         self._model.pt_Level = float(self._mainWin.t_Lev.text())            # long view PT levelling value
 
         # tide apply/unapply text
@@ -237,12 +239,8 @@ class Controller:
         # show/hide pipetracker on pView
         if self._pv.ch_ShowPT.isChecked():
             self._pv.pt_acc.setVisible(True)
-            self._pv.pt_rej.setVisible(True)
-            self._pv.pt_all.setVisible(True)
         else:
             self._pv.pt_acc.setVisible(False)
-            self._pv.pt_rej.setVisible(False)
-            self._pv.pt_all.setVisible(False)
 
         # show/hide pipetracker selector on pView
         if not self.EditMode and self.Ptflag:
@@ -259,12 +257,8 @@ class Controller:
         # show/hide pipetracker on lView
         if self._lv.ch_ShowPT.isChecked():
             self._lv.pt_acc.setVisible(True)
-            self._lv.pt_rej.setVisible(True)
-            self._lv.pt_all.setVisible(True)
         else:
             self._lv.pt_acc.setVisible(False)
-            self._lv.pt_rej.setVisible(False)
-            self._lv.pt_all.setVisible(False)
 
         # show/hide pipetracker selector on lView
         if not self.EditMode and self.Ptflag:
@@ -657,18 +651,23 @@ class Controller:
 
             self._pv.ch_ShowPT.setDisabled(False)
             self._pv.b_snap_h.setDisabled(False)
+            self._pv.b_EditMode.setDisabled(False)
 
             self._lv.ch_ShowPT.setDisabled(False)
             self._lv.b_snap_v.setDisabled(False)
 
             self._mainWin.sp_Pt_Weed.setDisabled(False)
-            self._mainWin.b_EditMode.setDisabled(False)
             self._mainWin.b_savePT.setDisabled(False)
+            self._mainWin.b_analysePtShift.setDisabled(False)
             self._mainWin.t_PtGap.setDisabled(False)
             self._mainWin.t_EdSpot.setDisabled(False)
             self._mainWin.t_smW.setDisabled(False)
-            self._mainWin.b_smoothPT_p.setDisabled(False)
-            self._mainWin.b_smoothPT_l.setDisabled(False)
+            self._mainWin.sp_smW_A.setDisabled(False)
+            self._mainWin.sp_smW_B.setDisabled(False)
+            self._mainWin.b_smoothPT_p_MA.setDisabled(False)
+            self._mainWin.b_smoothPT_p_AB.setDisabled(False)
+            self._mainWin.b_smoothPT_l_MA.setDisabled(False)
+            self._mainWin.b_smoothPT_l_AB.setDisabled(False)
             self._mainWin.t_Lev.setDisabled(False)
             self._mainWin.b_levelPT.setDisabled(False)
             self._mainWin.t_Lev.setText(str(self._model.pipetracker_W[0, 11]))
@@ -707,7 +706,7 @@ class Controller:
         # change Pipe/Pt edit mode
         if sender == 'b_EditMode' and self.Ptflag:
             self.EditMode = False if self.EditMode else True
-            self._mainWin.b_EditMode.setText('\u26F0') if self.EditMode else self._mainWin.b_EditMode.setText('\U0001F9F2')
+            self._pv.b_EditMode.setText('\U0001F3A5') if self.EditMode else self._pv.b_EditMode.setText('\U0001F9F2')
             self._pv.gb_PT_Rej_Acc.setDisabled(True) if self.EditMode else self._pv.gb_PT_Rej_Acc.setDisabled(False)
             self.get_vals()
         # weed pipetracker
@@ -725,10 +724,22 @@ class Controller:
             if self.Ptflag:
                 self._model.level_pipetracker()
                 self.update_pipetracker()
-        # smooth pipetracker
-        if sender == 'b_smoothPT_p' or sender  == 'b_smoothPT_l':
+        # smooth pipetracker Moving Average
+        if sender == 'b_smoothPT_p_MA' or sender  == 'b_smoothPT_l_MA':
             if self.Ptflag: # and self._mainWin.rb_Pt.isChecked():
-                self._model.smooth_pipetracker(sender)
+                self._model.smooth_pipetracker_MA(sender)
+                self.update_pipetracker()
+        # smooth pipetracker AB
+        if sender == 'b_smoothPT_p_AB' or sender  == 'b_smoothPT_l_AB':
+            if self.Ptflag: # and self._mainWin.rb_Pt.isChecked():
+                self._model.smooth_pipetracker_AB(sender)
+                self.update_pipetracker()
+        # analyse PT to Pipe shifts
+        if sender == 'b_analysePtShift':
+            if self.Ptflag: # and self._mainWin.rb_Pt.isChecked():
+                self._model.analyse_pypetracker()
+                self._mainWin.t_Lev.setText(str(self._model.pipetracker_W[0, 11]))
+                self._model.pt_Level = self._model.pipetracker_W[0, 11]
                 self.update_pipetracker()
         # save pipetracker
         if sender == 'b_savePT':
@@ -767,8 +778,10 @@ class Controller:
             self._model.AntiSpoof_A = float(self._mainWin.t_AntiSpoof_A.text())
 
         if sender not in ['b_EditMode', 'sp_Pt_Weed', 'rb_Pr', 'ch_ApplyTide',
-                          'b_levelPT', 'b_smoothPT_p', 'b_smoothPT_l', 'b_snap_h', 'b_snap_v',
-                          'b_savePT', 't_PtGap', 't_EdSpot', 't_smW', 't_Lev',
+                          'b_levelPT', 'b_smoothPT_p_MA', 'b_smoothPT_p_AB',
+                          'b_smoothPT_l_MA', 'b_smoothPT_l_AB',
+                          'b_snap_h', 'b_snap_v',
+                          'b_savePT', 'b_analysePtShift', 't_PtGap', 't_EdSpot', 't_smW', 'sp_smW_A', 'sp_smW_B', 't_Lev',
                           'gb_PT_Rej_Acc', 'rb_RejectPT', 'rb_AcceptPT']:
             self._model.flush[self._model.prno, 11] = 0
             self._model.make_profile()
@@ -887,8 +900,6 @@ class Controller:
         # top visited/not visited
         self._pv.visited.setData(self._model.flush[:, 9],
                                  self._model.flush[:, 10], connect=visited_mask)
-        self._pv.notvisited.setData(self._model.flush[:, 0][self._model.flush[:, 11] == 0],
-                                    self._model.flush[:, 1][self._model.flush[:, 11] == 0])
         # flags
         self._pv.li.setData(self._model.flush[:, 20],
                             self._model.flush[:, 21], connect=visited_mask)
@@ -924,8 +935,7 @@ class Controller:
         # update lView------------------------------------------------------------------------------------------
         ixf = 14 if self._lv.ch_Time_Chn.isChecked() else 12    # flush np field index time/ KP on Lview
         # tide for long
-        TLV = self._mainWin.ch_ApplyTide.isChecked() * self._model.flush[:, 15]  # visited
-        TLN = self._mainWin.ch_ApplyTide.isChecked() * self._model.flush[:, 15][self._model.flush[:, 11] == 0]  # not visited
+        TLV = self._mainWin.ch_ApplyTide.isChecked() * self._model.flush[:, 15]                                 # visited
         TLC = self._mainWin.ch_ApplyTide.isChecked() * self._model.flush[self._model.prno, 15]                  # current profile
         TLP = self._mainWin.ch_ApplyTide.isChecked() * self._model.flush[:, 15][self._model.flush[:, 29] == 1]  # POI
 
@@ -937,9 +947,6 @@ class Controller:
         self._lv.visited_top.setData(self._model.flush[:, ixf],
                                      self._model.flush[:, 4]
                                      + TLV, connect=visited_mask)
-        self._lv.notvisited_top.setData(self._model.flush[:, ixf][self._model.flush[:, 11] == 0],
-                                        self._model.flush[:, 4][self._model.flush[:, 11] == 0]
-                                        + TLN)
         # bop visited/not visited
         self._lv.visited_bot.setData(self._model.flush[:, ixf],
                                      self._model.flush[:, 4] -
@@ -983,30 +990,21 @@ class Controller:
 
     def update_pipetracker(self):
         if self._pv.ch_ShowPT.isChecked() and self.Ptflag:
+            accepted_mask = np.logical_not(np.hstack((self._model.pipetracker_W[1:, 9], np.zeros((1)))))
             # pView
-            self._pv.pt_acc.setData(self._model.pipetracker_W[:, 4][self._model.pipetracker_W[:, 9] == 0],
-                                    self._model.pipetracker_W[:, 5][self._model.pipetracker_W[:, 9] == 0])
-            self._pv.pt_rej.setData(self._model.pipetracker_W[:, 4][self._model.pipetracker_W[:, 9] == 1],
-                                    self._model.pipetracker_W[:, 5][self._model.pipetracker_W[:, 9] == 1])
-            self._pv.pt_all.setData(self._model.pipetracker_W[:, 4],
-                                    self._model.pipetracker_W[:, 5])
+            self._pv.pt_acc.setData(self._model.pipetracker_W[:, 14],
+                                    self._model.pipetracker_W[:, 15],
+                                    connect=accepted_mask)
             # lView
             ixp = 0 if self._lv.ch_Time_Chn.isChecked() else 8  # pipetracker np field index time/ KP on Lview
             # tide for pipetracker on long
-            TP_all = self._mainWin.ch_ApplyTide.isChecked() * self._model.pipetracker_W[:, 7]
-            TP_acc = self._mainWin.ch_ApplyTide.isChecked() * self._model.pipetracker_W[:, 7][self._model.pipetracker_W[:, 9] == 0]
-            TP_rej = self._mainWin.ch_ApplyTide.isChecked() * self._model.pipetracker_W[:, 7][self._model.pipetracker_W[:, 9] == 1]
-            self._lv.pt_acc.setData(self._model.pipetracker_W[:, ixp][self._model.pipetracker_W[:, 9] == 0],
-                                    self._model.pipetracker_W[:, 6][self._model.pipetracker_W[:, 9] == 0] +
-                                    self._model.pipetracker_W[:, 11][self._model.pipetracker_W[:, 9] == 0]
-                                    + TP_acc)
-            self._lv.pt_rej.setData(self._model.pipetracker_W[:, ixp][self._model.pipetracker_W[:, 9] == 1],
-                                    self._model.pipetracker_W[:, 6][self._model.pipetracker_W[:, 9] == 1] +
-                                    self._model.pipetracker_W[:, 11][self._model.pipetracker_W[:, 9] == 1]
-                                    + TP_rej)
-            self._lv.pt_all.setData(self._model.pipetracker_W[:, ixp],
-                                    self._model.pipetracker_W[:, 6]
-                                    + TP_all)
+            TP_acc = self._mainWin.ch_ApplyTide.isChecked() * self._model.pipetracker_W[:, 7]
+            self._lv.pt_acc.setData(self._model.pipetracker_W[:, ixp],
+                                    self._model.pipetracker_W[:, 6] +
+                                    self._model.pipetracker_W[:, 11]
+                                    + TP_acc,
+                                    connect=accepted_mask)
+
         else:
             pass
 

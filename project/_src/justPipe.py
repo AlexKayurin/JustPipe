@@ -1,4 +1,4 @@
-# justPipe on MVP pattern v3; 10/08/2026 further developments
+# justPipe on MVP pattern v3; 11/08/2026 further developments (Added pt snapping on not visited; removed not visited)
 
 import os
 import sys

@@ -4,6 +4,7 @@ import pickle
 from pathlib import Path
 from datetime import datetime, timezone
 import numpy as np
+import numpy.ma as ma
 from decimal import Decimal
 import _F_funcs
 import _F_kp_to_point
@@ -217,13 +218,14 @@ class Model:
                                                                                          '%Y:%m:%d:%H:%M:%S.%f').replace(
                                                   tzinfo=timezone.utc).timestamp(),
                                                           1: float, 2: float, 3: float, 4: float, 5: float})
-                self.pipetracker = np.concatenate((pipetracker_file, np.zeros((len(pipetracker_file), 8))),
+                self.pipetracker = np.concatenate((pipetracker_file, np.zeros((len(pipetracker_file), 10))),
                                                   axis=1)
 
                 # depth to field 3 from field 4 (and negating Z)
                 self.pipetracker[:, 3] = -self.pipetracker[:, 4]
-                # populating 'smoothed' fields from 'raw'
+                # populating 'smoothed' and 'shifted' fields from 'raw'
                 self.pipetracker[:, 4:7] = self.pipetracker[:, 1:4]
+                self.pipetracker[:, 14:] = self.pipetracker[:, 1:3]
 
                 self._rechain_pipetracker(self.pipetracker)
 
@@ -233,13 +235,14 @@ class Model:
                                                                                          '%d/%m/%Y %H:%M:%S.%f').replace(
                                                   tzinfo=timezone.utc).timestamp(),
                                                           1: float, 2: float, 3: float})
-                self.pipetracker = np.concatenate((pipetracker_file, np.zeros((len(pipetracker_file), 10))),
+                self.pipetracker = np.concatenate((pipetracker_file, np.zeros((len(pipetracker_file), 12))),
                                                   axis=1)
 
                 # negating Z
                 self.pipetracker[:, 3] *= -1
-                # populating 'smoothed' fields from 'raw'
+                # populating 'smoothed' and 'shifted' fields from 'raw'
                 self.pipetracker[:, 4:7] = self.pipetracker[:, 1:4]
+                self.pipetracker[:, 14:] = self.pipetracker[:, 1:3]
 
                 self._rechain_pipetracker(self.pipetracker)
 
@@ -475,11 +478,107 @@ class Model:
         self._controller.DoPipe = False
 
 
+    def analyse_pypetracker(self):
+        accepted_pt_W = self.pipetracker_W[self.pipetracker_W[:, 9] == 0]
+
+        visited_mask = np.floor(np.interp(accepted_pt_W[:, 8], self.flush[:, 12], self.flush[:, 11], left=0, right=0)).astype('int')
+        projected_pipe_e = np.interp(accepted_pt_W[:, 8], self.flush[:, 12], self.flush[:, 9])
+        projected_pipe_n = np.interp(accepted_pt_W[:, 8], self.flush[:, 12], self.flush[:, 10])
+        projected_pipe_z = np.interp(accepted_pt_W[:, 8], self.flush[:, 12], self.flush[:, 4])
+        projected_pipe_h = np.interp(accepted_pt_W[:, 8], self.flush[:, 12], self.flush[:, 28])
+
+        de = accepted_pt_W[:, 4] - projected_pipe_e
+        dn = accepted_pt_W[:, 5] - projected_pipe_n
+        dh = np.sqrt(de ** 2 + dn ** 2)
+        brg = _F_funcs.Bearing(de, dn)
+
+        dx = ma.masked_array((dh * np.sin(brg - np.deg2rad(projected_pipe_h))), mask=np.logical_not(visited_mask))
+        dz = ma.masked_array((accepted_pt_W[:, 6] - projected_pipe_z), mask=np.logical_not(visited_mask))
+
+        mean_dx, mean_dz = np.mean(dx), np.round(np.mean(dz), 2)
+        std_dx, std_dz = np.std(dx), np.std(dz)
+
+        pt_points_heading = _F_funcs.Bearing(np.diff(self.pipetracker_W[:, 4]), np.diff(self.pipetracker_W[:, 5]))
+        de_shift = mean_dx * np.sin(pt_points_heading + np.sign(mean_dx) * 1.5708)
+        dn_shift = mean_dx * np.cos(pt_points_heading + np.sign(mean_dx) * 1.5708)
+
+
+        self.pipetracker_W[:-1, 14] = self.pipetracker_W[:-1, 4] - de_shift
+        self.pipetracker_W[:-1, 15] = self.pipetracker_W[:-1, 5] - dn_shift
+
+        self.pipetracker_W[:, 11] = -mean_dz
+
+
     def level_pipetracker(self):
         self.pipetracker_W[:, 11] = self.pt_Level
 
 
-    def smooth_pipetracker(self, sender):
+    def smooth_pipetracker_AB(self, sender):
+        def smooth_ab(to_smooth, dx, dt, a=self.SmoothWin_A, b=self.SmoothWin_B): #a=self.SmoothWin_A, b=self.SmoothWin_B
+            x_est = to_smooth[0, 1]
+            results = []
+            for i, reading in enumerate(to_smooth[1:, :]):
+                # prediction step
+                x_pred = x_est + (dx * dt)
+                dx = dx
+                # update step
+                residual = reading[1] - x_pred
+                dx = dx + b * (residual) / dt
+                x_est = x_pred + a * residual
+                results.append(x_est)
+
+            return np.array(results)
+
+
+        acc_starts_ix, acc_ends_ix = self._find_gaps_on_pipetracker_W()
+
+        dt_ini = np.median(np.diff(self.pipetracker_W[:, 0]))
+        de_ini = np.median(np.diff(self.pipetracker_W[:, 1]))
+        dn_ini = np.median(np.diff(self.pipetracker_W[:, 2]))
+        dz_ini = np.median(np.diff(self.pipetracker_W[:, 3]))
+
+        # smoothing parts
+        for s, e in zip(acc_starts_ix, acc_ends_ix):
+            if (e - s) > 1:
+                _for_smooth_str = self.pipetracker_W[s + 1: e + 1, :4][self.pipetracker_W[s + 1: e + 1, 9] == 0]
+                _for_smooth_flp = np.flip(_for_smooth_str.copy(), axis=0)
+                _for_smooth_flp[:, 0] = _for_smooth_str[-1, 0] - np.flip(_for_smooth_str[:, 0], axis=0)
+
+                _filt_fwd = np.zeros(_for_smooth_str.shape)
+                _filt_fwd[0] = _for_smooth_str[0]
+                _filt_fwd[1:, 0] = _for_smooth_str[1:, 0]
+                _filt_bwd = np.zeros(_for_smooth_flp.shape)
+                _filt_bwd[0] = _for_smooth_flp[0]
+                _filt_bwd[1:, 0] = _for_smooth_flp[1:, 0]
+                track_filt = np.zeros(_for_smooth_str.shape)
+                track_filt[:, 0] = _filt_fwd[:, 0]
+
+                if sender == 'b_smoothPT_p_AB':
+                    _filt_fwd[1:, 1] = smooth_ab(_for_smooth_str[:, [0, 1]], dx=de_ini, dt=dt_ini)
+                    _filt_fwd[1:, 2] = smooth_ab(_for_smooth_str[:, [0, 2]], dx=dn_ini, dt=dt_ini)
+
+                    _filt_bwd[1:, 1] = smooth_ab(_for_smooth_flp[:, [0, 1]], dx=de_ini, dt=dt_ini)
+                    _filt_bwd[1:, 2] = smooth_ab(_for_smooth_flp[:, [0, 2]], dx=dn_ini, dt=dt_ini)
+
+                    track_filt[:, 1] = (_filt_fwd[:, 1] + np.flip(_filt_bwd[:, 1], axis=0)) / 2
+                    track_filt[:, 2] = (_filt_fwd[:, 2] + np.flip(_filt_bwd[:, 2], axis=0)) / 2
+
+                    # populate 'smoothed' and 'shifted' fileds
+                    self.pipetracker_W[s + 1: e + 1, 4][self.pipetracker_W[s + 1: e + 1, 9] == 0] = track_filt[:, 1]
+                    self.pipetracker_W[s + 1: e + 1, 5][self.pipetracker_W[s + 1: e + 1, 9] == 0] = track_filt[:, 2]
+                    self.pipetracker_W[s + 1: e + 1, 14][self.pipetracker_W[s + 1: e + 1, 9] == 0] = track_filt[:, 1]
+                    self.pipetracker_W[s + 1: e + 1, 15][self.pipetracker_W[s + 1: e + 1, 9] == 0] = track_filt[:, 2]
+
+                elif sender == 'b_smoothPT_l_AB':
+                    _filt_fwd[1:, 3] = smooth_ab(_for_smooth_str[:, [0, 3]], dx=dz_ini, dt=dt_ini)
+                    _filt_bwd[1:, 3] = smooth_ab(_for_smooth_flp[:, [0, 3]], dx=dz_ini, dt=dt_ini)
+                    track_filt[:, 3] = (_filt_fwd[:, 3] + np.flip(_filt_bwd[:, 3], axis=0)) / 2
+                    self.pipetracker_W[s + 1: e + 1, 6][self.pipetracker_W[s + 1: e + 1, 9] == 0] = track_filt[:, 3]
+
+        self._rechain_pipetracker(self.pipetracker_W)
+
+
+    def smooth_pipetracker_MA(self, sender):
         acc_starts_ix, acc_ends_ix = self._find_gaps_on_pipetracker_W()
 
         # smoothing window
@@ -491,15 +590,19 @@ class Model:
         for s, e in zip(acc_starts_ix, acc_ends_ix):
             _for_smooth = self.pipetracker_W[s + 1: e + 1][self.pipetracker_W[s + 1: e + 1, 9] == 0]
             if len(_for_smooth) > 2 * sm_win:  # !!!! only smoothing if section > window +- margin (window/2)
-                if sender == 'b_smoothPT_p':  # smoothing plan
+                if sender == 'b_smoothPT_p_MA':  # smoothing plan
                     if sm_win != 0:  # smooth
                         _for_smooth[:, 4][mov:-mov] = (np.convolve(_for_smooth[:, 1], filt, 'same') / sm_win)[
                             mov:-mov]
                         _for_smooth[:, 5][mov:-mov] = (np.convolve(_for_smooth[:, 2], filt, 'same') / sm_win)[
                             mov:-mov]
+                        # populate 'smoothed' and 'shifted' fileds
                         self.pipetracker_W[s + 1: e + 1, 4][self.pipetracker_W[s + 1: e + 1, 9] == 0] = _for_smooth[:, 4]
                         self.pipetracker_W[s + 1: e + 1, 5][self.pipetracker_W[s + 1: e + 1, 9] == 0] = _for_smooth[:, 5]
-                elif sender == 'b_smoothPT_l':  # smoothing depth
+                        self.pipetracker_W[s + 1: e + 1, 14][self.pipetracker_W[s + 1: e + 1, 9] == 0] = _for_smooth[:, 4]
+                        self.pipetracker_W[s + 1: e + 1, 15][self.pipetracker_W[s + 1: e + 1, 9] == 0] = _for_smooth[:, 5]
+
+                elif sender == 'b_smoothPT_l_MA':  # smoothing depth
                     if sm_win != 0:  # smooth
                         _for_smooth[:, 6][mov:-mov] = (np.convolve(_for_smooth[:, 3], filt, 'same') / sm_win)[
                             mov:-mov]
@@ -510,6 +613,8 @@ class Model:
             self.pipetracker_W[:, 4] = self.pipetracker_W[:, 1]
             self.pipetracker_W[:, 5] = self.pipetracker_W[:, 2]
             self.pipetracker_W[:, 6] = self.pipetracker_W[:, 3] + self.pipetracker_W[:, 11]
+            self.pipetracker_W[:, 14] = self.pipetracker_W[:, 1]
+            self.pipetracker_W[:, 15] = self.pipetracker_W[:, 2]
 
         self._rechain_pipetracker(self.pipetracker_W)
 
@@ -524,23 +629,25 @@ class Model:
 
         for s, e in zip(acc_starts_ix, acc_ends_ix):
             if (s <= che) & (chs <= e):
+                # part of flush between s and e of accepted pipetracker sections
                 _p_part = (self.flush[chs:che + 1, 13][
                     (s <= self.flush[chs:che + 1, 13]) & (self.flush[chs:che + 1, 13] <= e)]).astype('int')
+                # part of flush[_p_part] not visited by pipe
+                _to_snap = _p_part[self.flush[_p_part, 30] == 0]
 
                 if sender == 'b_snap_h':
-                    self.flush[_p_part, 9] = np.interp(self.flush[_p_part, 12],
-                                                       self.pipetracker_W[:, 8][self.pipetracker_W[:, 9] == 0],
-                                                       self.pipetracker_W[:, 4][self.pipetracker_W[:, 9] == 0])
-                    self.flush[_p_part, 10] = np.interp(self.flush[_p_part, 12],
-                                                        self.pipetracker_W[:, 8][self.pipetracker_W[:, 9] == 0],
-                                                        self.pipetracker_W[:, 5][self.pipetracker_W[:, 9] == 0])
+                    self.flush[_to_snap, 9] = np.interp(self.flush[_to_snap, 12],
+                                  self.pipetracker_W[:, 8][self.pipetracker_W[:, 9] == 0],
+                                  self.pipetracker_W[:, 14][self.pipetracker_W[:, 9] == 0])
+                    self.flush[_to_snap, 10] = np.interp(self.flush[_to_snap, 12],
+                                  self.pipetracker_W[:, 8][self.pipetracker_W[:, 9] == 0],
+                                  self.pipetracker_W[:, 15][self.pipetracker_W[:, 9] == 0])
 
                 if sender == 'b_snap_v':
-                    self.flush[_p_part, 4] = np.interp(self.flush[_p_part, 12],
-                                                       self.pipetracker_W[:, 8][self.pipetracker_W[:, 9] == 0],
-                                                       self.pipetracker_W[:, 6][self.pipetracker_W[:, 9] == 0] +
-                                                       self.pipetracker_W[:, 11][self.pipetracker_W[:, 9] == 0])
-
+                    self.flush[_to_snap, 4] = np.interp(self.flush[_to_snap, 12],
+                                  self.pipetracker_W[:, 8][self.pipetracker_W[:, 9] == 0],
+                                  self.pipetracker_W[:, 6][self.pipetracker_W[:, 9] == 0] +
+                                  self.pipetracker_W[:, 11][self.pipetracker_W[:, 9] == 0])
         self._upd_mincx_flags(chs, che)
 
 
@@ -599,9 +706,10 @@ class Model:
         # new min_cx (min_cx distance projected to profile)
         brg = _F_funcs.Bearing((self.flush[s:e + 1, 9] - self.flush[s:e + 1, 0]),
                                (self.flush[s:e + 1, 10] - self.flush[s:e + 1, 1]))
-        self.flush[s:e + 1, 3] = new_dist * np.sin(brg - np.deg2rad(self.flush[s:e + 1, 2]))
+        self.flush[s:e + 1, 3] = new_dist * np.sin(brg - np.deg2rad(self.flush[s:e + 1, 28]))
 
         # set visited (prevents changing TOP in AutoPipe() but re-sets flags based on Interpolation flag)
+        # if it updates from interpolation, also pipe/pt flag is set
         self.flush[s:e + 1, 11] = 1
 
         self._controller.Interpflag = True
@@ -984,10 +1092,10 @@ class Model:
 
             # write to flash flag = 'visited'
             self.flush[self.prno, 11] = 1
+            self.flush[self.prno, 30] = 1
 
 
         if not self._controller.Interpflag and not self._controller.DoPipe:
             pass
-            # return self.profile
 
 
