@@ -13,9 +13,11 @@ class LV(QtWidgets.QMainWindow, _UI_Lview.Ui_LVIEW):
         self.lview.setMenuEnabled(False)
         # set form
         self.move(544, int(screen_resolution.height() / 1.9))
+        self.resize(int(screen_resolution.width() - 544), int(screen_resolution.height() / 3))
+        # set flags
         self.setWindowFlags(self.windowFlags() & QtCore.Qt.CustomizeWindowHint)
         # self.setWindowFlag(self.windowFlags() | QtCore.Qt.WindowStaysOnTopHint)
-        self.resize(int(screen_resolution.width() - 544), int(screen_resolution.height() / 3))
+
         self.vb_lview = self.lview.plotItem.vb              # for correct mouse tracking
         self.lview.viewport().installEventFilter(self)      # eventFilter for tracking mouse wheel scroll
 
@@ -25,7 +27,6 @@ class LV(QtWidgets.QMainWindow, _UI_Lview.Ui_LVIEW):
         self.aspect = 1
         self.ch_Aspect.setChecked(True)
         self.lview.setAspectLocked(True, 1)
-        self.winrange = [0, 1]                              # init lview xRange
 
         # set up appearance
         self.b_POI.setText('\u2714')
@@ -59,11 +60,13 @@ class LV(QtWidgets.QMainWindow, _UI_Lview.Ui_LVIEW):
         # current position
         self.here = pg.PlotDataItem([], [],
                                     symbol='x', symbolSize=15)
-        # pipe top visited/notvisited
+        # pipe top visited/from_pipetracker
         self.visited_top = pg.PlotDataItem([], [],
                                            symbol='o', symbolSize=3)
         self.visited_bot = pg.PlotDataItem([], [],
                                            symbol=None)
+        self.from_pt = pg.PlotDataItem([], [],
+                                       pen=pg.mkPen('darksalmon', width=5))
         # levels
         self.madj = pg.PlotDataItem([], [],
                                     symbol=None)
@@ -85,7 +88,7 @@ class LV(QtWidgets.QMainWindow, _UI_Lview.Ui_LVIEW):
                                      pen=pg.mkPen('yellow', width=5), symbol=None)
 
         for item in [self.here,
-                     self.visited_top, self.visited_bot,
+                     self.visited_top, self.visited_bot, self.from_pt,
                      self.madj, self.msbl,
                      self.POI,
                      self.pt_acc, self.pt_selector,
@@ -117,13 +120,17 @@ class LV(QtWidgets.QMainWindow, _UI_Lview.Ui_LVIEW):
     def eventFilter(self, source, e):
         # set event filter for changing Lview aspect
         if e.type() == QtCore.QEvent.Wheel and self.aspect_change_flag:
-            self.ch_Aspect.setChecked(False)
+            # xRange; yRange and v centre before wheel scroll
+            _initial_h_range =self.lview.viewRange()[0]
+
             if e.angleDelta().y() > 0:
                 self.aspect *= 1.25
             else:
                 self.aspect /= 1.25
-            self.lview.setAspectLocked(True, ratio=self.aspect)
-            self.lview.setRange(xRange=self.winrange)
+
+            self.lview.getViewBox().setAspectLocked(True, ratio=self.aspect)
+            self.lview.setXRange(_initial_h_range[0], _initial_h_range[1], padding=0)
+
             self.l_scale.setText(f'SCALE 1:{1 / self.aspect:.2f}')
 
         return False

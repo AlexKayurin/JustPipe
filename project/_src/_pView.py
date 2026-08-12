@@ -23,6 +23,9 @@ class PV(QtWidgets.QMainWindow, _UI_Pview.Ui_PVIEW):
         self.pview.getView().invertX(False)
         self.pview.getView().invertY(False)
 
+        # set up le validators
+        self.t_EdSpot.setValidator(QDoubleValidator())
+
         # set up appearance
         self.b_POI.setText('\u2714')
         self.b_POI.setStyleSheet('color: green')
@@ -34,7 +37,6 @@ class PV(QtWidgets.QMainWindow, _UI_Pview.Ui_PVIEW):
         self.b_snap_h.setText('\u21F2\u02E3\u02B8')
         self.b_snap_h.setToolTip('Snap TOP XY to pipetracker')
         self.b_snap_h.setToolTipDuration(2000)
-        self.b_EditMode.setText('\U0001F3A5')
 
         # # connecting signals
         self.pview.scene.sigMouseMoved.connect(self.mouse_moved)
@@ -42,6 +44,7 @@ class PV(QtWidgets.QMainWindow, _UI_Pview.Ui_PVIEW):
         self.b_POI.clicked.connect(self.button_pressed)
         self.b_Interpolate.clicked.connect(self.button_pressed)
         self.b_snap_h.clicked.connect(self.val_changed)
+        self.t_EdSpot.textEdited.connect(self.val_changed)
         self.b_EditMode.clicked.connect(self.val_changed)
         self.rb_RejectPT.clicked.connect(self.val_changed)
         self.rb_AcceptPT.clicked.connect(self.val_changed)
@@ -52,9 +55,11 @@ class PV(QtWidgets.QMainWindow, _UI_Pview.Ui_PVIEW):
         # current position
         self.here = pg.PlotDataItem([], [],
                                     symbol='x', symbolSize=15)
-        # pipe top
+        # pipe top visited/from_pipetracker
         self.visited = pg.PlotDataItem([], [],
                                        symbol='o', symbolSize=3)
+        self.from_pt = pg.PlotDataItem([], [],
+                                       pen=pg.mkPen('darksalmon', width=5))
         # flags
         self.li = pg.PlotDataItem([], [],
                                   symbol='o', symbolSize=2)
@@ -79,7 +84,7 @@ class PV(QtWidgets.QMainWindow, _UI_Pview.Ui_PVIEW):
         self.chunk = pg.PlotDataItem([], [],
                                      pen=pg.mkPen('yellow', width=5), symbol=None)
 
-        for item in [self.here, self.visited,
+        for item in [self.here, self.visited, self.from_pt,
                      self.li, self.ri, self.lo, self.ro,
                      self.POI,
                      self.pt_acc, self.pt_selector,

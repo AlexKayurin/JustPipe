@@ -1,4 +1,4 @@
-# justPipe on MVP pattern v3; 11/08/2026 further developments (Added pt snapping on not visited; removed not visited)
+# justPipe on MVP pattern v3; 12/08/2026 All working well; need DV option added and Manual & License update
 
 import os
 import sys
@@ -13,12 +13,6 @@ from _config import Config
 
 
 if __name__ == '__main__':
-    # executable parent folder and path to config.bin
-    appfolder = os.path.dirname(sys.argv[0])
-    configfold = os.path.join(appfolder, '_internal', 'config')
-    configfile = os.path.join(configfold, 'config.bin')
-    iconfile = os.path.join(configfold, 'icon.ico')
-
     app = QtWidgets.QApplication(sys.argv)
 
     # if not QtWidgets.QApplication.instance():
@@ -36,7 +30,8 @@ if __name__ == '__main__':
     lv = LV(screen_resolution)
     model = Model()
     config = Config()
-    controller = Controller(model, mainWin, xv, pv, lv, config, appfolder)
+    controller = Controller(model, mainWin, xv, pv, lv, config,
+                            os.path.dirname(sys.argv[0]))
 
     for w in [mainWin, xv, pv, lv]:
         w.show()

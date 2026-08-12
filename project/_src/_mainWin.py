@@ -16,8 +16,8 @@ class MainWin(QtWidgets.QMainWindow, _UI_Control.Ui_CONTROL):
 
         # set up le validators
         for _le in [self.t_D, self.t_IW, self.t_OW, self.t_HW, self.t_VW, self.t_RES,
-                    self.t_Fl, self.t_FlPt, self.t_AntiSpoof, self.t_AdPad, self.t_FoDist,
-                    self.t_PtGap, self.t_EdSpot,
+                    self.t_FlPt, self.t_AntiSpoof, self.t_AdPad, self.t_FoDist,
+                    self.t_PtGap,
                     self.t_CamOffset]:
             _le.setValidator(QDoubleValidator())
         for _le in [self.t_AntiSpoof_A, self.t_smW]:
@@ -27,13 +27,10 @@ class MainWin(QtWidgets.QMainWindow, _UI_Control.Ui_CONTROL):
         self.toolBoxPipe.setStyleSheet('color: darkblue')
         self.toolBoxFlags.setStyleSheet('color: darkgreen')
         self.toolBoxPtSet.setStyleSheet('color: darkblue')
-        self.toolBoxPtEdit.setStyleSheet('color: darkgreen')
         self.gB1.setStyleSheet('color: darkgreen')
         self.ch_ApplyTide.setStyleSheet('color: darkred')
         self.b_smoothPT_p_MA.setText('S\u02E3\u02B8')
-        self.b_smoothPT_p_AB.setText('S\u02E3\u02B8')
         self.b_smoothPT_l_MA.setText('S\u1DBB')
-        self.b_smoothPT_l_AB.setText('S\u1DBB')
         self.b_levelPT.setText('\u21F3')
         self.b_savePT.setText('\U0001F4BE')
 
@@ -63,7 +60,6 @@ class MainWin(QtWidgets.QMainWindow, _UI_Control.Ui_CONTROL):
         self.t_VW.textEdited.connect(self.val_changed)
         self.t_RES.textEdited.connect(self.val_changed)
         self.sp_Weed.valueChanged.connect(self.val_changed)
-        self.t_Fl.textEdited.connect(self.val_changed)
         self.t_FlPt.textEdited.connect(self.val_changed)
         self.t_FoDist.textEdited.connect(self.val_changed)
         self.t_AntiSpoof.textEdited.connect(self.val_changed)
@@ -79,14 +75,9 @@ class MainWin(QtWidgets.QMainWindow, _UI_Control.Ui_CONTROL):
         self.ch_FoSnap.stateChanged.connect(self.val_changed)
         self.ch_ApplyTide.stateChanged.connect(self.val_changed)
         self.sp_Pt_Weed.valueChanged.connect(self.val_changed)
-        self.t_EdSpot.textEdited.connect(self.val_changed)
         self.t_smW.textEdited.connect(self.val_changed)
-        self.sp_smW_A.valueChanged.connect(self.val_changed)
-        self.sp_smW_B.valueChanged.connect(self.val_changed)
         self.b_smoothPT_p_MA.clicked.connect(self.val_changed)
-        self.b_smoothPT_p_AB.clicked.connect(self.val_changed)
         self.b_smoothPT_l_MA.clicked.connect(self.val_changed)
-        self.b_smoothPT_l_AB.clicked.connect(self.val_changed)
         self.t_Lev.textEdited.connect(self.val_changed)
         self.b_levelPT.clicked.connect(self.val_changed)
         self.b_savePT.clicked.connect(self.val_changed)
@@ -96,7 +87,6 @@ class MainWin(QtWidgets.QMainWindow, _UI_Control.Ui_CONTROL):
         self.toolBoxPipe.currentChanged.connect(self.toolbox_select)
         self.toolBoxFlags.currentChanged.connect(self.toolbox_select)
         self.toolBoxPtSet.currentChanged.connect(self.toolbox_select)
-        self.toolBoxPtEdit.currentChanged.connect(self.toolbox_select)
         self.toolBoxVideo.currentChanged.connect(self.toolbox_select)
 
 
@@ -118,16 +108,12 @@ class MainWin(QtWidgets.QMainWindow, _UI_Control.Ui_CONTROL):
             _widgets[_ix].selectAll()
             _widgets[_ix].setFocus()
         elif _sender.objectName() == 'toolBoxFlags':
-            _widgets = [self.t_Fl, self.t_FlPt, self.t_AdPad,
+            _widgets = [self.t_FlPt, self.t_AdPad,
                             self.t_AntiSpoof, self.t_AntiSpoof_A, self.t_FoDist,]
             _widgets[_ix].selectAll()
             _widgets[_ix].setFocus()
         elif _sender.objectName() == 'toolBoxPtSet':
-            _widgets = [self.sp_Pt_Weed, self.t_PtGap, self.t_EdSpot,]
-            _widgets[_ix].selectAll()
-            _widgets[_ix].setFocus()
-        elif _sender.objectName() == 'toolBoxPtEdit':
-            _widgets = [self.sp_smW_A, self.t_smW, self.t_Lev,]
+            _widgets = [self.sp_Pt_Weed, self.t_PtGap, self.t_smW, self.t_Lev,]
             _widgets[_ix].selectAll()
             _widgets[_ix].setFocus()
 

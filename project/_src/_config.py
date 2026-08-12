@@ -9,7 +9,7 @@ class Config(QtWidgets.QMainWindow, _UI_Options.Ui_Dialog):
 
         # set up signals
         for b in [self.b_Profile, self.b_Pipe, self.b_LeftM, self.b_RightM,
-                  self.b_NotVis, self.b_Vis, self.b_MADJ, self.b_MSBL,
+                  self.b_Vis, self.b_MADJ, self.b_MSBL,
                   self.b_Pipetracker, self.b_CurrentProf, self.b_Background]:
             b.clicked.connect(self._colorselect)
 
@@ -20,10 +20,10 @@ class Config(QtWidgets.QMainWindow, _UI_Options.Ui_Dialog):
 
     def _colorselect(self):
         _selectors = ['b_Profile', 'b_Pipe', 'b_LeftM', 'b_RightM',
-                      'b_NotVis', 'b_Vis', 'b_MADJ', 'b_MSBL', 'b_Pipetracker',
+                      'b_Vis', 'b_MADJ', 'b_MSBL', 'b_Pipetracker',
                       'b_CurrentProf', 'b_Background']
         _palettes = [self.w_Profile, self.w_Pipe, self.w_LeftM, self.w_RightM,
-                     self.w_NotVis, self.w_Vis, self.w_MADJ, self.w_MSBL, self.w_Pipetracker,
+                     self.w_Vis, self.w_MADJ, self.w_MSBL, self.w_Pipetracker,
                      self.w_CurrentProf, self.w_Background]
 
 
@@ -35,7 +35,7 @@ class Config(QtWidgets.QMainWindow, _UI_Options.Ui_Dialog):
             _selectedcolor = _color.getRgb()
             _palettes[_ix].setStyleSheet(f'background-color: rgba{_selectedcolor}')
 
-            self._controller.handle_config(_sender, _ix, _selectedcolor)
+            self._controller.handle_colors(_ix, _selectedcolor)
 
 
 

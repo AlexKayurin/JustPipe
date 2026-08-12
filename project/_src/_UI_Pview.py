@@ -15,10 +15,10 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QFont, QFontDatabase, QGradient, QIcon,
     QImage, QKeySequence, QLinearGradient, QPainter,
     QPalette, QPixmap, QRadialGradient, QTransform)
-from PySide6.QtWidgets import (QApplication, QCheckBox, QGridLayout, QGroupBox,
-    QHBoxLayout, QLayout, QMainWindow, QPushButton,
-    QRadioButton, QSizePolicy, QSpacerItem, QVBoxLayout,
-    QWidget)
+from PySide6.QtWidgets import (QApplication, QCheckBox, QFrame, QGridLayout,
+    QGroupBox, QHBoxLayout, QLabel, QLayout,
+    QLineEdit, QMainWindow, QPushButton, QRadioButton,
+    QSizePolicy, QSpacerItem, QVBoxLayout, QWidget)
 
 from pyqtgraph import ImageView
 
@@ -87,14 +87,42 @@ class Ui_PVIEW(object):
 
         self.Layout0.addWidget(self.groupBox)
 
-        self.b_EditMode = QPushButton(self.centralwidget)
-        self.b_EditMode.setObjectName(u"b_EditMode")
-        self.b_EditMode.setEnabled(False)
-        self.b_EditMode.setMinimumSize(QSize(120, 40))
-        self.b_EditMode.setMaximumSize(QSize(120, 40))
-        self.b_EditMode.setFont(font1)
+        self.line = QFrame(self.centralwidget)
+        self.line.setObjectName(u"line")
+        self.line.setMinimumSize(QSize(3, 50))
+        self.line.setMaximumSize(QSize(3, 50))
+        self.line.setFrameShape(QFrame.Shape.VLine)
+        self.line.setFrameShadow(QFrame.Shadow.Sunken)
 
-        self.Layout0.addWidget(self.b_EditMode)
+        self.Layout0.addWidget(self.line)
+
+        self.groupBox_2 = QGroupBox(self.centralwidget)
+        self.groupBox_2.setObjectName(u"groupBox_2")
+        self.groupBox_2.setMinimumSize(QSize(265, 50))
+        self.groupBox_2.setMaximumSize(QSize(265, 50))
+        self.horizontalLayout_2 = QHBoxLayout(self.groupBox_2)
+        self.horizontalLayout_2.setObjectName(u"horizontalLayout_2")
+        self.label = QLabel(self.groupBox_2)
+        self.label.setObjectName(u"label")
+        self.label.setMinimumSize(QSize(160, 30))
+        self.label.setMaximumSize(QSize(160, 30))
+        self.label.setFont(font1)
+        self.label.setAlignment(Qt.AlignmentFlag.AlignRight|Qt.AlignmentFlag.AlignTrailing|Qt.AlignmentFlag.AlignVCenter)
+
+        self.horizontalLayout_2.addWidget(self.label)
+
+        self.t_EdSpot = QLineEdit(self.groupBox_2)
+        self.t_EdSpot.setObjectName(u"t_EdSpot")
+        self.t_EdSpot.setEnabled(False)
+        self.t_EdSpot.setMinimumSize(QSize(80, 30))
+        self.t_EdSpot.setMaximumSize(QSize(80, 30))
+        self.t_EdSpot.setFont(font1)
+        self.t_EdSpot.setAlignment(Qt.AlignmentFlag.AlignCenter)
+
+        self.horizontalLayout_2.addWidget(self.t_EdSpot)
+
+
+        self.Layout0.addWidget(self.groupBox_2)
 
         self.gb_PT_Rej_Acc = QGroupBox(self.centralwidget)
         self.gb_PT_Rej_Acc.setObjectName(u"gb_PT_Rej_Acc")
@@ -127,6 +155,15 @@ class Ui_PVIEW(object):
 
 
         self.Layout0.addWidget(self.gb_PT_Rej_Acc)
+
+        self.b_EditMode = QPushButton(self.centralwidget)
+        self.b_EditMode.setObjectName(u"b_EditMode")
+        self.b_EditMode.setEnabled(False)
+        self.b_EditMode.setMinimumSize(QSize(120, 40))
+        self.b_EditMode.setMaximumSize(QSize(120, 40))
+        self.b_EditMode.setFont(font1)
+
+        self.Layout0.addWidget(self.b_EditMode)
 
         self.horizontalSpacer = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
 
@@ -201,10 +238,13 @@ class Ui_PVIEW(object):
 #endif // QT_CONFIG(whatsthis)
         self.b_Interpolate.setText(QCoreApplication.translate("PVIEW", u"I", None))
         self.b_snap_h.setText(QCoreApplication.translate("PVIEW", u"SnH", None))
-        self.b_EditMode.setText(QCoreApplication.translate("PVIEW", u"Pt/P", None))
+        self.groupBox_2.setTitle("")
+        self.label.setText(QCoreApplication.translate("PVIEW", u"PT Reject window:", None))
+        self.t_EdSpot.setText(QCoreApplication.translate("PVIEW", u"0.5", None))
         self.gb_PT_Rej_Acc.setTitle("")
         self.rb_RejectPT.setText(QCoreApplication.translate("PVIEW", u"Reject", None))
         self.rb_AcceptPT.setText(QCoreApplication.translate("PVIEW", u"Accept", None))
+        self.b_EditMode.setText("")
         self.ch_Center.setText(QCoreApplication.translate("PVIEW", u"Follow", None))
         self.ch_ShowPT.setText(QCoreApplication.translate("PVIEW", u"Show PT", None))
     # retranslateUi

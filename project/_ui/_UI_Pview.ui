@@ -191,31 +191,102 @@
        </widget>
       </item>
       <item>
-       <widget class="QPushButton" name="b_EditMode">
-        <property name="enabled">
-         <bool>false</bool>
-        </property>
+       <widget class="Line" name="line">
         <property name="minimumSize">
          <size>
-          <width>120</width>
-          <height>40</height>
+          <width>3</width>
+          <height>50</height>
          </size>
         </property>
         <property name="maximumSize">
          <size>
-          <width>120</width>
-          <height>40</height>
+          <width>3</width>
+          <height>50</height>
          </size>
         </property>
-        <property name="font">
-         <font>
-          <pointsize>14</pointsize>
-          <bold>true</bold>
-         </font>
+        <property name="orientation">
+         <enum>Qt::Orientation::Vertical</enum>
         </property>
-        <property name="text">
-         <string>Pt/P</string>
+       </widget>
+      </item>
+      <item>
+       <widget class="QGroupBox" name="groupBox_2">
+        <property name="minimumSize">
+         <size>
+          <width>265</width>
+          <height>50</height>
+         </size>
         </property>
+        <property name="maximumSize">
+         <size>
+          <width>265</width>
+          <height>50</height>
+         </size>
+        </property>
+        <property name="title">
+         <string/>
+        </property>
+        <layout class="QHBoxLayout" name="horizontalLayout_2">
+         <item>
+          <widget class="QLabel" name="label">
+           <property name="minimumSize">
+            <size>
+             <width>160</width>
+             <height>30</height>
+            </size>
+           </property>
+           <property name="maximumSize">
+            <size>
+             <width>160</width>
+             <height>30</height>
+            </size>
+           </property>
+           <property name="font">
+            <font>
+             <pointsize>14</pointsize>
+             <bold>true</bold>
+            </font>
+           </property>
+           <property name="text">
+            <string>PT Reject window:</string>
+           </property>
+           <property name="alignment">
+            <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QLineEdit" name="t_EdSpot">
+           <property name="enabled">
+            <bool>false</bool>
+           </property>
+           <property name="minimumSize">
+            <size>
+             <width>80</width>
+             <height>30</height>
+            </size>
+           </property>
+           <property name="maximumSize">
+            <size>
+             <width>80</width>
+             <height>30</height>
+            </size>
+           </property>
+           <property name="font">
+            <font>
+             <pointsize>14</pointsize>
+             <bold>true</bold>
+            </font>
+           </property>
+           <property name="text">
+            <string>0.5</string>
+           </property>
+           <property name="alignment">
+            <set>Qt::AlignmentFlag::AlignCenter</set>
+           </property>
+          </widget>
+         </item>
+        </layout>
        </widget>
       </item>
       <item>
@@ -308,6 +379,34 @@
           </widget>
          </item>
         </layout>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="b_EditMode">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
+        <property name="minimumSize">
+         <size>
+          <width>120</width>
+          <height>40</height>
+         </size>
+        </property>
+        <property name="maximumSize">
+         <size>
+          <width>120</width>
+          <height>40</height>
+         </size>
+        </property>
+        <property name="font">
+         <font>
+          <pointsize>14</pointsize>
+          <bold>true</bold>
+         </font>
+        </property>
+        <property name="text">
+         <string/>
+        </property>
        </widget>
       </item>
       <item>

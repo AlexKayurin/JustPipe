@@ -58,8 +58,8 @@
     <property name="spacing">
      <number>10</number>
     </property>
-    <item row="4" column="0">
-     <widget class="QPushButton" name="b_NotVis">
+    <item row="8" column="0">
+     <widget class="QPushButton" name="b_CurrentProf">
       <property name="minimumSize">
        <size>
         <width>150</width>
@@ -73,12 +73,12 @@
        </size>
       </property>
       <property name="text">
-       <string>Not visited</string>
+       <string>Current position</string>
       </property>
      </widget>
     </item>
-    <item row="10" column="1">
-     <widget class="QWidget" name="w_Background" native="true">
+    <item row="8" column="1">
+     <widget class="QWidget" name="w_CurrentProf" native="true">
       <property name="minimumSize">
        <size>
         <width>120</width>
@@ -93,19 +93,41 @@
       </property>
      </widget>
     </item>
-    <item row="6" column="1">
-     <widget class="QWidget" name="w_MADJ" native="true">
+    <item row="4" column="0">
+     <widget class="QPushButton" name="b_Vis">
       <property name="minimumSize">
        <size>
-        <width>120</width>
-        <height>30</height>
+        <width>150</width>
+        <height>40</height>
        </size>
       </property>
       <property name="maximumSize">
        <size>
-        <width>120</width>
-        <height>30</height>
+        <width>150</width>
+        <height>40</height>
        </size>
+      </property>
+      <property name="text">
+       <string>Visited</string>
+      </property>
+     </widget>
+    </item>
+    <item row="5" column="0">
+     <widget class="QPushButton" name="b_MADJ">
+      <property name="minimumSize">
+       <size>
+        <width>150</width>
+        <height>40</height>
+       </size>
+      </property>
+      <property name="maximumSize">
+       <size>
+        <width>150</width>
+        <height>40</height>
+       </size>
+      </property>
+      <property name="text">
+       <string>Mean adjacent</string>
       </property>
      </widget>
     </item>
@@ -144,8 +166,8 @@
       </property>
      </widget>
     </item>
-    <item row="5" column="1">
-     <widget class="QWidget" name="w_Vis" native="true">
+    <item row="6" column="1">
+     <widget class="QWidget" name="w_MSBL" native="true">
       <property name="minimumSize">
        <size>
         <width>120</width>
@@ -160,45 +182,23 @@
       </property>
      </widget>
     </item>
-    <item row="5" column="0">
-     <widget class="QPushButton" name="b_Vis">
+    <item row="9" column="1">
+     <widget class="QWidget" name="w_Background" native="true">
       <property name="minimumSize">
        <size>
-        <width>150</width>
-        <height>40</height>
+        <width>120</width>
+        <height>30</height>
        </size>
       </property>
       <property name="maximumSize">
        <size>
-        <width>150</width>
-        <height>40</height>
+        <width>120</width>
+        <height>30</height>
        </size>
-      </property>
-      <property name="text">
-       <string>Visited</string>
       </property>
      </widget>
     </item>
-    <item row="8" column="0">
-     <widget class="QPushButton" name="b_Pipetracker">
-      <property name="minimumSize">
-       <size>
-        <width>150</width>
-        <height>40</height>
-       </size>
-      </property>
-      <property name="maximumSize">
-       <size>
-        <width>150</width>
-        <height>40</height>
-       </size>
-      </property>
-      <property name="text">
-       <string>Pipetracker</string>
-      </property>
-     </widget>
-    </item>
-    <item row="10" column="0">
+    <item row="9" column="0">
      <widget class="QPushButton" name="b_Background">
       <property name="minimumSize">
        <size>
@@ -217,22 +217,19 @@
       </property>
      </widget>
     </item>
-    <item row="6" column="0">
-     <widget class="QPushButton" name="b_MADJ">
+    <item row="2" column="1">
+     <widget class="QWidget" name="w_LeftM" native="true">
       <property name="minimumSize">
        <size>
-        <width>150</width>
-        <height>40</height>
+        <width>120</width>
+        <height>30</height>
        </size>
       </property>
       <property name="maximumSize">
        <size>
-        <width>150</width>
-        <height>40</height>
+        <width>120</width>
+        <height>30</height>
        </size>
-      </property>
-      <property name="text">
-       <string>Mean adjacent</string>
       </property>
      </widget>
     </item>
@@ -252,6 +249,22 @@
       </property>
       <property name="text">
        <string>Right flag</string>
+      </property>
+     </widget>
+    </item>
+    <item row="4" column="1">
+     <widget class="QWidget" name="w_Vis" native="true">
+      <property name="minimumSize">
+       <size>
+        <width>120</width>
+        <height>30</height>
+       </size>
+      </property>
+      <property name="maximumSize">
+       <size>
+        <width>120</width>
+        <height>30</height>
+       </size>
       </property>
      </widget>
     </item>
@@ -279,8 +292,8 @@
       </property>
      </widget>
     </item>
-    <item row="9" column="0">
-     <widget class="QPushButton" name="b_CurrentProf">
+    <item row="7" column="0">
+     <widget class="QPushButton" name="b_Pipetracker">
       <property name="minimumSize">
        <size>
         <width>150</width>
@@ -294,12 +307,12 @@
        </size>
       </property>
       <property name="text">
-       <string>Current position</string>
+       <string>Pipetracker</string>
       </property>
      </widget>
     </item>
-    <item row="9" column="1">
-     <widget class="QWidget" name="w_CurrentProf" native="true">
+    <item row="3" column="1">
+     <widget class="QWidget" name="w_RightM" native="true">
       <property name="minimumSize">
        <size>
         <width>120</width>
@@ -314,7 +327,55 @@
       </property>
      </widget>
     </item>
-    <item row="7" column="0">
+    <item row="7" column="1">
+     <widget class="QWidget" name="w_Pipetracker" native="true">
+      <property name="minimumSize">
+       <size>
+        <width>120</width>
+        <height>30</height>
+       </size>
+      </property>
+      <property name="maximumSize">
+       <size>
+        <width>120</width>
+        <height>30</height>
+       </size>
+      </property>
+     </widget>
+    </item>
+    <item row="5" column="1">
+     <widget class="QWidget" name="w_MADJ" native="true">
+      <property name="minimumSize">
+       <size>
+        <width>120</width>
+        <height>30</height>
+       </size>
+      </property>
+      <property name="maximumSize">
+       <size>
+        <width>120</width>
+        <height>30</height>
+       </size>
+      </property>
+     </widget>
+    </item>
+    <item row="0" column="1">
+     <widget class="QWidget" name="w_Profile" native="true">
+      <property name="minimumSize">
+       <size>
+        <width>120</width>
+        <height>30</height>
+       </size>
+      </property>
+      <property name="maximumSize">
+       <size>
+        <width>120</width>
+        <height>30</height>
+       </size>
+      </property>
+     </widget>
+    </item>
+    <item row="6" column="0">
      <widget class="QPushButton" name="b_MSBL">
       <property name="minimumSize">
        <size>
@@ -349,102 +410,6 @@
       </property>
       <property name="text">
        <string>Pipe</string>
-      </property>
-     </widget>
-    </item>
-    <item row="4" column="1">
-     <widget class="QWidget" name="w_NotVis" native="true">
-      <property name="minimumSize">
-       <size>
-        <width>120</width>
-        <height>30</height>
-       </size>
-      </property>
-      <property name="maximumSize">
-       <size>
-        <width>120</width>
-        <height>30</height>
-       </size>
-      </property>
-     </widget>
-    </item>
-    <item row="2" column="1">
-     <widget class="QWidget" name="w_LeftM" native="true">
-      <property name="minimumSize">
-       <size>
-        <width>120</width>
-        <height>30</height>
-       </size>
-      </property>
-      <property name="maximumSize">
-       <size>
-        <width>120</width>
-        <height>30</height>
-       </size>
-      </property>
-     </widget>
-    </item>
-    <item row="8" column="1">
-     <widget class="QWidget" name="w_Pipetracker" native="true">
-      <property name="minimumSize">
-       <size>
-        <width>120</width>
-        <height>30</height>
-       </size>
-      </property>
-      <property name="maximumSize">
-       <size>
-        <width>120</width>
-        <height>30</height>
-       </size>
-      </property>
-     </widget>
-    </item>
-    <item row="0" column="1">
-     <widget class="QWidget" name="w_Profile" native="true">
-      <property name="minimumSize">
-       <size>
-        <width>120</width>
-        <height>30</height>
-       </size>
-      </property>
-      <property name="maximumSize">
-       <size>
-        <width>120</width>
-        <height>30</height>
-       </size>
-      </property>
-     </widget>
-    </item>
-    <item row="3" column="1">
-     <widget class="QWidget" name="w_RightM" native="true">
-      <property name="minimumSize">
-       <size>
-        <width>120</width>
-        <height>30</height>
-       </size>
-      </property>
-      <property name="maximumSize">
-       <size>
-        <width>120</width>
-        <height>30</height>
-       </size>
-      </property>
-     </widget>
-    </item>
-    <item row="7" column="1">
-     <widget class="QWidget" name="w_MSBL" native="true">
-      <property name="minimumSize">
-       <size>
-        <width>120</width>
-        <height>30</height>
-       </size>
-      </property>
-      <property name="maximumSize">
-       <size>
-        <width>120</width>
-        <height>30</height>
-       </size>
       </property>
      </widget>
     </item>

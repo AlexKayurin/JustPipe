@@ -30,7 +30,7 @@ class Model:
         self._controller = controller
 
 
-    def loadprof(self, proftype, fName):
+    def load_profiles(self, proftype, fName):
         self.profiles = []  # empty array of classes Pofile()
         self.profName = fName
 
@@ -167,7 +167,7 @@ class Model:
         return self.profName, self.prno, self.no_of_prof
 
 
-    def loadtide(self, _ext, fName):
+    def load_tide(self, _ext, fName):
         pass
         if not self._controller.ProfileFlag:
             self._controller.messagepop('Load profiles first')
@@ -190,24 +190,24 @@ class Model:
                                                      self.flush[:, 15])
 
 
-    def loadwork(self, _ext, fName):
+    def load_work(self, _ext, fName):
         with open(fName, 'rb') as loadfile:
             [self._controller.views_geometry, self.prno,
              self.profName, self.no_of_prof, self.profiles, self.flush,
              self.pipeD, self.pipeR, self.inWall, self.outWall,
              self.HWin, self.VWin, self.Res,
-             self.FlD, self.FlP, self.AntiSpoof, self.AntiSpoof_A,
+             self.FlP, self.AntiSpoof, self.AntiSpoof_A,
              self.FoDist,
              self._controller.Tideflag, self._controller.Appliedflag,
              self._controller.cProfile, self._controller.cPipe,
              self._controller.cLeftM, self._controller.cRightM,
-             self._controller.cNotVis, self._controller.cVis,
+             self._controller.cVis,
              self._controller.cMADJ, self._controller.cMSBL,
              self._controller.cPipetracker, self._controller.cCurrentProf,
              self._controller.cBackground] = pickle.load(loadfile)
 
 
-    def loadpt(self, _ext, fName):
+    def load_pipetracker(self, _ext, fName):
         if not self._controller.ProfileFlag:
             self._controller.messagepop('Load profiles first')
         else:
@@ -260,7 +260,7 @@ class Model:
             self._controller.Ptflag = True
 
 
-    def loadtif(self, _ext, fName):
+    def load_image(self, _ext, fName):
         geodata = []  # georef data list
         # open image, read metadata
         img = Image.open(fName)
@@ -302,7 +302,7 @@ class Model:
             return geoimage, cellsize, o_left, o_top
 
 
-    def loadplaylist(self, _ext, fName):
+    def load_playlist(self, _ext, fName):
         pass
 
 
@@ -322,12 +322,12 @@ class Model:
                     self.profName, self.no_of_prof, self.profiles, self.flush,
                     self.pipeD, self.pipeR, self.inWall, self.outWall,
                     self.HWin, self.VWin, self.Res,
-                    self.FlD, self.FlP, self.AntiSpoof, self.AntiSpoof_A,
+                    self.FlP, self.AntiSpoof, self.AntiSpoof_A,
                     self.FoDist,
                     self._controller.Tideflag, self._controller.Appliedflag,
                     self._controller.cProfile, self._controller.cPipe,
                     self._controller.cLeftM, self._controller.cRightM,
-                    self._controller.cNotVis, self._controller.cVis,
+                    self._controller.cVis,
                     self._controller.cMADJ, self._controller.cMSBL,
                     self._controller.cPipetracker, self._controller.cCurrentProf,
                     self._controller.cBackground]
@@ -477,6 +477,9 @@ class Model:
             self.make_profile()
         self._controller.DoPipe = False
 
+        self.chunk = [-1, -1]
+        self._controller.ChunkSelCounter = 0
+
 
     def analyse_pypetracker(self):
         accepted_pt_W = self.pipetracker_W[self.pipetracker_W[:, 9] == 0]
@@ -502,80 +505,17 @@ class Model:
         de_shift = mean_dx * np.sin(pt_points_heading + np.sign(mean_dx) * 1.5708)
         dn_shift = mean_dx * np.cos(pt_points_heading + np.sign(mean_dx) * 1.5708)
 
+        return mean_dx, mean_dz, std_dx, std_dz, de_shift, dn_shift
 
+
+    def apply_statistical_shift_to_pipetracker(self, de_shift, dn_shift, mean_dz):
         self.pipetracker_W[:-1, 14] = self.pipetracker_W[:-1, 4] - de_shift
         self.pipetracker_W[:-1, 15] = self.pipetracker_W[:-1, 5] - dn_shift
-
         self.pipetracker_W[:, 11] = -mean_dz
 
 
     def level_pipetracker(self):
         self.pipetracker_W[:, 11] = self.pt_Level
-
-
-    def smooth_pipetracker_AB(self, sender):
-        def smooth_ab(to_smooth, dx, dt, a=self.SmoothWin_A, b=self.SmoothWin_B): #a=self.SmoothWin_A, b=self.SmoothWin_B
-            x_est = to_smooth[0, 1]
-            results = []
-            for i, reading in enumerate(to_smooth[1:, :]):
-                # prediction step
-                x_pred = x_est + (dx * dt)
-                dx = dx
-                # update step
-                residual = reading[1] - x_pred
-                dx = dx + b * (residual) / dt
-                x_est = x_pred + a * residual
-                results.append(x_est)
-
-            return np.array(results)
-
-
-        acc_starts_ix, acc_ends_ix = self._find_gaps_on_pipetracker_W()
-
-        dt_ini = np.median(np.diff(self.pipetracker_W[:, 0]))
-        de_ini = np.median(np.diff(self.pipetracker_W[:, 1]))
-        dn_ini = np.median(np.diff(self.pipetracker_W[:, 2]))
-        dz_ini = np.median(np.diff(self.pipetracker_W[:, 3]))
-
-        # smoothing parts
-        for s, e in zip(acc_starts_ix, acc_ends_ix):
-            if (e - s) > 1:
-                _for_smooth_str = self.pipetracker_W[s + 1: e + 1, :4][self.pipetracker_W[s + 1: e + 1, 9] == 0]
-                _for_smooth_flp = np.flip(_for_smooth_str.copy(), axis=0)
-                _for_smooth_flp[:, 0] = _for_smooth_str[-1, 0] - np.flip(_for_smooth_str[:, 0], axis=0)
-
-                _filt_fwd = np.zeros(_for_smooth_str.shape)
-                _filt_fwd[0] = _for_smooth_str[0]
-                _filt_fwd[1:, 0] = _for_smooth_str[1:, 0]
-                _filt_bwd = np.zeros(_for_smooth_flp.shape)
-                _filt_bwd[0] = _for_smooth_flp[0]
-                _filt_bwd[1:, 0] = _for_smooth_flp[1:, 0]
-                track_filt = np.zeros(_for_smooth_str.shape)
-                track_filt[:, 0] = _filt_fwd[:, 0]
-
-                if sender == 'b_smoothPT_p_AB':
-                    _filt_fwd[1:, 1] = smooth_ab(_for_smooth_str[:, [0, 1]], dx=de_ini, dt=dt_ini)
-                    _filt_fwd[1:, 2] = smooth_ab(_for_smooth_str[:, [0, 2]], dx=dn_ini, dt=dt_ini)
-
-                    _filt_bwd[1:, 1] = smooth_ab(_for_smooth_flp[:, [0, 1]], dx=de_ini, dt=dt_ini)
-                    _filt_bwd[1:, 2] = smooth_ab(_for_smooth_flp[:, [0, 2]], dx=dn_ini, dt=dt_ini)
-
-                    track_filt[:, 1] = (_filt_fwd[:, 1] + np.flip(_filt_bwd[:, 1], axis=0)) / 2
-                    track_filt[:, 2] = (_filt_fwd[:, 2] + np.flip(_filt_bwd[:, 2], axis=0)) / 2
-
-                    # populate 'smoothed' and 'shifted' fileds
-                    self.pipetracker_W[s + 1: e + 1, 4][self.pipetracker_W[s + 1: e + 1, 9] == 0] = track_filt[:, 1]
-                    self.pipetracker_W[s + 1: e + 1, 5][self.pipetracker_W[s + 1: e + 1, 9] == 0] = track_filt[:, 2]
-                    self.pipetracker_W[s + 1: e + 1, 14][self.pipetracker_W[s + 1: e + 1, 9] == 0] = track_filt[:, 1]
-                    self.pipetracker_W[s + 1: e + 1, 15][self.pipetracker_W[s + 1: e + 1, 9] == 0] = track_filt[:, 2]
-
-                elif sender == 'b_smoothPT_l_AB':
-                    _filt_fwd[1:, 3] = smooth_ab(_for_smooth_str[:, [0, 3]], dx=dz_ini, dt=dt_ini)
-                    _filt_bwd[1:, 3] = smooth_ab(_for_smooth_flp[:, [0, 3]], dx=dz_ini, dt=dt_ini)
-                    track_filt[:, 3] = (_filt_fwd[:, 3] + np.flip(_filt_bwd[:, 3], axis=0)) / 2
-                    self.pipetracker_W[s + 1: e + 1, 6][self.pipetracker_W[s + 1: e + 1, 9] == 0] = track_filt[:, 3]
-
-        self._rechain_pipetracker(self.pipetracker_W)
 
 
     def smooth_pipetracker_MA(self, sender):
@@ -612,7 +552,7 @@ class Model:
         if sm_win == 0:
             self.pipetracker_W[:, 4] = self.pipetracker_W[:, 1]
             self.pipetracker_W[:, 5] = self.pipetracker_W[:, 2]
-            self.pipetracker_W[:, 6] = self.pipetracker_W[:, 3] + self.pipetracker_W[:, 11]
+            self.pipetracker_W[:, 6] = self.pipetracker_W[:, 3] #+ self.pipetracker_W[:, 11]
             self.pipetracker_W[:, 14] = self.pipetracker_W[:, 1]
             self.pipetracker_W[:, 15] = self.pipetracker_W[:, 2]
 
@@ -648,7 +588,10 @@ class Model:
                                   self.pipetracker_W[:, 8][self.pipetracker_W[:, 9] == 0],
                                   self.pipetracker_W[:, 6][self.pipetracker_W[:, 9] == 0] +
                                   self.pipetracker_W[:, 11][self.pipetracker_W[:, 9] == 0])
+
+        self._controller.TopSnap = True
         self._upd_mincx_flags(chs, che)
+        self._controller.TopSnap = False
 
 
     def _find_gaps_on_pipetracker_W(self):
@@ -925,10 +868,10 @@ class Model:
             self.min_cx = self.flush[self.prno, 3]
             self.min_cz = self.flush[self.prno, 4] - self.pipeR
             # inner flags - initial position
-            self.li_x, self.ri_x = self.min_cx - self.FlD, self.min_cx + self.FlD
+            self.li_x, self.ri_x = self.min_cx - self.pipeR, self.min_cx + self.pipeR
             self.li_z = self.ri_z = self.min_cz
             # outer flags - initial position
-            self.lo_x, self.ro_x = self.min_cx - self.FlD, self.min_cx + self.FlD
+            self.lo_x, self.ro_x = self.min_cx - self.pipeR, self.min_cx + self.pipeR
             self.lo_z = self.ro_z = self.min_cz
 
             try:
@@ -936,30 +879,30 @@ class Model:
                 if self._controller._mainWin.rb_Fadapt.isChecked():
                     # extended spot -+ AdPadli_x(ri_x) +-inflag_patch to -+inflag_patch - for adaptive mode
                     self.li_spot = (
-                        np.where((self.min_cx - self.FlD - self.FlP <= self.profile[:, 0]) &
+                        np.where((self.min_cx - self.pipeR - self.FlP <= self.profile[:, 0]) &
                                  (self.profile[:, 0] <= self.min_cx - self.AdPad)))
                     self.ri_spot =(
                         np.where((self.min_cx + self.AdPad <= self.profile[:, 0]) &
-                                 (self.profile[:, 0] <= self.min_cx + self.FlD + self.FlP)))
+                                 (self.profile[:, 0] <= self.min_cx + self.pipeR + self.FlP)))
                 else:
                     # narrow spot li_x(ri_x)+-inflag_patch to inflag - for other modes
                     self.li_spot =(
-                        np.where((self.min_cx - self.FlD - self.FlP <= self.profile[:, 0]) &
-                                 (self.profile[:, 0] <= self.min_cx - self.FlD)))
+                        np.where((self.min_cx - self.pipeR - self.FlP <= self.profile[:, 0]) &
+                                 (self.profile[:, 0] <= self.min_cx - self.pipeR)))
                     self.ri_spot =(
-                        np.where((self.min_cx + self.FlD <= self.profile[:, 0]) &
-                                 (self.profile[:, 0] <= self.min_cx + self.FlD + self.FlP)))
+                        np.where((self.min_cx + self.pipeR <= self.profile[:, 0]) &
+                                 (self.profile[:, 0] <= self.min_cx + self.pipeR + self.FlP)))
 
                 if len(self.li_spot[0]) != 0 and len(self.ri_spot[0]) != 0:
                     # if in bad profile low number of datapoints (not hitting flag patch)
                     if self._controller._mainWin.rb_Fmean.isChecked():
                         # no point snapping for 'mean'
-                        self.li_x, self.ri_x = self.min_cx - self.FlD, self.min_cx + self.FlD
+                        self.li_x, self.ri_x = self.min_cx - self.pipeR, self.min_cx + self.pipeR
                         self.li_z, self.ri_z = np.mean(self.profile[self.li_spot][:, 1]), np.mean(self.profile[self.ri_spot][:, 1])
 
                     elif self._controller._mainWin.rb_Fmin.isChecked():
                         if not self._controller._mainWin.ch_FiSnap.isChecked():
-                            self.li_x, self.ri_x = self.min_cx - self.FlD, self.min_cx + self.FlD
+                            self.li_x, self.ri_x = self.min_cx - self.pipeR, self.min_cx + self.pipeR
                             self.li_z, self.ri_z = np.max(self.profile[self.li_spot][:, 1]), np.max(
                                 self.profile[self.ri_spot][:, 1])
                         else:
@@ -972,7 +915,7 @@ class Model:
 
                     elif self._controller._mainWin.rb_Fmax.isChecked():
                         if not self._controller._mainWin.ch_FiSnap.isChecked():
-                            self.li_x, self.ri_x = self.min_cx - self.FlD, self.min_cx + self.FlD
+                            self.li_x, self.ri_x = self.min_cx - self.pipeR, self.min_cx + self.pipeR
                             self.li_z, self.ri_z = np.min(self.profile[self.li_spot][:, 1]), np.min(
                                 self.profile[self.ri_spot][:, 1])
                         else:
@@ -1092,7 +1035,8 @@ class Model:
 
             # write to flash flag = 'visited'
             self.flush[self.prno, 11] = 1
-            self.flush[self.prno, 30] = 1
+            if not self._controller.TopSnap:
+                self.flush[self.prno, 30] = 1
 
 
         if not self._controller.Interpflag and not self._controller.DoPipe:

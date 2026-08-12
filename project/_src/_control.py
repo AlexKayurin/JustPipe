@@ -10,9 +10,20 @@ import subprocess
 from pathlib import Path
 import numpy as np
 from PySide6 import QtCore, QtGui
-from PySide6.QtWidgets import QMessageBox
-from PySide6.QtCore import Qt
+from PySide6.QtWidgets import QWidget, QMessageBox, QDialog
+from PySide6.QtCore import Qt, QSize
 import pyqtgraph as pg
+import _UI_Statistics
+
+
+class Statistics(_UI_Statistics.Ui_Dialog, QDialog):
+    '''
+    Class inherits MODAL(!) QDialog class. This is child class of MergeWindow instance. Since it is modal,
+    it suspends eventloop of the parent class until 'accept' func is called.
+    '''
+    def __init__(self):
+        super().__init__()
+        self.setupUi(self)
 
 
 class Controller:
@@ -36,7 +47,11 @@ class Controller:
         self._appfolder = appfolder
         self._configfold = os.path.join(self._appfolder, '_internal', 'config')
         self._configfile = os.path.join(self._configfold, 'config.bin')
-        self._icon = QtGui.QIcon(os.path.join(self._configfold, 'icon.ico'))
+        self._icon_logo = QtGui.QIcon(os.path.join(self._configfold, 'icon_pipe_256.ico'))
+        self._icon_pipe = QtGui.QIcon(os.path.join(self._configfold, 'icon_pipe_300.ico'))
+        self._icon_md = QtGui.QIcon(os.path.join(self._configfold, 'icon_md_300.ico'))
+        self._icon_hysto = QtGui.QIcon(os.path.join(self._configfold, 'icon_hysto_300_tr.ico'))
+
         self._logfile = os.path.join(self._configfold, 'error.log')
         self._manualfile = os.path.join(self._configfold, 'justPipe.pdf')
         self._licensefile = os.path.join(self._configfold, 'license.pdf')
@@ -55,7 +70,6 @@ class Controller:
             self.cPipe = pg.mkColor(255, 228, 181, 255)
             self.cLeftM = pg.mkColor(255, 0, 0, 255)
             self.cRightM = pg.mkColor(0, 255, 0, 255)
-            self.cNotVis = pg.mkColor(204, 0, 0, 255)
             self.cVis = pg.mkColor(0, 204, 0, 255)
             self.cMADJ = pg.mkColor(255, 0, 255, 255)
             self.cMSBL = pg.mkColor(0, 255, 255, 255)
@@ -67,10 +81,10 @@ class Controller:
                 [self.views_geometry,
                  self._model.pipeD, self._model.pipeR, self._model.inWall, self._model.outWall,
                  self._model.HWin, self._model.VWin, self._model.Res,
-                 self._model.FlD, self._model.FlP, self._model.AntiSpoof, self._model.AntiSpoof_A,
+                 self._model.FlP, self._model.AntiSpoof, self._model.AntiSpoof_A,
                  self._model.FoDist,
                  self.cProfile, self.cPipe, self.cLeftM, self.cRightM,
-                 self.cNotVis, self.cVis, self.cMADJ, self.cMSBL,
+                 self.cVis, self.cMADJ, self.cMSBL,
                  self.cPipetracker, self.cCurrentProf,
                  self.cBackground] = pickle.load(loadfile)
             self.load_saved_config()
@@ -79,6 +93,7 @@ class Controller:
         self.ProfileFlag = False        # Profile loaded flag
         self.ChunkSelCounter = 0        # click counter/flag for chunk selection (0-not selected; 1-start selected;2-sterat&end (chunk) selected
         self.ManualPipe = False         # Manual pipe placement flag
+        self.TopSnap = False            # Snapping TOP to pipetracker
         self.DoPipe = False             # Autorun flag
         self.Interpflag = False         # Running interpolation flag
         self.DVflag = False             # DV loaded flag
@@ -91,71 +106,20 @@ class Controller:
 
 
         # set up ui
-        for _w in [self._mainWin, self._xv, self._pv, self._lv, self._config]:
-            _w.setWindowIcon(self._icon)
+        for _w in [self._mainWin, self._xv, self._pv, self._lv, self._config, ]:
+            _w.setWindowIcon(self._icon_logo)
+        self._pv.b_EditMode.setIcon(self._icon_pipe)
+        self._pv.b_EditMode.setIconSize(QSize(64, 64))
+        self._mainWin.b_analysePtShift.setIcon(self._icon_hysto)
+        self._mainWin.b_analysePtShift.setIconSize(QSize(64, 64))
+
         # set up mainWin
         self._mainWin.setWindowTitle(f'jP')
-        # set up xView------------------------------------------------------------------------------------------
         self._xv.setWindowTitle(f'Profile View')
-        self._xv.xview.setAspectLocked()
-        self._xv.x_prof.setSymbolBrush(self.cProfile)
-        self._xv.pipe_P.setPen(color=self.cPipe.getRgb(), width=1.5)
-        self._xv.pipe_I.setPen(color=self.cPipe.getRgb(), width=0.5, style=QtCore.Qt.DotLine)
-        self._xv.pipe_O.setPen(color=self.cPipe.getRgb(), width=0.5, style=QtCore.Qt.DotLine)
-        self._xv.pipe_A.setPen(color='red', width=0.5)
-        self._xv.pipeassist.setPen(color='g', width=2)
-        self._xv.pipe_top.setPen(color='white', width=0.3, style=QtCore.Qt.DotLine)
-        self._xv.pipe_bot.setPen(color='white', width=0.3, style=QtCore.Qt.DotLine)
-        self._xv.pipe_cl.setPen(color='white', width=0.3, style=QtCore.Qt.DotLine)
-        self._xv.x_l_inner.setBrush(self.cLeftM)
-        self._xv.x_r_inner.setBrush(self.cRightM)
-        self._xv.x_l_outer.setBrush(self.cLeftM)
-        self._xv.x_r_outer.setBrush(self.cRightM)
-        self._xv.port_p_win.setPen(color='orange', width=1.0, style=QtCore.Qt.DotLine)
-        self._xv.stbd_p_win.setPen(color='orange', width=1.0, style=QtCore.Qt.DotLine)
-        self._xv.c_win.setPen(color='orange', width=1.0,style=QtCore.Qt.DotLine)
-        self._xv.c_win.setPen(color='orange', width=1.0, style=QtCore.Qt.DotLine)
-        # set up pView------------------------------------------------------------------------------------------
         self._pv.setWindowTitle(f'Plan View')
-        self._pv.here.setPen(self.cCurrentProf, width=1)
-        self._pv.here.setSymbolBrush(self.cCurrentProf)
-        self._pv.visited.setPen(self.cVis.getRgb(), width=2.5)
-        self._pv.visited.setSymbolBrush(self.cVis)
-        self._pv.li.setPen(self.cLeftM.getRgb(), width=0.75, style=QtCore.Qt.DotLine)
-        self._pv.li.setSymbolBrush(self.cLeftM)
-        self._pv.ri.setPen(self.cRightM.getRgb(), width=0.75, style=QtCore.Qt.DotLine)
-        self._pv.ri.setSymbolBrush(self.cRightM)
-        self._pv.lo.setPen(self.cLeftM.getRgb(), width=0.75, style=QtCore.Qt.DotLine)
-        self._pv.lo.setSymbolBrush(self.cLeftM)
-        self._pv.ro.setPen(self.cRightM.getRgb(), width=0.75, style=QtCore.Qt.DotLine)
-        self._pv.ro.setSymbolBrush(self.cRightM)
-        self._pv.pt_acc.setPen(self.cPipetracker.getRgb(), width=2)
-        self._pv.pt_acc.setSymbolBrush(self.cPipetracker)
-        # set up lView------------------------------------------------------------------------------------------
         self._lv.setWindowTitle(f'Long View')
-        self._lv.here.setPen(self.cCurrentProf.getRgb(), width=1)
-        self._lv.here.setSymbolBrush(self.cCurrentProf)
-        self._lv.visited_top.setPen(self.cVis.getRgb(), width = 2.5)
-        self._lv.visited_top.setSymbolBrush(self.cVis)
-        self._lv.visited_bot.setPen(self.cVis.getRgb(), width = 2.5)
-        self._lv.madj.setPen(self.cMADJ.getRgb(), width=1.5, style=QtCore.Qt.DotLine)
-        self._lv.msbl.setPen(self.cMSBL.getRgb(), width=1.5, style=QtCore.Qt.DotLine)
-        self._lv.pt_acc.setPen(self.cPipetracker.getRgb(), width=2)
-        self._lv.pt_acc.setSymbolBrush(self.cPipetracker)
-        # set up colors------------------------------------------------------------------------------------------
-        self._config.w_Profile.setStyleSheet(f'background-color: rgba{self.cProfile.getRgb()}')
-        self._config.w_Pipe.setStyleSheet(f'background-color: rgba{self.cPipe.getRgb()}')
-        self._config.w_LeftM.setStyleSheet(f'background-color: rgba{self.cLeftM.getRgb()}')
-        self._config.w_RightM.setStyleSheet(f'background-color: rgba{self.cRightM.getRgb()}')
-        self._config.w_NotVis.setStyleSheet(f'background-color: rgba{self.cNotVis.getRgb()}')
-        self._config.w_Vis.setStyleSheet(f'background-color: rgba{self.cVis.getRgb()}')
-        self._config.w_MADJ.setStyleSheet(f'background-color: rgba{self.cMADJ.getRgb()}')
-        self._config.w_MSBL.setStyleSheet(f'background-color: rgba{self.cMSBL.getRgb()}')
-        self._config.w_Pipetracker.setStyleSheet(f'background-color: rgba{self.cPipetracker.getRgb()}')
-        self._config.w_CurrentProf.setStyleSheet(f'background-color: rgba{self.cCurrentProf.getRgb()}')
-        self._config.w_Background.setStyleSheet(f'background-color: rgba{self.cBackground.getRgb()}')
 
-
+        self.set_colors()
         self.get_vals()
 
 
@@ -177,7 +141,6 @@ class Controller:
         self._mainWin.t_HW.setText(str(self._model.HWin))
         self._mainWin.t_VW.setText(str(self._model.VWin))
         self._mainWin.t_RES.setText(str(self._model.Res))
-        self._mainWin.t_Fl.setText(str(self._model.FlD))
         self._mainWin.t_FlPt.setText(str(self._model.FlP))
         self._mainWin.t_AntiSpoof.setText(str(self._model.AntiSpoof))
         self._mainWin.t_AntiSpoof_A.setText(str(self._model.AntiSpoof_A))
@@ -192,8 +155,7 @@ class Controller:
         self._model.HWin = float(self._mainWin.t_HW.text())                 # horizontal search window
         self._model.VWin = float(self._mainWin.t_VW.text())                 # vertical search window (from the highest sounding in H window)
         self._model.Res = float(self._mainWin.t_RES.text())                 # search grid resolution
-        self._model.weed_prof_val = int(self._mainWin.sp_Weed.value())               # profile weed factor
-        self._model.FlD = float(self._mainWin.t_Fl.text())                  # inner flag distance from TOP
+        self._model.weed_prof_val = int(self._mainWin.sp_Weed.value())      # profile weed factor
         self._model.FlP = float(self._mainWin.t_FlPt.text())                # inner flag patch (from flag distance)
         self._model.FoDist = float(self._mainWin.t_FoDist.text())           # outer flag distance from TOP
         self._model.AntiSpoof = float(self._mainWin.t_AntiSpoof.text())     # antisppofing pillow for adaptive flags - min distance to pipe wall
@@ -201,12 +163,10 @@ class Controller:
         self._model.AdPad = float(self._mainWin.t_AdPad.text())             # center pad (left blank) for adaptive flags
         self._model.CamOffset = float(self._mainWin.t_CamOffset.text())     # camera offset relative to profile
         self._model.Tzone = self._mainWin.spb_Timezone.value()              # time zone (diff DV - timestamps)
-        self._model.weed_pt_val = int(self._mainWin.sp_Pt_Weed.value())         # pipetracker weed factor
+        self._model.weed_pt_val = int(self._mainWin.sp_Pt_Weed.value())     # pipetracker weed factor
         self._model.PtGap = float(self._mainWin.t_PtGap.text())             # Min gap in PT data for smoothing
-        self._model.EditSpot = float(self._mainWin.t_EdSpot.text())         # plan/long view PT edit rectangle size
+        self._model.EditSpot = float(self._pv.t_EdSpot.text())              # plan/long view PT edit rectangle size
         self._model.SmoothWin = int(self._mainWin.t_smW.text())             # plan/long view PT smooth window
-        self._model.SmoothWin_A = float(self._mainWin.sp_smW_A.value())
-        self._model.SmoothWin_B = float(self._mainWin.sp_smW_B.value())
         self._model.pt_Level = float(self._mainWin.t_Lev.text())            # long view PT levelling value
 
         # tide apply/unapply text
@@ -278,8 +238,7 @@ class Controller:
             self._lv.l_scale.setText(f'SCALE 1:1')
             self._lv.aspect = 1
         else:
-            self._lv.lview.setAspectLocked(False)
-            self._lv.aspect = 1
+            pass
 
         # chunk pView/lView on/off
         if self.ChunkSelCounter == 0:
@@ -293,6 +252,64 @@ class Controller:
         elif self.ChunkSelCounter == 2:
             self._pv.chunk.setVisible(True)
             self._lv.chunk.setVisible(True)
+
+
+    def set_colors(self):
+        # set up xView------------------------------------------------------------------------------------------
+        self._xv.xview.setAspectLocked()
+        self._xv.x_prof.setSymbolBrush(self.cProfile)
+        self._xv.pipe_P.setPen(color=self.cPipe.getRgb(), width=1.5)
+        self._xv.pipe_I.setPen(color=self.cPipe.getRgb(), width=0.5, style=QtCore.Qt.DotLine)
+        self._xv.pipe_O.setPen(color=self.cPipe.getRgb(), width=0.5, style=QtCore.Qt.DotLine)
+        self._xv.pipe_A.setPen(color='red', width=0.5)
+        self._xv.pipeassist.setPen(color='g', width=2)
+        self._xv.pipe_top.setPen(color='white', width=0.3, style=QtCore.Qt.DotLine)
+        self._xv.pipe_bot.setPen(color='white', width=0.3, style=QtCore.Qt.DotLine)
+        self._xv.pipe_cl.setPen(color='white', width=0.3, style=QtCore.Qt.DotLine)
+        self._xv.x_l_inner.setBrush(self.cLeftM)
+        self._xv.x_r_inner.setBrush(self.cRightM)
+        self._xv.x_l_outer.setBrush(self.cLeftM)
+        self._xv.x_r_outer.setBrush(self.cRightM)
+        self._xv.port_p_win.setPen(color='orange', width=1.0, style=QtCore.Qt.DotLine)
+        self._xv.stbd_p_win.setPen(color='orange', width=1.0, style=QtCore.Qt.DotLine)
+        self._xv.c_win.setPen(color='orange', width=1.0,style=QtCore.Qt.DotLine)
+        self._xv.c_win.setPen(color='orange', width=1.0, style=QtCore.Qt.DotLine)
+        # set up pView------------------------------------------------------------------------------------------
+        self._pv.here.setPen(self.cCurrentProf, width=1)
+        self._pv.here.setSymbolBrush(self.cCurrentProf)
+        self._pv.visited.setPen(self.cVis.getRgb(), width=2.5)
+        self._pv.visited.setSymbolBrush(self.cVis)
+        self._pv.li.setPen(self.cLeftM.getRgb(), width=0.75, style=QtCore.Qt.DotLine)
+        self._pv.li.setSymbolBrush(self.cLeftM)
+        self._pv.ri.setPen(self.cRightM.getRgb(), width=0.75, style=QtCore.Qt.DotLine)
+        self._pv.ri.setSymbolBrush(self.cRightM)
+        self._pv.lo.setPen(self.cLeftM.getRgb(), width=0.75, style=QtCore.Qt.DotLine)
+        self._pv.lo.setSymbolBrush(self.cLeftM)
+        self._pv.ro.setPen(self.cRightM.getRgb(), width=0.75, style=QtCore.Qt.DotLine)
+        self._pv.ro.setSymbolBrush(self.cRightM)
+        self._pv.pt_acc.setPen(self.cPipetracker.getRgb(), width=2)
+        self._pv.pt_acc.setSymbolBrush(self.cPipetracker)
+        # set up lView------------------------------------------------------------------------------------------
+        self._lv.here.setPen(self.cCurrentProf.getRgb(), width=1)
+        self._lv.here.setSymbolBrush(self.cCurrentProf)
+        self._lv.visited_top.setPen(self.cVis.getRgb(), width = 2.5)
+        self._lv.visited_top.setSymbolBrush(self.cVis)
+        self._lv.visited_bot.setPen(self.cVis.getRgb(), width = 2.5)
+        self._lv.madj.setPen(self.cMADJ.getRgb(), width=1.5, style=QtCore.Qt.DotLine)
+        self._lv.msbl.setPen(self.cMSBL.getRgb(), width=1.5, style=QtCore.Qt.DotLine)
+        self._lv.pt_acc.setPen(self.cPipetracker.getRgb(), width=2)
+        self._lv.pt_acc.setSymbolBrush(self.cPipetracker)
+        # set up colors------------------------------------------------------------------------------------------
+        self._config.w_Profile.setStyleSheet(f'background-color: rgba{self.cProfile.getRgb()}')
+        self._config.w_Pipe.setStyleSheet(f'background-color: rgba{self.cPipe.getRgb()}')
+        self._config.w_LeftM.setStyleSheet(f'background-color: rgba{self.cLeftM.getRgb()}')
+        self._config.w_RightM.setStyleSheet(f'background-color: rgba{self.cRightM.getRgb()}')
+        self._config.w_Vis.setStyleSheet(f'background-color: rgba{self.cVis.getRgb()}')
+        self._config.w_MADJ.setStyleSheet(f'background-color: rgba{self.cMADJ.getRgb()}')
+        self._config.w_MSBL.setStyleSheet(f'background-color: rgba{self.cMSBL.getRgb()}')
+        self._config.w_Pipetracker.setStyleSheet(f'background-color: rgba{self.cPipetracker.getRgb()}')
+        self._config.w_CurrentProf.setStyleSheet(f'background-color: rgba{self.cCurrentProf.getRgb()}')
+        self._config.w_Background.setStyleSheet(f'background-color: rgba{self.cBackground.getRgb()}')
 
 
     def handle_close_ui(self):
@@ -309,11 +326,11 @@ class Controller:
                     self._model.pipeD, self._model.pipeR,
                     self._model.inWall, self._model.outWall,
                     self._model.HWin, self._model.VWin, self._model.Res,
-                    self._model.FlD, self._model.FlP, self._model.AntiSpoof, self._model.AntiSpoof_A,
+                    self._model.FlP, self._model.AntiSpoof, self._model.AntiSpoof_A,
                     self._model.FoDist,
                     self.cProfile, self.cPipe,
                     self.cLeftM, self.cRightM,
-                    self.cNotVis, self.cVis,
+                    self.cVis,
                     self.cMADJ, self.cMSBL, self.cPipetracker,
                     self.cCurrentProf, self.cBackground]
             pickle.dump(dump, dumpfile)
@@ -350,12 +367,13 @@ class Controller:
         if e.key() == Qt.Key_Control and e.type() == 7 and view == 'l':  # Ctrl released on lView
             self._lv.aspect_change_flag = False
             self._model.make_shapes()
-
+            self.update_views()
 
         if e.type() == 6:
             # focus to XView
             if e.key() in [Qt.Key_Return, Qt.Key_Enter]:
                 self._xv.xview.activateWindow()
+                self._xv.xview.setFocus()
 
             # reset chunk
             if e.key() == Qt.Key_Escape:
@@ -419,6 +437,7 @@ class Controller:
                     chs, che = self._model.prno + 1, self._model.no_of_prof
 
                 self._model.flush[chs:che + 1, 11] = 0
+                self._model.flush[chs:che + 1, 30] = 0
                 self._model.flush[chs:che + 1, 9] = self._model.flush[chs:che + 1, 0]
                 self._model.flush[chs:che + 1, 10] = self._model.flush[chs:che + 1, 1]
                 self._model.flush[chs:che + 1, 4] = self._model.flush[chs, 4]
@@ -609,12 +628,12 @@ class Controller:
         _ext = Path(fName).suffix.strip().lower()
         # profiles
         if _ext in ['.xpa', '.cr2']:
-            self.profName, self._model.prno, self._model.no_of_prof = self._model.loadprof(_ext, fName)
+            self.profName, self._model.prno, self._model.no_of_prof = self._model.load_profiles(_ext, fName)
             self.ProfileFlag = True
 
         # tide
         elif _ext in ['.tid']:
-            self._model.loadtide(_ext, fName)
+            self._model.load_tide(_ext, fName)
             self._xv.l_Tide.setText('TIDE LOADED - APPLIED')
             self._xv.l_Tide.setStyleSheet('color: forestgreen')
 
@@ -623,7 +642,7 @@ class Controller:
 
         # work
         elif _ext in ['.wrk']:
-            self._model.loadwork(_ext, fName)
+            self._model.load_work(_ext, fName)
             self.load_saved_config()
             if not self.Tideflag:
                 self._mainWin.ch_ApplyTide.setDisabled(True)
@@ -641,17 +660,19 @@ class Controller:
                 self._xv.l_Tide.setText('TIDE LOADED - APPLIED')
                 self._xv.l_Tide.setStyleSheet('color: forestgreen')
             self.ProfileFlag = True
+            self.set_colors()
             self._model.make_shapes()
 
         # pipetracker
         elif _ext in ['.pip', '.fug', '.ptr']:
             self._mainWin.sp_Pt_Weed.setValue(1)
             self._model.weed_pt_val = 1
-            self._model.loadpt(_ext, fName)
+            self._model.load_pipetracker(_ext, fName)
 
             self._pv.ch_ShowPT.setDisabled(False)
             self._pv.b_snap_h.setDisabled(False)
             self._pv.b_EditMode.setDisabled(False)
+            self._pv.t_EdSpot.setDisabled(False)
 
             self._lv.ch_ShowPT.setDisabled(False)
             self._lv.b_snap_v.setDisabled(False)
@@ -660,14 +681,9 @@ class Controller:
             self._mainWin.b_savePT.setDisabled(False)
             self._mainWin.b_analysePtShift.setDisabled(False)
             self._mainWin.t_PtGap.setDisabled(False)
-            self._mainWin.t_EdSpot.setDisabled(False)
             self._mainWin.t_smW.setDisabled(False)
-            self._mainWin.sp_smW_A.setDisabled(False)
-            self._mainWin.sp_smW_B.setDisabled(False)
             self._mainWin.b_smoothPT_p_MA.setDisabled(False)
-            self._mainWin.b_smoothPT_p_AB.setDisabled(False)
             self._mainWin.b_smoothPT_l_MA.setDisabled(False)
-            self._mainWin.b_smoothPT_l_AB.setDisabled(False)
             self._mainWin.t_Lev.setDisabled(False)
             self._mainWin.b_levelPT.setDisabled(False)
             self._mainWin.t_Lev.setText(str(self._model.pipetracker_W[0, 11]))
@@ -677,19 +693,20 @@ class Controller:
 
         # image
         elif _ext in ['.tif', '.tiff', '.png']:
-            geoimage, cellsize, o_left, o_top = self._model.loadtif(_ext, fName)
+            geoimage, cellsize, o_left, o_top = self._model.load_image(_ext, fName)
             self._pv.pview.setImage(geoimage, scale=(cellsize, -cellsize), pos=(o_left - cellsize, o_top + cellsize))
             self.update_views()
 
         # playlist
         elif _ext in ['.pll']:
-            self._model.loadplaylist(_ext, fName)
+            self._model.load_playlist(_ext, fName)
 
-        self._xv.xview.activateWindow()
 
         self._model.make_shapes()
         self._model.make_profile()
         self.update_views()
+        self._xv.xview.activateWindow()
+        self._xv.xview.setFocus()
 
 
     def handle_save_data(self, function, fNname):
@@ -706,7 +723,7 @@ class Controller:
         # change Pipe/Pt edit mode
         if sender == 'b_EditMode' and self.Ptflag:
             self.EditMode = False if self.EditMode else True
-            self._pv.b_EditMode.setText('\U0001F3A5') if self.EditMode else self._pv.b_EditMode.setText('\U0001F9F2')
+            self._pv.b_EditMode.setIcon(self._icon_pipe) if self.EditMode else self._pv.b_EditMode.setIcon(self._icon_md)
             self._pv.gb_PT_Rej_Acc.setDisabled(True) if self.EditMode else self._pv.gb_PT_Rej_Acc.setDisabled(False)
             self.get_vals()
         # weed pipetracker
@@ -729,18 +746,27 @@ class Controller:
             if self.Ptflag: # and self._mainWin.rb_Pt.isChecked():
                 self._model.smooth_pipetracker_MA(sender)
                 self.update_pipetracker()
-        # smooth pipetracker AB
-        if sender == 'b_smoothPT_p_AB' or sender  == 'b_smoothPT_l_AB':
-            if self.Ptflag: # and self._mainWin.rb_Pt.isChecked():
-                self._model.smooth_pipetracker_AB(sender)
-                self.update_pipetracker()
         # analyse PT to Pipe shifts
         if sender == 'b_analysePtShift':
             if self.Ptflag: # and self._mainWin.rb_Pt.isChecked():
-                self._model.analyse_pypetracker()
-                self._mainWin.t_Lev.setText(str(self._model.pipetracker_W[0, 11]))
-                self._model.pt_Level = self._model.pipetracker_W[0, 11]
-                self.update_pipetracker()
+                mean_dx, mean_dz, std_dx, std_dz, de_shift, dn_shift = self._model.analyse_pypetracker()
+
+                # apply statistical shift dialog
+                _statistics = Statistics()
+                _statistics.setWindowIcon(self._icon_logo)
+                _statistics.l_PtStatistics.setText(f'Mean lateral misalignment: {mean_dx:.2f}m\n'
+                                                   f'  StDev: {std_dx:.2f}m\n\n'
+                                                   f'Mean vertical misalignment: {-mean_dz:.2f}m\n'
+                                                   f'  StDev: {std_dz:.2f}m;\n\n'
+                                                   f'Apply?')
+                # exec dialog (not  .show()!, otherwise it will not be modal)
+                if _statistics.exec():
+                    self._model.apply_statistical_shift_to_pipetracker(de_shift, dn_shift, mean_dz)
+                    self._mainWin.t_Lev.setText(str(self._model.pipetracker_W[0, 11]))
+                    self._model.pt_Level = self._model.pipetracker_W[0, 11]
+                    self.update_pipetracker()
+                else:
+                    pass
         # save pipetracker
         if sender == 'b_savePT':
             if self.Ptflag:
@@ -778,10 +804,9 @@ class Controller:
             self._model.AntiSpoof_A = float(self._mainWin.t_AntiSpoof_A.text())
 
         if sender not in ['b_EditMode', 'sp_Pt_Weed', 'rb_Pr', 'ch_ApplyTide',
-                          'b_levelPT', 'b_smoothPT_p_MA', 'b_smoothPT_p_AB',
-                          'b_smoothPT_l_MA', 'b_smoothPT_l_AB',
+                          'b_levelPT', 'b_smoothPT_p_MA', 'b_smoothPT_l_MA',
                           'b_snap_h', 'b_snap_v',
-                          'b_savePT', 'b_analysePtShift', 't_PtGap', 't_EdSpot', 't_smW', 'sp_smW_A', 'sp_smW_B', 't_Lev',
+                          'b_savePT', 'b_analysePtShift', 't_PtGap', 't_EdSpot', 't_smW', 't_Lev',
                           'gb_PT_Rej_Acc', 'rb_RejectPT', 'rb_AcceptPT']:
             self._model.flush[self._model.prno, 11] = 0
             self._model.make_profile()
@@ -894,12 +919,17 @@ class Controller:
 
         # update pView------------------------------------------------------------------------------------------
         visited_mask = np.hstack((self._model.flush[1:, 11], np.zeros((1))))
+        from_pt_mask = np.hstack(
+            (np.logical_xor(self._model.flush[1:, 11], self._model.flush[1:, 30]),
+             np.zeros((1))))
         # current profile
         self._pv.here.setData([self._model.flush[self._model.prno, 9]],
                               [self._model.flush[self._model.prno, 10]])
-        # top visited/not visited
+        # top visited/from_pipetracker
         self._pv.visited.setData(self._model.flush[:, 9],
                                  self._model.flush[:, 10], connect=visited_mask)
+        self._pv.from_pt.setData(self._model.flush[:, 9],
+                                 self._model.flush[:, 10], connect=from_pt_mask)
         # flags
         self._pv.li.setData(self._model.flush[:, 20],
                             self._model.flush[:, 21], connect=visited_mask)
@@ -943,11 +973,14 @@ class Controller:
         self._lv.here.setData([self._model.flush[self._model.prno, ixf]],
                               [self._model.flush[self._model.prno, 4]
                                + TLC])
-        # top visited/not visited
+        # top visited/from_pipetracker
         self._lv.visited_top.setData(self._model.flush[:, ixf],
                                      self._model.flush[:, 4]
                                      + TLV, connect=visited_mask)
-        # bop visited/not visited
+        self._lv.from_pt.setData(self._model.flush[:, ixf],
+                                     self._model.flush[:, 4]
+                                     + TLV, connect=from_pt_mask)
+        # bop visited
         self._lv.visited_bot.setData(self._model.flush[:, ixf],
                                      self._model.flush[:, 4] -
                                         self._model.pipeD + TLV, connect=visited_mask)
@@ -984,8 +1017,6 @@ class Controller:
                 xRange=[(x - rect.width() / 2), (x + rect.width() / 2)],
                 yRange=[(y - rect.height() / 2), (y + rect.height() / 2)],
                 padding=0)  # if padding != 0 it will change viewRect
-
-        self._lv.winrange = self._lv.lview.viewRange()[0]
 
 
     def update_pipetracker(self):
@@ -1034,9 +1065,9 @@ class Controller:
                 os.startfile(self._manualfile)
 
 
-    def handle_config(self, sender, ix, selectedcolor):
+    def handle_colors(self, ix, selectedcolor):
         _objcolors= [self.cProfile, self.cPipe, self.cLeftM, self.cRightM,
-                     self.cNotVis, self.cVis, self.cMADJ, self.cMSBL, self.cPipetracker,
+                     self.cVis, self.cMADJ, self.cMSBL, self.cPipetracker,
                      self.cCurrentProf, self.cBackground]
 
         _objcolors[ix].setRgb(*selectedcolor)
@@ -1044,6 +1075,7 @@ class Controller:
         pg.GraphicsView.setBackground(self._lv.lview, self.cBackground)
         self._pv.pview.getView().setBackgroundColor(self.cBackground)
 
+        self.set_colors()
         self.update_views()
 
 
@@ -1051,6 +1083,6 @@ class Controller:
         _msg = QMessageBox()
         _msg.setWindowTitle('Warning')
         _msg.setText(message)
-        _msg.setWindowIcon(self._icon)
+        _msg.setWindowIcon(self._icon_logo)
         _msg.show()
         _msg.exec()
