@@ -199,6 +199,22 @@ class Ui_PVIEW(object):
 
         self.Layout3.addWidget(self.ch_Center)
 
+        self.ch_ShowTOP = QCheckBox(self.centralwidget)
+        self.ch_ShowTOP.setObjectName(u"ch_ShowTOP")
+        self.ch_ShowTOP.setMinimumSize(QSize(120, 20))
+        self.ch_ShowTOP.setMaximumSize(QSize(120, 20))
+        self.ch_ShowTOP.setChecked(True)
+
+        self.Layout3.addWidget(self.ch_ShowTOP)
+
+        self.ch_ShowFlags = QCheckBox(self.centralwidget)
+        self.ch_ShowFlags.setObjectName(u"ch_ShowFlags")
+        self.ch_ShowFlags.setMinimumSize(QSize(120, 20))
+        self.ch_ShowFlags.setMaximumSize(QSize(120, 20))
+        self.ch_ShowFlags.setChecked(True)
+
+        self.Layout3.addWidget(self.ch_ShowFlags)
+
         self.ch_ShowPT = QCheckBox(self.centralwidget)
         self.ch_ShowPT.setObjectName(u"ch_ShowPT")
         self.ch_ShowPT.setEnabled(False)
@@ -246,6 +262,8 @@ class Ui_PVIEW(object):
         self.rb_AcceptPT.setText(QCoreApplication.translate("PVIEW", u"Accept", None))
         self.b_EditMode.setText("")
         self.ch_Center.setText(QCoreApplication.translate("PVIEW", u"Follow", None))
+        self.ch_ShowTOP.setText(QCoreApplication.translate("PVIEW", u"Show TOP", None))
+        self.ch_ShowFlags.setText(QCoreApplication.translate("PVIEW", u"Show Flags", None))
         self.ch_ShowPT.setText(QCoreApplication.translate("PVIEW", u"Show PT", None))
     # retranslateUi
 

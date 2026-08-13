@@ -51,7 +51,8 @@ class LV(QtWidgets.QMainWindow, _UI_Lview.Ui_LVIEW):
         self.b_POI.clicked.connect(self.button_pressed)
         self.b_Interpolate.clicked.connect(self.button_pressed)
         self.b_snap_v.clicked.connect(self.val_changed)
-
+        self.ch_ShowTOP.stateChanged.connect(self.val_changed)
+        self.ch_ShowFlags.stateChanged.connect(self.val_changed)
         self.ch_ShowPT.stateChanged.connect(self.val_changed)
 
         # adding empty data graphs to plot parent_box
@@ -66,7 +67,7 @@ class LV(QtWidgets.QMainWindow, _UI_Lview.Ui_LVIEW):
         self.visited_bot = pg.PlotDataItem([], [],
                                            symbol=None)
         self.from_pt = pg.PlotDataItem([], [],
-                                       pen=pg.mkPen('darksalmon', width=5))
+                                       symbol=None)
         # levels
         self.madj = pg.PlotDataItem([], [],
                                     symbol=None)

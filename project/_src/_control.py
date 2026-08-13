@@ -10,10 +10,12 @@ import subprocess
 from pathlib import Path
 import numpy as np
 from PySide6 import QtCore, QtGui
-from PySide6.QtWidgets import QWidget, QMessageBox, QDialog
+from PySide6.QtWidgets import QMessageBox, QDialog
 from PySide6.QtCore import Qt, QSize
 import pyqtgraph as pg
 import _UI_Statistics
+import _QtPl
+import _F_funcs
 
 
 class Statistics(_UI_Statistics.Ui_Dialog, QDialog):
@@ -27,13 +29,14 @@ class Statistics(_UI_Statistics.Ui_Dialog, QDialog):
 
 
 class Controller:
-    def __init__(self, model, mainWin, xv, pv, lv, config, appfolder):
+    def __init__(self, model, mainWin, xv, pv, lv, playpause, config, appfolder):
         self._model = model
         self._mainWin = mainWin
         self._xv = xv
         self._pv = pv
         self._lv = lv
         self._config = config
+        self._playpause = playpause
 
         # subscribe views to controller
         self._model.subscribe_controller(self)
@@ -42,6 +45,7 @@ class Controller:
         self._pv.subscribe_controller(self)
         self._lv.subscribe_controller(self)
         self._config.subscribe_controller(self)
+        self._playpause.subscribe_controller(self)
 
         # init files
         self._appfolder = appfolder
@@ -53,7 +57,7 @@ class Controller:
         self._icon_hysto = QtGui.QIcon(os.path.join(self._configfold, 'icon_hysto_300_tr.ico'))
 
         self._logfile = os.path.join(self._configfold, 'error.log')
-        self._manualfile = os.path.join(self._configfold, 'justPipe.pdf')
+        self._manualfile = os.path.join(self._configfold, 'manual.pdf')
         self._licensefile = os.path.join(self._configfold, 'license.pdf')
 
         # Set up the basic configuration for logging
@@ -68,6 +72,7 @@ class Controller:
             # default colors
             self.cProfile = pg.mkColor(0, 255, 128, 255)
             self.cPipe = pg.mkColor(255, 228, 181, 255)
+            self.cFromPt = pg.mkColor(255, 127, 0, 255)
             self.cLeftM = pg.mkColor(255, 0, 0, 255)
             self.cRightM = pg.mkColor(0, 255, 0, 255)
             self.cVis = pg.mkColor(0, 204, 0, 255)
@@ -83,7 +88,7 @@ class Controller:
                  self._model.HWin, self._model.VWin, self._model.Res,
                  self._model.FlP, self._model.AntiSpoof, self._model.AntiSpoof_A,
                  self._model.FoDist,
-                 self.cProfile, self.cPipe, self.cLeftM, self.cRightM,
+                 self.cProfile, self.cPipe, self.cFromPt, self.cLeftM, self.cRightM,
                  self.cVis, self.cMADJ, self.cMSBL,
                  self.cPipetracker, self.cCurrentProf,
                  self.cBackground] = pickle.load(loadfile)
@@ -106,7 +111,7 @@ class Controller:
 
 
         # set up ui
-        for _w in [self._mainWin, self._xv, self._pv, self._lv, self._config, ]:
+        for _w in [self._mainWin, self._xv, self._pv, self._lv, self._playpause, self._config, ]:
             _w.setWindowIcon(self._icon_logo)
         self._pv.b_EditMode.setIcon(self._icon_pipe)
         self._pv.b_EditMode.setIconSize(QSize(64, 64))
@@ -196,6 +201,26 @@ class Controller:
             self._xv.x_patch_l.setVisible(False)
             self._xv.x_patch_r.setVisible(False)
 
+        # show/hide TOP on pView
+        if self._pv.ch_ShowTOP.isChecked():
+            self._pv.visited.setVisible(True)
+            self._pv.from_pt.setVisible(True)
+        else:
+            self._pv.visited.setVisible(False)
+            self._pv.from_pt.setVisible(False)
+
+        # show/hide Flags on pView
+        if self._pv.ch_ShowFlags.isChecked():
+            self._pv.li.setVisible(True)
+            self._pv.ri.setVisible(True)
+            self._pv.lo.setVisible(True)
+            self._pv.ro.setVisible(True)
+        else:
+            self._pv.li.setVisible(False)
+            self._pv.ri.setVisible(False)
+            self._pv.lo.setVisible(False)
+            self._pv.ro.setVisible(False)
+
         # show/hide pipetracker on pView
         if self._pv.ch_ShowPT.isChecked():
             self._pv.pt_acc.setVisible(True)
@@ -213,6 +238,30 @@ class Controller:
         else:
             self._pv.gb_PT_Rej_Acc.setDisabled(True)
             self._pv.pt_selector.setVisible(False)
+
+        # show/hide camera on pview
+        if self._mainWin.ch_ShowCamOffset.isChecked():
+            self._pv.camera.setVisible(True)
+        else:
+            self._pv.camera.setVisible(False)
+
+        # show/hide TOP on lView
+        if self._lv.ch_ShowTOP.isChecked():
+            self._lv.visited_top.setVisible(True)
+            self._lv.visited_bot.setVisible(True)
+            self._lv.from_pt.setVisible(True)
+        else:
+            self._lv.visited_top.setVisible(False)
+            self._lv.visited_bot.setVisible(False)
+            self._lv.from_pt.setVisible(False)
+
+        # show/hide Flags on lView
+        if self._lv.ch_ShowFlags.isChecked():
+            self._lv.madj.setVisible(True)
+            self._lv.msbl.setVisible(True)
+        else:
+            self._lv.madj.setVisible(False)
+            self._lv.msbl.setVisible(False)
 
         # show/hide pipetracker on lView
         if self._lv.ch_ShowPT.isChecked():
@@ -279,6 +328,8 @@ class Controller:
         self._pv.here.setSymbolBrush(self.cCurrentProf)
         self._pv.visited.setPen(self.cVis.getRgb(), width=2.5)
         self._pv.visited.setSymbolBrush(self.cVis)
+        self._pv.from_pt.setPen(self.cFromPt.getRgb(), width=2.5)
+        self._pv.camera.setSymbolBrush(self.cCurrentProf)
         self._pv.li.setPen(self.cLeftM.getRgb(), width=0.75, style=QtCore.Qt.DotLine)
         self._pv.li.setSymbolBrush(self.cLeftM)
         self._pv.ri.setPen(self.cRightM.getRgb(), width=0.75, style=QtCore.Qt.DotLine)
@@ -295,6 +346,8 @@ class Controller:
         self._lv.visited_top.setPen(self.cVis.getRgb(), width = 2.5)
         self._lv.visited_top.setSymbolBrush(self.cVis)
         self._lv.visited_bot.setPen(self.cVis.getRgb(), width = 2.5)
+        self._lv.from_pt.setPen(self.cFromPt.getRgb(), width=2.5)
+        # self._lv.from_pt.setSymbolBrush(self.cFromPt)
         self._lv.madj.setPen(self.cMADJ.getRgb(), width=1.5, style=QtCore.Qt.DotLine)
         self._lv.msbl.setPen(self.cMSBL.getRgb(), width=1.5, style=QtCore.Qt.DotLine)
         self._lv.pt_acc.setPen(self.cPipetracker.getRgb(), width=2)
@@ -302,6 +355,7 @@ class Controller:
         # set up colors------------------------------------------------------------------------------------------
         self._config.w_Profile.setStyleSheet(f'background-color: rgba{self.cProfile.getRgb()}')
         self._config.w_Pipe.setStyleSheet(f'background-color: rgba{self.cPipe.getRgb()}')
+        self._config.w_FromPt.setStyleSheet(f'background-color: rgba{self.cFromPt.getRgb()}')
         self._config.w_LeftM.setStyleSheet(f'background-color: rgba{self.cLeftM.getRgb()}')
         self._config.w_RightM.setStyleSheet(f'background-color: rgba{self.cRightM.getRgb()}')
         self._config.w_Vis.setStyleSheet(f'background-color: rgba{self.cVis.getRgb()}')
@@ -328,17 +382,22 @@ class Controller:
                     self._model.HWin, self._model.VWin, self._model.Res,
                     self._model.FlP, self._model.AntiSpoof, self._model.AntiSpoof_A,
                     self._model.FoDist,
-                    self.cProfile, self.cPipe,
+                    self.cProfile, self.cPipe, self.cFromPt,
                     self.cLeftM, self.cRightM,
                     self.cVis,
                     self.cMADJ, self.cMSBL, self.cPipetracker,
                     self.cCurrentProf, self.cBackground]
             pickle.dump(dump, dumpfile)
 
+        if self.DVflag:
+            self._playpause.close()
+            for player in self.players:
+                player.close()
         self._mainWin.close()
         self._xv.close()
         self._pv.close()
         self._lv.close()
+        self._config.close()
 
 
     def handle_key_pressed(self, e, view):
@@ -462,6 +521,17 @@ class Controller:
     def handle_button_pressed(self, sender, view):
         # this emulates QKeyEvent and passes to self.handle_key_pressed
         match sender:
+            case 'b_Pause':
+                self.Pausedflag = True if not self.Pausedflag else False
+                if self.Pausedflag:
+                    self._playpause.b_Pause.setText('\U00002016')
+                    self._playpause.b_Pause.setStyleSheet('background-color:rgb(242, 131, 131)')
+                else:
+                    self._playpause.b_Pause.setText('\U000023F5')
+                    self._playpause.b_Pause.setStyleSheet('background-color:rgb(204,255,204)')
+                self._xv.xview.activateWindow()
+                self._xv.xview.setFocus()
+                e = QtGui.QKeyEvent(QtCore.QEvent.Type.KeyPress, Qt.Key.Key_Y, Qt.KeyboardModifier.NoModifier, 'y')  # nothing
             case 'b_POI':
                 self._model.flush[self._model.prno, 29] = 1 if self._model.flush[self._model.prno, 29] == 0 else 0
                 e = QtGui.QKeyEvent(QtCore.QEvent.Type.KeyPress, Qt.Key.Key_Y, Qt.KeyboardModifier.NoModifier, 'y') # nothing
@@ -698,13 +768,43 @@ class Controller:
             self.update_views()
 
         # playlist
-        elif _ext in ['.pll']:
-            self._model.load_playlist(_ext, fName)
+        elif _ext in ['.dvi']:
+            dvindex = self._model.load_dv_index(_ext, fName)
+
+            channel_set = dvindex[1]
+
+            self.playlists = []
+            self.DVstarts = []
+            self.DVends = []
+            self.currentDVs = []
+            self.players = []
+            for i, channel in enumerate(channel_set):
+                playlist = [file for file in dvindex[0] if file[4] == channel]
+                self.playlists.append(playlist)
+                self.DVstarts.append([ix[2] for ix in playlist])
+                self.DVends.append([ix[3] for ix in playlist])
+                self.currentDVs.append(0)
+                player = _QtPl.Player(channel, i)
+                self.players.append(player)
+
+            self.DVflag = True
+            self.Pausedflag = False
+
+            self._playpause.show()
+            self._playpause.move(self._mainWin.pos().x() + self._mainWin.width(), self._mainWin.pos().y())
+
+            for i, player in enumerate(self.players):
+                player.show()
+                player.setWindowIcon(self._icon_logo)
+                # load video
+                player.loadmedia(self.playlists[i][0][0])
 
 
-        self._model.make_shapes()
-        self._model.make_profile()
-        self.update_views()
+        if _ext not in ['.tif', '.tiff', '.png', '.dvi']:
+            self._model.make_shapes()
+            self._model.make_profile()
+            self.update_views()
+
         self._xv.xview.activateWindow()
         self._xv.xview.setFocus()
 
@@ -720,43 +820,36 @@ class Controller:
 
     def handle_val_changed(self, sender):
         self.get_vals()
+        # start build playlist app
+        if sender == 'actionBuild_Playlist':
+            subprocess.run(os.path.join(self._appfolder, 'dv_ix_builder.exe'))
         # change Pipe/Pt edit mode
         if sender == 'b_EditMode' and self.Ptflag:
             self.EditMode = False if self.EditMode else True
             self._pv.b_EditMode.setIcon(self._icon_pipe) if self.EditMode else self._pv.b_EditMode.setIcon(self._icon_md)
             self._pv.gb_PT_Rej_Acc.setDisabled(True) if self.EditMode else self._pv.gb_PT_Rej_Acc.setDisabled(False)
-            self.get_vals()
         # weed pipetracker
         if sender == 'sp_Pt_Weed':
             if self.Ptflag:
                 self._model.weed_pipetracker()
-                self.update_pipetracker()
-        # weed pipetracker / end of pipetracker editing / apply loaded tide
-        if sender == 'ch_ApplyTide':
-            if self.Ptflag:
-                self.update_pipetracker()
-            self.update_views()
         # level pipetracker
         if sender == 'b_levelPT':
             if self.Ptflag:
                 self._model.level_pipetracker()
-                self.update_pipetracker()
         # smooth pipetracker Moving Average
         if sender == 'b_smoothPT_p_MA' or sender  == 'b_smoothPT_l_MA':
             if self.Ptflag: # and self._mainWin.rb_Pt.isChecked():
                 self._model.smooth_pipetracker_MA(sender)
-                self.update_pipetracker()
         # analyse PT to Pipe shifts
         if sender == 'b_analysePtShift':
             if self.Ptflag: # and self._mainWin.rb_Pt.isChecked():
                 mean_dx, mean_dz, std_dx, std_dz, de_shift, dn_shift = self._model.analyse_pypetracker()
-
                 # apply statistical shift dialog
                 _statistics = Statistics()
                 _statistics.setWindowIcon(self._icon_logo)
                 _statistics.l_PtStatistics.setText(f'Mean lateral misalignment: {mean_dx:.2f}m\n'
                                                    f'  StDev: {std_dx:.2f}m\n\n'
-                                                   f'Mean vertical misalignment: {-mean_dz:.2f}m\n'
+                                                   f'Mean vertical misalignment: {mean_dz:.2f}m\n'
                                                    f'  StDev: {std_dz:.2f}m;\n\n'
                                                    f'Apply?')
                 # exec dialog (not  .show()!, otherwise it will not be modal)
@@ -764,7 +857,6 @@ class Controller:
                     self._model.apply_statistical_shift_to_pipetracker(de_shift, dn_shift, mean_dz)
                     self._mainWin.t_Lev.setText(str(self._model.pipetracker_W[0, 11]))
                     self._model.pt_Level = self._model.pipetracker_W[0, 11]
-                    self.update_pipetracker()
                 else:
                     pass
         # save pipetracker
@@ -776,9 +868,6 @@ class Controller:
         # snap top to pipetracker
         if sender == 'b_snap_h' or sender == 'b_snap_v':
             self._model.snap_top_to_pipetracker(sender)
-            self.get_vals()
-            self.update_pipetracker()
-            self.update_views()
         # change search window
         if sender == 'b_hwm':
             if self._model.HWin > 0.15:
@@ -803,17 +892,23 @@ class Controller:
             self._mainWin.t_AntiSpoof_A.setText(str(int(self._model.AntiSpoof_A + 5)))
             self._model.AntiSpoof_A = float(self._mainWin.t_AntiSpoof_A.text())
 
-        if sender not in ['b_EditMode', 'sp_Pt_Weed', 'rb_Pr', 'ch_ApplyTide',
+        if sender not in ['actionBuild_Playlist', 'b_EditMode', 'sp_Pt_Weed', 'rb_Pr', 'ch_ApplyTide',
                           'b_levelPT', 'b_smoothPT_p_MA', 'b_smoothPT_l_MA',
                           'b_snap_h', 'b_snap_v',
                           'b_savePT', 'b_analysePtShift', 't_PtGap', 't_EdSpot', 't_smW', 't_Lev',
-                          'gb_PT_Rej_Acc', 'rb_RejectPT', 'rb_AcceptPT']:
+                          'spb_Timezone', 'spb_CamSize', 'ch_ShowCamOffset',
+                          'gb_PT_Rej_Acc', 'rb_RejectPT', 'rb_AcceptPT',
+                          'ch_ShowTOP', 'ch_ShowFlags', 'ch_ShowPT']:
             self._model.flush[self._model.prno, 11] = 0
             self._model.make_profile()
         else:
             pass
+
+        self.get_vals()
         self._model.make_shapes()
         self.update_views()
+        if self.Ptflag:
+            self.update_pipetracker()
 
 
     def update_views(self):
@@ -834,21 +929,21 @@ class Controller:
         l_outer_coord = [self._model.flush[self._model.prno, 16], self._model.flush[self._model.prno, 17]]
         r_outer_coord = [self._model.flush[self._model.prno, 18], self._model.flush[self._model.prno, 19]]
 
+        # DV player
+        if self.DVflag:
+            if not self.Pausedflag:
+                for i, player in enumerate(self.players):
+                    for j, s in enumerate(self.DVstarts[i]):
+                        if s <= tstamp <= self.DVends[i][j]:
+                            if j == self.currentDVs[i]:
+                                goto_time = 1000 * int(tstamp - s)
+                                player.gototime(goto_time)
+                            else:
+                                self.currentDVs[i] = j
+                                goto_time = 1000 * int(tstamp - s)
+                                player.loadmedia(self.playlists[i][self.currentDVs[i]][0])
+                                player.gototime(goto_time)
 
-        # # DV player
-        # if mc.DVflag:
-        #     if not mc.Pausedflag:
-        #         for i, player in enumerate(mc.players):
-        #             for j, s in enumerate(mc.DVstarts[i]):
-        #                 if s <= tstamp <= mc.DVends[i][j]:
-        #                     if j == mc.currentDVs[i]:
-        #                         goto_time = 1000 * int(tstamp - s)
-        #                         player.gototime(goto_time)
-        #                     else:
-        #                         mc.currentDVs[i] = j
-        #                         goto_time = 1000 * int(tstamp - s)
-        #                         player.loadmedia(mc.playlists[i][mc.currentDVs[i]][0])
-        #                         player.gototime(goto_time)
 
         # update xView------------------------------------------------------------------------------------------
         # tide for X profile
@@ -926,22 +1021,37 @@ class Controller:
         self._pv.here.setData([self._model.flush[self._model.prno, 9]],
                               [self._model.flush[self._model.prno, 10]])
         # top visited/from_pipetracker
-        self._pv.visited.setData(self._model.flush[:, 9],
-                                 self._model.flush[:, 10], connect=visited_mask)
-        self._pv.from_pt.setData(self._model.flush[:, 9],
-                                 self._model.flush[:, 10], connect=from_pt_mask)
+        if self._pv.ch_ShowTOP.isChecked():
+            self._pv.visited.setData(self._model.flush[:, 9],
+                                     self._model.flush[:, 10], connect=visited_mask)
+            self._pv.from_pt.setData(self._model.flush[:, 9],
+                                     self._model.flush[:, 10], connect=from_pt_mask)
+        else:
+            pass
         # flags
-        self._pv.li.setData(self._model.flush[:, 20],
-                            self._model.flush[:, 21], connect=visited_mask)
-        self._pv.ri.setData(self._model.flush[:, 22],
-                            self._model.flush[:, 23], connect=visited_mask)
-        self._pv.lo.setData(self._model.flush[:, 24],
-                            self._model.flush[:, 25], connect=visited_mask)
-        self._pv.ro.setData(self._model.flush[:, 26],
-                            self._model.flush[:, 27], connect=visited_mask)
+        if self._pv.ch_ShowFlags.isChecked():
+            self._pv.li.setData(self._model.flush[:, 20],
+                                self._model.flush[:, 21], connect=visited_mask)
+            self._pv.ri.setData(self._model.flush[:, 22],
+                                self._model.flush[:, 23], connect=visited_mask)
+            self._pv.lo.setData(self._model.flush[:, 24],
+                                self._model.flush[:, 25], connect=visited_mask)
+            self._pv.ro.setData(self._model.flush[:, 26],
+                                self._model.flush[:, 27], connect=visited_mask)
+        else:
+            pass
         # POI
         self._pv.POI.setData(self._model.flush[:, 9][self._model.flush[:, 29] == 1],
                          self._model.flush[:, 10][self._model.flush[:, 29] == 1])
+        # camera
+        if self.DVflag and self._mainWin.ch_ShowCamOffset.isChecked():
+            cam_e, cam_n = _F_funcs.Rotation2D(self._model.CamOffset,
+                                               self._model.flush[self._model.prno, 9],
+                                               self._model.flush[self._model.prno, 10],
+                                               self._model.flush[self._model.prno, 2] - 90)
+            self._pv.camera.setData([cam_e], [cam_n], symbolSize=self._mainWin.spb_CamSize.value())
+        else:
+            pass
 
         # chunk
         if self.ChunkSelCounter == 1:
@@ -974,23 +1084,29 @@ class Controller:
                               [self._model.flush[self._model.prno, 4]
                                + TLC])
         # top visited/from_pipetracker
-        self._lv.visited_top.setData(self._model.flush[:, ixf],
-                                     self._model.flush[:, 4]
-                                     + TLV, connect=visited_mask)
-        self._lv.from_pt.setData(self._model.flush[:, ixf],
-                                     self._model.flush[:, 4]
-                                     + TLV, connect=from_pt_mask)
-        # bop visited
-        self._lv.visited_bot.setData(self._model.flush[:, ixf],
-                                     self._model.flush[:, 4] -
-                                        self._model.pipeD + TLV, connect=visited_mask)
+        if self._lv.ch_ShowTOP.isChecked():
+            self._lv.visited_top.setData(self._model.flush[:, ixf],
+                                         self._model.flush[:, 4]
+                                         + TLV, connect=visited_mask)
+            self._lv.from_pt.setData(self._model.flush[:, ixf],
+                                         self._model.flush[:, 4]
+                                         + TLV, connect=from_pt_mask)
+            # bop visited
+            self._lv.visited_bot.setData(self._model.flush[:, ixf],
+                                         self._model.flush[:, 4] -
+                                            self._model.pipeD + TLV, connect=visited_mask)
+        else:
+            pass
         # madj/msbl
-        self._lv.madj.setData(self._model.flush[:, ixf],
-                              np.mean(self._model.flush[:, [6, 8]], axis=1)
-                              + TLV, connect=visited_mask)
-        self._lv.msbl.setData(self._model.flush[:, ixf],
-                              np.mean(self._model.flush[:, [17, 19]], axis=1)
-                              + TLV, connect=visited_mask)
+        if self._lv.ch_ShowFlags.isChecked():
+            self._lv.madj.setData(self._model.flush[:, ixf],
+                                  np.mean(self._model.flush[:, [6, 8]], axis=1)
+                                  + TLV, connect=visited_mask)
+            self._lv.msbl.setData(self._model.flush[:, ixf],
+                                  np.mean(self._model.flush[:, [17, 19]], axis=1)
+                                  + TLV, connect=visited_mask)
+        else:
+            pass
         # POI
         self._lv.POI.setData(self._model.flush[:, ixf][self._model.flush[:, 29] == 1],
                              self._model.flush[:, 4][self._model.flush[:, 29] == 1] + TLP)
@@ -1051,7 +1167,10 @@ class Controller:
             self._lv.show()
 
         if sender == 'actionDV_Control':
-            pass
+            if self.DVflag:
+                self._playpause.show()
+                for player in self.players:
+                    player.show()
 
         if sender == 'actionSettings':
             self._config.show()
@@ -1064,9 +1183,17 @@ class Controller:
             if platf == 'Windows':
                 os.startfile(self._manualfile)
 
+        if sender == 'actionLicense':
+            # open application manual
+            platf = platform.system()
+            if platf == 'Linux':
+                subprocess.call(['xdg-open', self._licensefile])  # , check=True)
+            if platf == 'Windows':
+                os.startfile(self._licensefile)
+
 
     def handle_colors(self, ix, selectedcolor):
-        _objcolors= [self.cProfile, self.cPipe, self.cLeftM, self.cRightM,
+        _objcolors= [self.cProfile, self.cPipe, self.cFromPt, self.cLeftM, self.cRightM,
                      self.cVis, self.cMADJ, self.cMSBL, self.cPipetracker,
                      self.cCurrentProf, self.cBackground]
 

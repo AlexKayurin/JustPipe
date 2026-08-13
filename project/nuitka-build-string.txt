@@ -1,1 +1,0 @@
-python -m nuitka --mode=standalone --zig --include-qt-plugins=multimedia  --plugin-enable=pyside6 --windows-console-mode=disable --include-data-dir=C:\_AK\JP7\JustPipe\project\_src\_internal=_internal --windows-icon-from-ico=C:\_AK\JP7\JustPipe\project\_src\_internal\Pipe_transp.ico C:\_AK\JP7\JustPipe\project\_src\justPipe2.py

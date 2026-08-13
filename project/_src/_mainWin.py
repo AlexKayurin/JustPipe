@@ -1,9 +1,8 @@
-from PySide6 import QtWidgets, QtCore, QtGui
+from PySide6 import QtWidgets, QtCore
 from PySide6.QtGui import QDoubleValidator, QIntValidator
 from PySide6.QtWidgets import QFileDialog
 import _UI_Control
 
-OPTIONS = QFileDialog.Options()
 
 class MainWin(QtWidgets.QMainWindow, _UI_Control.Ui_CONTROL):
     def __init__(self):
@@ -44,15 +43,15 @@ class MainWin(QtWidgets.QMainWindow, _UI_Control.Ui_CONTROL):
         self.actionSave_work.triggered.connect(self.menu_savefile)
         self.actionExport_EIVA.triggered.connect(self.menu_savefile)
         self.actionExport_SFX.triggered.connect(self.menu_savefile)
-        self.actionBuild_Playlist.triggered.connect(self.menu_savefile)
-        # self.actionLoad_playlist.triggered.connect(self.menu_select)
+        self.actionBuild_Playlist.triggered.connect(self.val_changed)
+        self.actionLoad_playlist.triggered.connect(self.menu_loadfile)
         self.actionXView.triggered.connect(self.menu_show_view)
         self.actionPView.triggered.connect(self.menu_show_view)
         self.actionLView.triggered.connect(self.menu_show_view)
         self.actionSettings.triggered.connect(self.menu_show_view)
         self.actionDV_Control.triggered.connect(self.menu_show_view)
         self.actionManual.triggered.connect(self.menu_show_view)
-        # self.b_Pause.clicked.connect(self.dvPause)
+        self.actionLicense.triggered.connect(self.menu_show_view)
         self.t_D.textEdited.connect(self.val_changed)
         self.t_IW.textEdited.connect(self.val_changed)
         self.t_OW.textEdited.connect(self.val_changed)
@@ -82,6 +81,7 @@ class MainWin(QtWidgets.QMainWindow, _UI_Control.Ui_CONTROL):
         self.b_levelPT.clicked.connect(self.val_changed)
         self.b_savePT.clicked.connect(self.val_changed)
         self.b_analysePtShift.clicked.connect(self.val_changed)
+        self.ch_ShowCamOffset.stateChanged.connect(self.val_changed)
 
         # pipe tab
         self.toolBoxPipe.currentChanged.connect(self.toolbox_select)
@@ -128,14 +128,14 @@ class MainWin(QtWidgets.QMainWindow, _UI_Control.Ui_CONTROL):
                   'Load tide',
                   'Load pipetracker',
                   'Load saved work',
-                  'Load playlist',
+                  'Load DV index',
                   ]
         _exts = ['SITRAS profiles (*.cr2);;XPA profiles (*.xpa);;All Files (*)',
                  'GeoTiff files (*.tif);;GeoTiff files (*.tiff);;PNG files (*.png);;All Files (*)',
                  'Tide files (*.tid);;All Files (*)',
                  'justPipe Pipetracker files (*.ptr);;EIVA Pipetracker files (*.pip);;SFX Pipetracker files (*.fug);;All Files (*)',
                  'Work files (*.wrk);;All Files (*)',
-                 'Palylists (*.pll);;All files (*)',
+                 'DV index (*.dvi);;All files (*)',
                  ]
 
         _sender = self.sender().text()
@@ -150,12 +150,10 @@ class MainWin(QtWidgets.QMainWindow, _UI_Control.Ui_CONTROL):
     def menu_savefile(self):
         _menus = ['Export EIVA',
                   'Export SFX',
-                  'Build playlist',
                   'Save work',
                   ]
         _funcs = ['exporteiva',
                   'exportsfx',
-                  'buildDVplaylistfile',
                   'savework',
                   ]
 
@@ -167,10 +165,10 @@ class MainWin(QtWidgets.QMainWindow, _UI_Control.Ui_CONTROL):
         _ix = _menus.index(_sender)
         # save file dialog
         if _ix < 2:
-            _fName, _ = QFileDialog.getSaveFileName(self, _menus[_ix], '', _exts[_ix]) #, options=OPTIONS)
+            _fName, _ = QFileDialog.getSaveFileName(self, _menus[_ix], '', _exts[_ix])
         # select folder dialog
         else:
-            _fName = QFileDialog.getExistingDirectory(self) #, options=OPTIONS)
+            _fName = QFileDialog.getExistingDirectory(self)
 
         if _fName:
             self._controller.handle_save_data(_funcs[_ix], _fName)

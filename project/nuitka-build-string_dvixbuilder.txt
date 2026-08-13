@@ -1,0 +1,1 @@
+python -m nuitka --onefile --zig --include-qt-plugins=multimedia  --plugin-enable=pyside6 --windows-console-mode=disable --include-data-dir=D:\AK\PyProj\jP\JustPipe\project\_src\_internal=_internal D:\AK\PyProj\jP\JustPipe\project\_src\dv_ix_builder.py

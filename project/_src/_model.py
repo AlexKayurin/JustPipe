@@ -11,6 +11,7 @@ import _F_kp_to_point
 from PIL import Image
 from PIL.TiffTags import TAGS
 
+
 Image.MAX_IMAGE_PIXELS = 10000000000
 
 class Model:
@@ -199,7 +200,7 @@ class Model:
              self.FlP, self.AntiSpoof, self.AntiSpoof_A,
              self.FoDist,
              self._controller.Tideflag, self._controller.Appliedflag,
-             self._controller.cProfile, self._controller.cPipe,
+             self._controller.cProfile, self._controller.cPipe, self._controller.cFromPt,
              self._controller.cLeftM, self._controller.cRightM,
              self._controller.cVis,
              self._controller.cMADJ, self._controller.cMSBL,
@@ -302,8 +303,20 @@ class Model:
             return geoimage, cellsize, o_left, o_top
 
 
-    def load_playlist(self, _ext, fName):
-        pass
+    def load_dv_index(self, _ext, fName):
+        # read built playlist
+        with open(fName, 'rb') as loadfile:
+            # data[0]
+            # [full filename (with path)
+            # duration (sec)
+            # start timestamp
+            # end timestamp
+            # channel name]
+            # data[1]
+            # [channellist]
+            dvindex = pickle.load(loadfile)
+
+        return dvindex
 
 
     def save_work(self, foldName):
@@ -325,7 +338,7 @@ class Model:
                     self.FlP, self.AntiSpoof, self.AntiSpoof_A,
                     self.FoDist,
                     self._controller.Tideflag, self._controller.Appliedflag,
-                    self._controller.cProfile, self._controller.cPipe,
+                    self._controller.cProfile, self._controller.cPipe, self._controller.cFromPt,
                     self._controller.cLeftM, self._controller.cRightM,
                     self._controller.cVis,
                     self._controller.cMADJ, self._controller.cMSBL,

@@ -48,6 +48,8 @@ class PV(QtWidgets.QMainWindow, _UI_Pview.Ui_PVIEW):
         self.b_EditMode.clicked.connect(self.val_changed)
         self.rb_RejectPT.clicked.connect(self.val_changed)
         self.rb_AcceptPT.clicked.connect(self.val_changed)
+        self.ch_ShowTOP.stateChanged.connect(self.val_changed)
+        self.ch_ShowFlags.stateChanged.connect(self.val_changed)
         self.ch_ShowPT.stateChanged.connect(self.val_changed)
         # adding empty data graphs to plot parent_box
         self.p_parent_box = pg.PlotDataItem()
@@ -59,7 +61,7 @@ class PV(QtWidgets.QMainWindow, _UI_Pview.Ui_PVIEW):
         self.visited = pg.PlotDataItem([], [],
                                        symbol='o', symbolSize=3)
         self.from_pt = pg.PlotDataItem([], [],
-                                       pen=pg.mkPen('darksalmon', width=5))
+                                       symbol=None)
         # flags
         self.li = pg.PlotDataItem([], [],
                                   symbol='o', symbolSize=2)
@@ -76,7 +78,9 @@ class PV(QtWidgets.QMainWindow, _UI_Pview.Ui_PVIEW):
         self.pt_acc = pg.PlotDataItem([], [],
                                       symbol='o', symbolSize=2)
         self.pt_selector = pg.PlotCurveItem([], [], width=2)
-
+        # camera
+        self.camera = pg.PlotDataItem([], [],
+                                      pen=None, symbol='h')
         # selected chunk
         self.chunk_point = pg.PlotDataItem([], [],
                                            pen=pg.mkPen('b', width=1),
@@ -87,7 +91,7 @@ class PV(QtWidgets.QMainWindow, _UI_Pview.Ui_PVIEW):
         for item in [self.here, self.visited, self.from_pt,
                      self.li, self.ri, self.lo, self.ro,
                      self.POI,
-                     self.pt_acc, self.pt_selector,
+                     self.pt_acc, self.pt_selector, self.camera,
                      self.chunk_point, self.chunk]:
             item.setParentItem(self.p_parent_box)
 

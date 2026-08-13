@@ -8,7 +8,7 @@ class Config(QtWidgets.QMainWindow, _UI_Options.Ui_Dialog):
         self.setupUi(self)
 
         # set up signals
-        for b in [self.b_Profile, self.b_Pipe, self.b_LeftM, self.b_RightM,
+        for b in [self.b_Profile, self.b_Pipe, self.b_FromPt, self.b_LeftM, self.b_RightM,
                   self.b_Vis, self.b_MADJ, self.b_MSBL,
                   self.b_Pipetracker, self.b_CurrentProf, self.b_Background]:
             b.clicked.connect(self._colorselect)
@@ -19,10 +19,10 @@ class Config(QtWidgets.QMainWindow, _UI_Options.Ui_Dialog):
 
 
     def _colorselect(self):
-        _selectors = ['b_Profile', 'b_Pipe', 'b_LeftM', 'b_RightM',
+        _selectors = ['b_Profile', 'b_Pipe', 'b_FromPt', 'b_LeftM', 'b_RightM',
                       'b_Vis', 'b_MADJ', 'b_MSBL', 'b_Pipetracker',
                       'b_CurrentProf', 'b_Background']
-        _palettes = [self.w_Profile, self.w_Pipe, self.w_LeftM, self.w_RightM,
+        _palettes = [self.w_Profile, self.w_Pipe, self.w_FromPt, self.w_LeftM, self.w_RightM,
                      self.w_Vis, self.w_MADJ, self.w_MSBL, self.w_Pipetracker,
                      self.w_CurrentProf, self.w_Background]
 

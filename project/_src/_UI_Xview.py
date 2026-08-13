@@ -246,8 +246,8 @@ class Ui_XVIEW(object):
         self.horizontalLayout.setContentsMargins(0, 0, 0, 0)
         self.ch_Center = QCheckBox(self.centralwidget)
         self.ch_Center.setObjectName(u"ch_Center")
-        self.ch_Center.setMinimumSize(QSize(150, 20))
-        self.ch_Center.setMaximumSize(QSize(150, 20))
+        self.ch_Center.setMinimumSize(QSize(120, 20))
+        self.ch_Center.setMaximumSize(QSize(120, 20))
         self.ch_Center.setFont(font)
         self.ch_Center.setChecked(True)
 
@@ -260,8 +260,8 @@ class Ui_XVIEW(object):
         sizePolicy2.setVerticalStretch(0)
         sizePolicy2.setHeightForWidth(self.ch_ShowPatch.sizePolicy().hasHeightForWidth())
         self.ch_ShowPatch.setSizePolicy(sizePolicy2)
-        self.ch_ShowPatch.setMinimumSize(QSize(150, 20))
-        self.ch_ShowPatch.setMaximumSize(QSize(150, 20))
+        self.ch_ShowPatch.setMinimumSize(QSize(120, 20))
+        self.ch_ShowPatch.setMaximumSize(QSize(120, 20))
         self.ch_ShowPatch.setFont(font)
         self.ch_ShowPatch.setChecked(True)
 
@@ -269,8 +269,8 @@ class Ui_XVIEW(object):
 
         self.ch_ShowAntiSpoof = QCheckBox(self.centralwidget)
         self.ch_ShowAntiSpoof.setObjectName(u"ch_ShowAntiSpoof")
-        self.ch_ShowAntiSpoof.setMinimumSize(QSize(150, 20))
-        self.ch_ShowAntiSpoof.setMaximumSize(QSize(150, 20))
+        self.ch_ShowAntiSpoof.setMinimumSize(QSize(120, 20))
+        self.ch_ShowAntiSpoof.setMaximumSize(QSize(120, 20))
         self.ch_ShowAntiSpoof.setFont(font)
         self.ch_ShowAntiSpoof.setChecked(True)
 
@@ -328,6 +328,6 @@ class Ui_XVIEW(object):
         self.l_Time.setText(QCoreApplication.translate("XVIEW", u"T", None))
         self.ch_Center.setText(QCoreApplication.translate("XVIEW", u"Follow", None))
         self.ch_ShowPatch.setText(QCoreApplication.translate("XVIEW", u"Show Patch", None))
-        self.ch_ShowAntiSpoof.setText(QCoreApplication.translate("XVIEW", u"Show AntiSpoof", None))
+        self.ch_ShowAntiSpoof.setText(QCoreApplication.translate("XVIEW", u"Show AS Mask", None))
     # retranslateUi
 
