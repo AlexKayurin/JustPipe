@@ -139,7 +139,7 @@ class LV(QtWidgets.QMainWindow, _UI_Lview.Ui_LVIEW):
 
     def mouse_moved(self, e):
         _cursor = self.vb_lview.mapSceneToView(e)
-        self._controller.handle_mouse_moved(_cursor, 'l')
+        self._controller.handle_mouse_moved(e, _cursor, 'l')
 
 
     def mouse_pressed(self, e):

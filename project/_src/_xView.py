@@ -153,7 +153,7 @@ class XV(QtWidgets.QMainWindow, _UI_Xview.Ui_XVIEW):
 
     def mouse_moved(self, e):
         _cursor = self.vb_xview.mapSceneToView(e)
-        self._controller.handle_mouse_moved(_cursor, 'x')
+        self._controller.handle_mouse_moved(e, _cursor, 'x')
 
 
     def mouse_pressed(self, e):

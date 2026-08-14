@@ -1,4 +1,4 @@
-# justPipe v3 on MVP pattern; 13/08/2026 Working; need manual and license update
+# justPipe v3 on MVP pattern; 15/08/2026 Final; need manual and license update
 
 import os
 import sys
@@ -15,11 +15,6 @@ from _playpause import PlayPause
 
 if __name__ == '__main__':
     app = QtWidgets.QApplication(sys.argv)
-
-    # if not QtWidgets.QApplication.instance():
-    #     app = QtWidgets.QApplication(sys.argv)
-    # else:
-    #     app = QtWidgets.QApplication.instance()
 
     app.setStyle('fusion')
 

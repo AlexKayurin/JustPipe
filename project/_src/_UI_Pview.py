@@ -18,7 +18,8 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
 from PySide6.QtWidgets import (QApplication, QCheckBox, QFrame, QGridLayout,
     QGroupBox, QHBoxLayout, QLabel, QLayout,
     QLineEdit, QMainWindow, QPushButton, QRadioButton,
-    QSizePolicy, QSpacerItem, QVBoxLayout, QWidget)
+    QSizePolicy, QSpacerItem, QSpinBox, QVBoxLayout,
+    QWidget)
 
 from pyqtgraph import ImageView
 
@@ -192,34 +193,77 @@ class Ui_PVIEW(object):
         self.Layout3.setContentsMargins(0, 0, 0, 0)
         self.ch_Center = QCheckBox(self.centralwidget)
         self.ch_Center.setObjectName(u"ch_Center")
-        self.ch_Center.setMinimumSize(QSize(150, 20))
-        self.ch_Center.setMaximumSize(QSize(150, 20))
+        self.ch_Center.setMinimumSize(QSize(75, 20))
+        self.ch_Center.setMaximumSize(QSize(75, 20))
         self.ch_Center.setFont(font)
         self.ch_Center.setChecked(True)
 
         self.Layout3.addWidget(self.ch_Center)
 
+        self.line_2 = QFrame(self.centralwidget)
+        self.line_2.setObjectName(u"line_2")
+        self.line_2.setMinimumSize(QSize(3, 20))
+        self.line_2.setMaximumSize(QSize(3, 20))
+        self.line_2.setFrameShape(QFrame.Shape.VLine)
+        self.line_2.setFrameShadow(QFrame.Shadow.Sunken)
+
+        self.Layout3.addWidget(self.line_2)
+
+        self.label_2 = QLabel(self.centralwidget)
+        self.label_2.setObjectName(u"label_2")
+        self.label_2.setMinimumSize(QSize(55, 20))
+        self.label_2.setMaximumSize(QSize(55, 20))
+
+        self.Layout3.addWidget(self.label_2)
+
+        self.sp_ViewRotate = QSpinBox(self.centralwidget)
+        self.sp_ViewRotate.setObjectName(u"sp_ViewRotate")
+        self.sp_ViewRotate.setMinimumSize(QSize(80, 20))
+        self.sp_ViewRotate.setMaximumSize(QSize(80, 20))
+        self.sp_ViewRotate.setMinimum(-180)
+        self.sp_ViewRotate.setMaximum(180)
+        self.sp_ViewRotate.setSingleStep(5)
+
+        self.Layout3.addWidget(self.sp_ViewRotate)
+
+        self.line_3 = QFrame(self.centralwidget)
+        self.line_3.setObjectName(u"line_3")
+        self.line_3.setMinimumSize(QSize(3, 20))
+        self.line_3.setMaximumSize(QSize(3, 20))
+        self.line_3.setFrameShape(QFrame.Shape.VLine)
+        self.line_3.setFrameShadow(QFrame.Shadow.Sunken)
+
+        self.Layout3.addWidget(self.line_3)
+
+        self.ch_ShowImg = QCheckBox(self.centralwidget)
+        self.ch_ShowImg.setObjectName(u"ch_ShowImg")
+        self.ch_ShowImg.setMinimumSize(QSize(75, 20))
+        self.ch_ShowImg.setMaximumSize(QSize(75, 20))
+
+        self.Layout3.addWidget(self.ch_ShowImg)
+
         self.ch_ShowTOP = QCheckBox(self.centralwidget)
         self.ch_ShowTOP.setObjectName(u"ch_ShowTOP")
-        self.ch_ShowTOP.setMinimumSize(QSize(120, 20))
-        self.ch_ShowTOP.setMaximumSize(QSize(120, 20))
+        self.ch_ShowTOP.setMinimumSize(QSize(75, 20))
+        self.ch_ShowTOP.setMaximumSize(QSize(75, 20))
         self.ch_ShowTOP.setChecked(True)
 
         self.Layout3.addWidget(self.ch_ShowTOP)
 
         self.ch_ShowFlags = QCheckBox(self.centralwidget)
         self.ch_ShowFlags.setObjectName(u"ch_ShowFlags")
-        self.ch_ShowFlags.setMinimumSize(QSize(120, 20))
-        self.ch_ShowFlags.setMaximumSize(QSize(120, 20))
-        self.ch_ShowFlags.setChecked(True)
+        self.ch_ShowFlags.setEnabled(True)
+        self.ch_ShowFlags.setMinimumSize(QSize(75, 20))
+        self.ch_ShowFlags.setMaximumSize(QSize(75, 20))
+        self.ch_ShowFlags.setChecked(False)
 
         self.Layout3.addWidget(self.ch_ShowFlags)
 
         self.ch_ShowPT = QCheckBox(self.centralwidget)
         self.ch_ShowPT.setObjectName(u"ch_ShowPT")
         self.ch_ShowPT.setEnabled(False)
-        self.ch_ShowPT.setMinimumSize(QSize(150, 20))
-        self.ch_ShowPT.setMaximumSize(QSize(150, 20))
+        self.ch_ShowPT.setMinimumSize(QSize(75, 20))
+        self.ch_ShowPT.setMaximumSize(QSize(75, 20))
         self.ch_ShowPT.setFont(font)
         self.ch_ShowPT.setChecked(True)
 
@@ -262,8 +306,10 @@ class Ui_PVIEW(object):
         self.rb_AcceptPT.setText(QCoreApplication.translate("PVIEW", u"Accept", None))
         self.b_EditMode.setText("")
         self.ch_Center.setText(QCoreApplication.translate("PVIEW", u"Follow", None))
-        self.ch_ShowTOP.setText(QCoreApplication.translate("PVIEW", u"Show TOP", None))
-        self.ch_ShowFlags.setText(QCoreApplication.translate("PVIEW", u"Show Flags", None))
-        self.ch_ShowPT.setText(QCoreApplication.translate("PVIEW", u"Show PT", None))
+        self.label_2.setText(QCoreApplication.translate("PVIEW", u"Rotation:", None))
+        self.ch_ShowImg.setText(QCoreApplication.translate("PVIEW", u"Image", None))
+        self.ch_ShowTOP.setText(QCoreApplication.translate("PVIEW", u"TOP", None))
+        self.ch_ShowFlags.setText(QCoreApplication.translate("PVIEW", u"Flags", None))
+        self.ch_ShowPT.setText(QCoreApplication.translate("PVIEW", u"PT", None))
     # retranslateUi
 

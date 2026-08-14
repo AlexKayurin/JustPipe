@@ -683,13 +683,13 @@
        <widget class="QCheckBox" name="ch_Center">
         <property name="minimumSize">
          <size>
-          <width>120</width>
+          <width>75</width>
           <height>20</height>
          </size>
         </property>
         <property name="maximumSize">
          <size>
-          <width>120</width>
+          <width>75</width>
           <height>20</height>
          </size>
         </property>
@@ -707,6 +707,25 @@
        </widget>
       </item>
       <item>
+       <widget class="Line" name="line">
+        <property name="minimumSize">
+         <size>
+          <width>3</width>
+          <height>20</height>
+         </size>
+        </property>
+        <property name="maximumSize">
+         <size>
+          <width>3</width>
+          <height>20</height>
+         </size>
+        </property>
+        <property name="orientation">
+         <enum>Qt::Orientation::Vertical</enum>
+        </property>
+       </widget>
+      </item>
+      <item>
        <widget class="QCheckBox" name="ch_ShowPatch">
         <property name="sizePolicy">
          <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
@@ -716,13 +735,13 @@
         </property>
         <property name="minimumSize">
          <size>
-          <width>120</width>
+          <width>75</width>
           <height>20</height>
          </size>
         </property>
         <property name="maximumSize">
          <size>
-          <width>120</width>
+          <width>75</width>
           <height>20</height>
          </size>
         </property>
@@ -732,7 +751,7 @@
          </font>
         </property>
         <property name="text">
-         <string>Show Patch</string>
+         <string>Patch</string>
         </property>
         <property name="checked">
          <bool>true</bool>
@@ -743,13 +762,13 @@
        <widget class="QCheckBox" name="ch_ShowAntiSpoof">
         <property name="minimumSize">
          <size>
-          <width>120</width>
+          <width>75</width>
           <height>20</height>
          </size>
         </property>
         <property name="maximumSize">
          <size>
-          <width>120</width>
+          <width>75</width>
           <height>20</height>
          </size>
         </property>
@@ -759,7 +778,7 @@
          </font>
         </property>
         <property name="text">
-         <string>Show AS Mask</string>
+         <string>Mask</string>
         </property>
         <property name="checked">
          <bool>true</bool>

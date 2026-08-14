@@ -15,10 +15,10 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QFont, QFontDatabase, QGradient, QIcon,
     QImage, QKeySequence, QLinearGradient, QPainter,
     QPalette, QPixmap, QRadialGradient, QTransform)
-from PySide6.QtWidgets import (QApplication, QCheckBox, QGridLayout, QGroupBox,
-    QHBoxLayout, QLabel, QLayout, QMainWindow,
-    QPushButton, QSizePolicy, QSpacerItem, QVBoxLayout,
-    QWidget)
+from PySide6.QtWidgets import (QApplication, QCheckBox, QFrame, QGridLayout,
+    QGroupBox, QHBoxLayout, QLabel, QLayout,
+    QMainWindow, QPushButton, QSizePolicy, QSpacerItem,
+    QVBoxLayout, QWidget)
 
 from pyqtgraph import PlotWidget
 
@@ -120,8 +120,8 @@ class Ui_LVIEW(object):
         self.Layout3.setContentsMargins(0, 0, 0, 0)
         self.ch_Center = QCheckBox(self.centralwidget)
         self.ch_Center.setObjectName(u"ch_Center")
-        self.ch_Center.setMinimumSize(QSize(120, 20))
-        self.ch_Center.setMaximumSize(QSize(120, 20))
+        self.ch_Center.setMinimumSize(QSize(75, 20))
+        self.ch_Center.setMaximumSize(QSize(75, 20))
         self.ch_Center.setFont(font)
         self.ch_Center.setChecked(True)
 
@@ -129,32 +129,41 @@ class Ui_LVIEW(object):
 
         self.ch_Aspect = QCheckBox(self.centralwidget)
         self.ch_Aspect.setObjectName(u"ch_Aspect")
-        self.ch_Aspect.setMinimumSize(QSize(120, 20))
-        self.ch_Aspect.setMaximumSize(QSize(120, 20))
+        self.ch_Aspect.setMinimumSize(QSize(75, 20))
+        self.ch_Aspect.setMaximumSize(QSize(75, 20))
         self.ch_Aspect.setFont(font)
 
         self.Layout3.addWidget(self.ch_Aspect)
 
+        self.line = QFrame(self.centralwidget)
+        self.line.setObjectName(u"line")
+        self.line.setMinimumSize(QSize(3, 20))
+        self.line.setMaximumSize(QSize(3, 20))
+        self.line.setFrameShape(QFrame.Shape.VLine)
+        self.line.setFrameShadow(QFrame.Shadow.Sunken)
+
+        self.Layout3.addWidget(self.line)
+
         self.ch_Time_Chn = QCheckBox(self.centralwidget)
         self.ch_Time_Chn.setObjectName(u"ch_Time_Chn")
-        self.ch_Time_Chn.setMinimumSize(QSize(120, 20))
-        self.ch_Time_Chn.setMaximumSize(QSize(120, 20))
+        self.ch_Time_Chn.setMinimumSize(QSize(75, 20))
+        self.ch_Time_Chn.setMaximumSize(QSize(75, 20))
         self.ch_Time_Chn.setFont(font)
 
         self.Layout3.addWidget(self.ch_Time_Chn)
 
         self.ch_ShowTOP = QCheckBox(self.centralwidget)
         self.ch_ShowTOP.setObjectName(u"ch_ShowTOP")
-        self.ch_ShowTOP.setMinimumSize(QSize(120, 20))
-        self.ch_ShowTOP.setMaximumSize(QSize(120, 20))
+        self.ch_ShowTOP.setMinimumSize(QSize(75, 20))
+        self.ch_ShowTOP.setMaximumSize(QSize(75, 20))
         self.ch_ShowTOP.setChecked(True)
 
         self.Layout3.addWidget(self.ch_ShowTOP)
 
         self.ch_ShowFlags = QCheckBox(self.centralwidget)
         self.ch_ShowFlags.setObjectName(u"ch_ShowFlags")
-        self.ch_ShowFlags.setMinimumSize(QSize(120, 20))
-        self.ch_ShowFlags.setMaximumSize(QSize(120, 20))
+        self.ch_ShowFlags.setMinimumSize(QSize(75, 20))
+        self.ch_ShowFlags.setMaximumSize(QSize(75, 20))
         self.ch_ShowFlags.setChecked(True)
 
         self.Layout3.addWidget(self.ch_ShowFlags)
@@ -162,8 +171,8 @@ class Ui_LVIEW(object):
         self.ch_ShowPT = QCheckBox(self.centralwidget)
         self.ch_ShowPT.setObjectName(u"ch_ShowPT")
         self.ch_ShowPT.setEnabled(False)
-        self.ch_ShowPT.setMinimumSize(QSize(120, 20))
-        self.ch_ShowPT.setMaximumSize(QSize(120, 20))
+        self.ch_ShowPT.setMinimumSize(QSize(75, 20))
+        self.ch_ShowPT.setMaximumSize(QSize(75, 20))
         self.ch_ShowPT.setFont(font)
         self.ch_ShowPT.setChecked(True)
 
@@ -191,10 +200,10 @@ class Ui_LVIEW(object):
         self.b_snap_v.setText(QCoreApplication.translate("LVIEW", u"SnZ", None))
         self.l_scale.setText(QCoreApplication.translate("LVIEW", u"SCALE 1:", None))
         self.ch_Center.setText(QCoreApplication.translate("LVIEW", u"Follow", None))
-        self.ch_Aspect.setText(QCoreApplication.translate("LVIEW", u"Scale 1:1", None))
+        self.ch_Aspect.setText(QCoreApplication.translate("LVIEW", u"1:1", None))
         self.ch_Time_Chn.setText(QCoreApplication.translate("LVIEW", u"Time", None))
-        self.ch_ShowTOP.setText(QCoreApplication.translate("LVIEW", u"Show Pipe", None))
-        self.ch_ShowFlags.setText(QCoreApplication.translate("LVIEW", u"Show Levels", None))
-        self.ch_ShowPT.setText(QCoreApplication.translate("LVIEW", u"Show PT", None))
+        self.ch_ShowTOP.setText(QCoreApplication.translate("LVIEW", u"Pipe", None))
+        self.ch_ShowFlags.setText(QCoreApplication.translate("LVIEW", u"Levels", None))
+        self.ch_ShowPT.setText(QCoreApplication.translate("LVIEW", u"PT", None))
     # retranslateUi
 

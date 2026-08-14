@@ -261,13 +261,13 @@
        <widget class="QCheckBox" name="ch_Center">
         <property name="minimumSize">
          <size>
-          <width>120</width>
+          <width>75</width>
           <height>20</height>
          </size>
         </property>
         <property name="maximumSize">
          <size>
-          <width>120</width>
+          <width>75</width>
           <height>20</height>
          </size>
         </property>
@@ -288,13 +288,13 @@
        <widget class="QCheckBox" name="ch_Aspect">
         <property name="minimumSize">
          <size>
-          <width>120</width>
+          <width>75</width>
           <height>20</height>
          </size>
         </property>
         <property name="maximumSize">
          <size>
-          <width>120</width>
+          <width>75</width>
           <height>20</height>
          </size>
         </property>
@@ -304,7 +304,26 @@
          </font>
         </property>
         <property name="text">
-         <string>Scale 1:1</string>
+         <string>1:1</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="Line" name="line">
+        <property name="minimumSize">
+         <size>
+          <width>3</width>
+          <height>20</height>
+         </size>
+        </property>
+        <property name="maximumSize">
+         <size>
+          <width>3</width>
+          <height>20</height>
+         </size>
+        </property>
+        <property name="orientation">
+         <enum>Qt::Orientation::Vertical</enum>
         </property>
        </widget>
       </item>
@@ -312,13 +331,13 @@
        <widget class="QCheckBox" name="ch_Time_Chn">
         <property name="minimumSize">
          <size>
-          <width>120</width>
+          <width>75</width>
           <height>20</height>
          </size>
         </property>
         <property name="maximumSize">
          <size>
-          <width>120</width>
+          <width>75</width>
           <height>20</height>
          </size>
         </property>
@@ -336,18 +355,18 @@
        <widget class="QCheckBox" name="ch_ShowTOP">
         <property name="minimumSize">
          <size>
-          <width>120</width>
+          <width>75</width>
           <height>20</height>
          </size>
         </property>
         <property name="maximumSize">
          <size>
-          <width>120</width>
+          <width>75</width>
           <height>20</height>
          </size>
         </property>
         <property name="text">
-         <string>Show Pipe</string>
+         <string>Pipe</string>
         </property>
         <property name="checked">
          <bool>true</bool>
@@ -358,18 +377,18 @@
        <widget class="QCheckBox" name="ch_ShowFlags">
         <property name="minimumSize">
          <size>
-          <width>120</width>
+          <width>75</width>
           <height>20</height>
          </size>
         </property>
         <property name="maximumSize">
          <size>
-          <width>120</width>
+          <width>75</width>
           <height>20</height>
          </size>
         </property>
         <property name="text">
-         <string>Show Levels</string>
+         <string>Levels</string>
         </property>
         <property name="checked">
          <bool>true</bool>
@@ -383,13 +402,13 @@
         </property>
         <property name="minimumSize">
          <size>
-          <width>120</width>
+          <width>75</width>
           <height>20</height>
          </size>
         </property>
         <property name="maximumSize">
          <size>
-          <width>120</width>
+          <width>75</width>
           <height>20</height>
          </size>
         </property>
@@ -399,7 +418,7 @@
          </font>
         </property>
         <property name="text">
-         <string>Show PT</string>
+         <string>PT</string>
         </property>
         <property name="checked">
          <bool>true</bool>

@@ -15,10 +15,10 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QFont, QFontDatabase, QGradient, QIcon,
     QImage, QKeySequence, QLinearGradient, QPainter,
     QPalette, QPixmap, QRadialGradient, QTransform)
-from PySide6.QtWidgets import (QApplication, QCheckBox, QGridLayout, QGroupBox,
-    QHBoxLayout, QLabel, QLayout, QMainWindow,
-    QPushButton, QSizePolicy, QSpacerItem, QVBoxLayout,
-    QWidget)
+from PySide6.QtWidgets import (QApplication, QCheckBox, QFrame, QGridLayout,
+    QGroupBox, QHBoxLayout, QLabel, QLayout,
+    QMainWindow, QPushButton, QSizePolicy, QSpacerItem,
+    QVBoxLayout, QWidget)
 
 from pyqtgraph import PlotWidget
 
@@ -246,12 +246,21 @@ class Ui_XVIEW(object):
         self.horizontalLayout.setContentsMargins(0, 0, 0, 0)
         self.ch_Center = QCheckBox(self.centralwidget)
         self.ch_Center.setObjectName(u"ch_Center")
-        self.ch_Center.setMinimumSize(QSize(120, 20))
-        self.ch_Center.setMaximumSize(QSize(120, 20))
+        self.ch_Center.setMinimumSize(QSize(75, 20))
+        self.ch_Center.setMaximumSize(QSize(75, 20))
         self.ch_Center.setFont(font)
         self.ch_Center.setChecked(True)
 
         self.horizontalLayout.addWidget(self.ch_Center)
+
+        self.line = QFrame(self.centralwidget)
+        self.line.setObjectName(u"line")
+        self.line.setMinimumSize(QSize(3, 20))
+        self.line.setMaximumSize(QSize(3, 20))
+        self.line.setFrameShape(QFrame.Shape.VLine)
+        self.line.setFrameShadow(QFrame.Shadow.Sunken)
+
+        self.horizontalLayout.addWidget(self.line)
 
         self.ch_ShowPatch = QCheckBox(self.centralwidget)
         self.ch_ShowPatch.setObjectName(u"ch_ShowPatch")
@@ -260,8 +269,8 @@ class Ui_XVIEW(object):
         sizePolicy2.setVerticalStretch(0)
         sizePolicy2.setHeightForWidth(self.ch_ShowPatch.sizePolicy().hasHeightForWidth())
         self.ch_ShowPatch.setSizePolicy(sizePolicy2)
-        self.ch_ShowPatch.setMinimumSize(QSize(120, 20))
-        self.ch_ShowPatch.setMaximumSize(QSize(120, 20))
+        self.ch_ShowPatch.setMinimumSize(QSize(75, 20))
+        self.ch_ShowPatch.setMaximumSize(QSize(75, 20))
         self.ch_ShowPatch.setFont(font)
         self.ch_ShowPatch.setChecked(True)
 
@@ -269,8 +278,8 @@ class Ui_XVIEW(object):
 
         self.ch_ShowAntiSpoof = QCheckBox(self.centralwidget)
         self.ch_ShowAntiSpoof.setObjectName(u"ch_ShowAntiSpoof")
-        self.ch_ShowAntiSpoof.setMinimumSize(QSize(120, 20))
-        self.ch_ShowAntiSpoof.setMaximumSize(QSize(120, 20))
+        self.ch_ShowAntiSpoof.setMinimumSize(QSize(75, 20))
+        self.ch_ShowAntiSpoof.setMaximumSize(QSize(75, 20))
         self.ch_ShowAntiSpoof.setFont(font)
         self.ch_ShowAntiSpoof.setChecked(True)
 
@@ -327,7 +336,7 @@ class Ui_XVIEW(object):
         self.l_KP.setText(QCoreApplication.translate("XVIEW", u"KP", None))
         self.l_Time.setText(QCoreApplication.translate("XVIEW", u"T", None))
         self.ch_Center.setText(QCoreApplication.translate("XVIEW", u"Follow", None))
-        self.ch_ShowPatch.setText(QCoreApplication.translate("XVIEW", u"Show Patch", None))
-        self.ch_ShowAntiSpoof.setText(QCoreApplication.translate("XVIEW", u"Show AS Mask", None))
+        self.ch_ShowPatch.setText(QCoreApplication.translate("XVIEW", u"Patch", None))
+        self.ch_ShowAntiSpoof.setText(QCoreApplication.translate("XVIEW", u"Mask", None))
     # retranslateUi
 

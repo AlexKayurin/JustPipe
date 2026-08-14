@@ -265,7 +265,7 @@ class Model:
         geodata = []  # georef data list
         # open image, read metadata
         img = Image.open(fName)
-        geoimage = np.swapaxes(np.array(img), 0, 1)
+        geoimage = np.rot90(np.array(img), k=1, axes=(1, 0)) #np.swapaxes(np.array(img), 0, 1)
 
         if _ext in ['.tif', '.tiff']:
             refName = fName[: -len(_ext)] + '.tfw'  # world file name
@@ -345,6 +345,7 @@ class Model:
                     self._controller.cPipetracker, self._controller.cCurrentProf,
                     self._controller.cBackground]
             pickle.dump(dump, dumpfile)
+
 
         if self._controller.Ptflag:
             self.save_pipetracker(saving_time, foldName)

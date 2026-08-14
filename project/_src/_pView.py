@@ -1,4 +1,5 @@
 from PySide6 import QtWidgets, QtCore
+from PySide6.QtGui import QTransform
 from PySide6.QtGui import QIntValidator, QDoubleValidator
 import pyqtgraph as pg
 import _UI_Pview
@@ -9,7 +10,7 @@ class PV(QtWidgets.QMainWindow, _UI_Pview.Ui_PVIEW):
         self._screen_resolution = screen_resolution
         self.setupUi(self)
         self.setAcceptDrops(True)
-        self.setMouseTracking(True)
+        # self.setMouseTracking(True)
         # set form
         self.move(int(544 + (screen_resolution.width() - 544) / 2), 0)
         self.setWindowFlags(self.windowFlags() & QtCore.Qt.CustomizeWindowHint)
@@ -19,6 +20,13 @@ class PV(QtWidgets.QMainWindow, _UI_Pview.Ui_PVIEW):
         self.pview.ui.menuBtn.hide()
         self.pview.ui.roiPlot.hide()
         self.pview.ui.histogram.hide()
+
+        # objects for rotation/transformation
+        self.pview.scene.sigMouseMoved.connect(self.mouse_moved)    # !!!! to track world CRS
+        self.p_vb = self.pview.getView()
+        self.p_vb.enableAutoRange(False)
+        self.transform = QTransform()
+
         self.pview.getView().setMenuEnabled(False)
         self.pview.getView().invertX(False)
         self.pview.getView().invertY(False)
@@ -38,7 +46,7 @@ class PV(QtWidgets.QMainWindow, _UI_Pview.Ui_PVIEW):
         self.b_snap_h.setToolTip('Snap TOP XY to pipetracker')
         self.b_snap_h.setToolTipDuration(2000)
 
-        # # connecting signals
+        # connecting signals
         self.pview.scene.sigMouseMoved.connect(self.mouse_moved)
         self.pview.scene.sigMouseClicked.connect(self.mouse_pressed)
         self.b_POI.clicked.connect(self.button_pressed)
@@ -48,12 +56,17 @@ class PV(QtWidgets.QMainWindow, _UI_Pview.Ui_PVIEW):
         self.b_EditMode.clicked.connect(self.val_changed)
         self.rb_RejectPT.clicked.connect(self.val_changed)
         self.rb_AcceptPT.clicked.connect(self.val_changed)
+        self.sp_ViewRotate.valueChanged.connect(self.val_changed)
         self.ch_ShowTOP.stateChanged.connect(self.val_changed)
         self.ch_ShowFlags.stateChanged.connect(self.val_changed)
         self.ch_ShowPT.stateChanged.connect(self.val_changed)
-        # adding empty data graphs to plot parent_box
-        self.p_parent_box = pg.PlotDataItem()
-        self.pview.addItem(self.p_parent_box)
+        self.ch_ShowImg.stateChanged.connect(self.val_changed)
+
+        # adding empty data graphs to plot group
+        # this group is created for handling view rotation - only group is rotated
+        # to handle coordinates, self.pview.scene.sigMouseMoved.connect(self.mouse_moved) is set up in __init__
+        self.plotgroup = pg.ItemGroup()
+        self.p_vb.addItem(self.plotgroup)
         # current position
         self.here = pg.PlotDataItem([], [],
                                     symbol='x', symbolSize=15)
@@ -93,7 +106,7 @@ class PV(QtWidgets.QMainWindow, _UI_Pview.Ui_PVIEW):
                      self.POI,
                      self.pt_acc, self.pt_selector, self.camera,
                      self.chunk_point, self.chunk]:
-            item.setParentItem(self.p_parent_box)
+            self.plotgroup.addItem(item)
 
 
     def subscribe_controller(self, controller) -> None:
@@ -115,7 +128,7 @@ class PV(QtWidgets.QMainWindow, _UI_Pview.Ui_PVIEW):
 
     def mouse_moved(self, e):
         _cursor = self.pview.view.mapSceneToView(e)
-        self._controller.handle_mouse_moved(_cursor, 'p')
+        self._controller.handle_mouse_moved(e, _cursor, 'p')
 
 
     def mouse_pressed(self, e):

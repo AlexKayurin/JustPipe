@@ -96,6 +96,8 @@ class Controller:
 
         # set up default variables
         self.ProfileFlag = False        # Profile loaded flag
+        self.Ptflag = False             # Pipetracker loaded flag
+        self.Imgflag = False            # Image loaded flag
         self.ChunkSelCounter = 0        # click counter/flag for chunk selection (0-not selected; 1-start selected;2-sterat&end (chunk) selected
         self.ManualPipe = False         # Manual pipe placement flag
         self.TopSnap = False            # Snapping TOP to pipetracker
@@ -103,7 +105,6 @@ class Controller:
         self.Interpflag = False         # Running interpolation flag
         self.DVflag = False             # DV loaded flag
         self.Pausedflag = True          # DV pause on / off flag
-        self.Ptflag = False             # Pipetracker loaded flag
         self.EditMode = True            # Pipe(True)/Pipetracker(False) edit flag
         self.Tideflag = False           # Tide loaded flag
         self.Appliedflag = False        # Tide applied flag
@@ -119,7 +120,7 @@ class Controller:
         self._mainWin.b_analysePtShift.setIconSize(QSize(64, 64))
 
         # set up mainWin
-        self._mainWin.setWindowTitle(f'jP')
+        self._mainWin.setWindowTitle(f'jP3')
         self._xv.setWindowTitle(f'Profile View')
         self._pv.setWindowTitle(f'Plan View')
         self._lv.setWindowTitle(f'Long View')
@@ -227,6 +228,13 @@ class Controller:
         else:
             self._pv.pt_acc.setVisible(False)
 
+        # show/hide image on pView
+        if self.Imgflag:
+            if self._pv.ch_ShowImg.isChecked():
+                self.img.setVisible(True)
+            else:
+                self.img.setVisible(False)
+
         # show/hide pipetracker selector on pView
         if not self.EditMode and self.Ptflag:
             self._pv.gb_PT_Rej_Acc.setDisabled(False)
@@ -288,6 +296,14 @@ class Controller:
             self._lv.aspect = 1
         else:
             pass
+
+        # time/KP on lView bottom axis
+        if self._lv.ch_Time_Chn.isChecked():
+            h_axis = pg.DateAxisItem(orientation='bottom')
+            self._lv.lview.setAxisItems({'bottom': h_axis})
+        else:
+            h_axis = pg.AxisItem(orientation='bottom')
+            self._lv.lview.setAxisItems({'bottom': h_axis})
 
         # chunk pView/lView on/off
         if self.ChunkSelCounter == 0:
@@ -444,8 +460,11 @@ class Controller:
             if e.modifiers() & Qt.ControlModifier:  # 'Ctrl + S' -----MODIFIER
                 # save work
                 if e.key() == Qt.Key_S:
-                    saving_time = self._model.save_work(os.path.dirname(self._model.profName))
-                    self._mainWin.l_Saved.setText(f'SAVED: {saving_time}')
+                    if self.ProfileFlag:
+                        saving_time = self._model.save_work(os.path.dirname(self._model.profName))
+                        self._mainWin.l_Saved.setText(f'SAVED: {saving_time}')
+                    else:
+                        self._mainWin.l_Saved.setText(f'SAVED: No data loaded')
             # autodigiize
             if e.key() == Qt.Key_A:
                 self._model.auto_run()
@@ -557,9 +576,15 @@ class Controller:
         self.handle_key_pressed(e, view)
 
 
-    def handle_mouse_moved(self, cursor, view):
-        self.cursor = cursor
+    def handle_mouse_moved(self, e, cursor, view):
         # cursor coords
+        if view in ['x', 'l']:
+            # view=world coordinates
+            self.cursor = cursor
+        if view == 'p':
+            # transform from view to world
+            self.cursor = self._pv.visited.mapFromScene(e)
+
         self._mainWin.l_Coord.setText(f'dX:{round(self.cursor.x(), 1)}, Z:{round(self.cursor.y(), 1)}')
 
         if view == 'x':
@@ -764,10 +789,19 @@ class Controller:
         # image
         elif _ext in ['.tif', '.tiff', '.png']:
             geoimage, cellsize, o_left, o_top = self._model.load_image(_ext, fName)
-            self._pv.pview.setImage(geoimage, scale=(cellsize, -cellsize), pos=(o_left - cellsize, o_top + cellsize))
+            self.Imgflag = True
+            self._pv.ch_ShowImg.setChecked(True)
+            # add image to plotgroup
+            self.img = pg.ImageItem(geoimage)
+            self.img.setRect(o_left - cellsize, o_top - geoimage.shape[1] * cellsize + cellsize,
+                             geoimage.shape[0] * cellsize, geoimage.shape[1] * cellsize
+                             )
+            self.img.setZValue(-1)      # on background
+            self._pv.plotgroup.addItem(self.img)
+
             self.update_views()
 
-        # playlist
+        # dv index
         elif _ext in ['.dvi']:
             dvindex = self._model.load_dv_index(_ext, fName)
 
@@ -823,6 +857,13 @@ class Controller:
         # start build playlist app
         if sender == 'actionBuild_Playlist':
             subprocess.run(os.path.join(self._appfolder, 'dv_ix_builder.exe'))
+        # rotate pView
+        if sender == 'sp_ViewRotate':
+            _center = QtCore.QPointF(self._model.flush[self._model.prno, 9],
+                                     self._model.flush[self._model.prno, 10])
+
+            self._pv.plotgroup.setTransformOriginPoint(_center)
+            self._pv.plotgroup.setRotation(self._pv.sp_ViewRotate.value())
         # change Pipe/Pt edit mode
         if sender == 'b_EditMode' and self.Ptflag:
             self.EditMode = False if self.EditMode else True
@@ -892,13 +933,14 @@ class Controller:
             self._mainWin.t_AntiSpoof_A.setText(str(int(self._model.AntiSpoof_A + 5)))
             self._model.AntiSpoof_A = float(self._mainWin.t_AntiSpoof_A.text())
 
-        if sender not in ['actionBuild_Playlist', 'b_EditMode', 'sp_Pt_Weed', 'rb_Pr', 'ch_ApplyTide',
+        if sender not in ['ch_Center', 'actionBuild_Playlist', 'b_EditMode', 'sp_Pt_Weed', 'rb_Pr', 'ch_ApplyTide',
                           'b_levelPT', 'b_smoothPT_p_MA', 'b_smoothPT_l_MA',
-                          'b_snap_h', 'b_snap_v',
+                          'b_snap_h', 'b_snap_v', 'ch_ShowPatch', 'ch_ShowAntiSpoof',
                           'b_savePT', 'b_analysePtShift', 't_PtGap', 't_EdSpot', 't_smW', 't_Lev',
                           'spb_Timezone', 'spb_CamSize', 'ch_ShowCamOffset',
                           'gb_PT_Rej_Acc', 'rb_RejectPT', 'rb_AcceptPT',
-                          'ch_ShowTOP', 'ch_ShowFlags', 'ch_ShowPT']:
+                          'sp_ViewRotate',
+                          'ch_ShowTOP', 'ch_ShowFlags', 'ch_ShowPT', 'ch_ShowImg']:
             self._model.flush[self._model.prno, 11] = 0
             self._model.make_profile()
         else:
@@ -1066,7 +1108,10 @@ class Controller:
         # center pView
         if self._pv.ch_Center.isChecked():
             rect = self._pv.pview.view.viewRect()
-            x, y = self._model.flush[self._model.prno, 9], self._model.flush[self._model.prno, 10]
+            # transform from world to view
+            pos = self._pv.visited.mapToView(QtCore.QPointF(self._model.flush[self._model.prno, 9],
+                                                            self._model.flush[self._model.prno, 10]))
+            x, y = pos.x(), pos.y()
             self._pv.pview.view.setRange(
                 xRange=[(x - rect.width() / 2), (x + rect.width() / 2)],
                 yRange=[(y - rect.height() / 2), (y + rect.height() / 2)],
