@@ -912,6 +912,7 @@ class Controller:
                 mean_dx, mean_dz, std_dx, std_dz, de_shift, dn_shift = self._model.analyse_pypetracker()
                 # apply statistical shift dialog
                 _statistics = Statistics()
+                _statistics.move(self._xv.pos().x() + self._xv.width() / 2, self._xv.pos().y() + self._xv.height() / 2)
                 _statistics.setWindowIcon(self._icon_logo)
                 _statistics.l_PtStatistics.setText(f'Mean lateral misalignment: {mean_dx:.2f}m\n'
                                                    f'  StDev: {std_dx:.2f}m\n\n'
@@ -1243,6 +1244,7 @@ class Controller:
                     player.show()
 
         if sender == 'actionSettings':
+            self._config.move(self._xv.pos().x() + self._xv.width() / 3, self._xv.pos().y() + self._xv.height() / 3)
             self._config.show()
 
         if sender == 'actionManual':
@@ -1256,6 +1258,7 @@ class Controller:
         if sender == 'actionLicense':
             # show license dialog
             l = LicenseDialog(self._licensefile, self._icon_logo)
+            l.move(self._xv.pos().x() + 10, self._xv.pos().y() + 10)
             l.exec()
 
             # platf = platform.system()
@@ -1283,6 +1286,7 @@ class Controller:
         _msg = QMessageBox()
         _msg.setWindowTitle('Warning')
         _msg.setText(message)
+        _msg.move(self._xv.pos().x() + self._xv.width() / 2, self._xv.pos().y() + self._xv.height() / 2)
         _msg.setWindowIcon(self._icon_logo)
         _msg.show()
         _msg.exec()
