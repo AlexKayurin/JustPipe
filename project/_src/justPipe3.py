@@ -1,4 +1,4 @@
-# justPipe v3 on MVP pattern; 15/08/2026 Final; need manual and license update
+# justPipe v3 on MVP pattern; 15/08/2026 Final; need manual
 
 import os
 import sys

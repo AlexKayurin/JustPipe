@@ -1,7 +1,4 @@
 import os
-import sys
-import platform
-import subprocess
 import logging
 import pickle
 from datetime import datetime, timezone
@@ -10,12 +7,57 @@ import subprocess
 from pathlib import Path
 import numpy as np
 from PySide6 import QtCore, QtGui
-from PySide6.QtWidgets import QMessageBox, QDialog
+
+from PySide6.QtWidgets import (QMessageBox, QDialog, QVBoxLayout, QTextEdit, QDialogButtonBox)
 from PySide6.QtCore import Qt, QSize
 import pyqtgraph as pg
 import _UI_Statistics
 import _QtPl
 import _F_funcs
+
+
+class LicenseDialog(QDialog):
+    def __init__(self, licensefile, icon, parent=None):
+        super().__init__(parent)
+
+        self.licensefile = licensefile
+        self.icon = icon
+        self.setWindowTitle('Third - Party Licenses')
+        self.setWindowIcon(self.icon)
+        self.resize(600, 500)
+
+        # Основной вертикальный слой
+        layout = QVBoxLayout(self)
+
+        # Поле для отображения текста лицензий
+        self.text_edit = QTextEdit(self)
+        self.text_edit.setReadOnly(True)
+
+        # Установка моноширинного шрифта для сохранения форматирования
+        font = QtGui.QFont('Courier New', 10)
+        self.text_edit.setFont(font)
+
+        # Загрузка текста из файла
+        self.load_license_file()
+        layout.addWidget(self.text_edit)
+
+        # Кнопка закрытия окна (Стандартный набор Qt)
+        buttons = QDialogButtonBox(QDialogButtonBox.Ok)
+        buttons.accepted.connect(self.accept)
+        layout.addWidget(buttons)
+
+    def load_license_file(self):
+        # Находим путь к файлу лицензий рядом со скриптом
+        # base_path = os.path.dirname(os.path.abspath(__file__))
+        # file_path = os.path.join(base_path, 'THIRD_PARTY_LICENSES.txt')
+
+        try:
+            with open(self.licensefile, 'r', encoding ='utf - 8') as file:
+                self.text_edit.setPlainText(file.read())
+        except FileNotFoundError:
+            self.text_edit.setPlainText('Error: THIRD_PARTY_LICENSES.txt file not found.')
+        except Exception as e:
+            self.text_edit.setPlainText(f'Error loading licenses: {str(e)}')
 
 
 class Statistics(_UI_Statistics.Ui_Dialog, QDialog):
@@ -58,7 +100,7 @@ class Controller:
 
         self._logfile = os.path.join(self._configfold, 'error.log')
         self._manualfile = os.path.join(self._configfold, 'manual.pdf')
-        self._licensefile = os.path.join(self._configfold, 'license.pdf')
+        self._licensefile = os.path.join(self._configfold, 'third-party-license.txt')
 
         # Set up the basic configuration for logging
         if os.path.isfile(self._logfile):
@@ -683,37 +725,20 @@ class Controller:
             # accept/reject pipetracker
             elif not self.EditMode and self.Ptflag:
                 if view == 'p':
-                    spot_p = self._model.EditSpot / 2
-                    ix = np.where((((self.cursor.x() - spot_p) < self._model.pipetracker[:, 1]) &
-                                   (self._model.pipetracker[:, 1] < (self.cursor.x() + spot_p))) &
-                                  (((self.cursor.y() - spot_p) < self._model.pipetracker[:, 2]) &
-                                   (self._model.pipetracker[:, 2] < (self.cursor.y() + spot_p))))
-                    ixw = np.where((((self.cursor.x() - spot_p) < self._model.pipetracker_W[:, 1]) &
-                                     (self._model.pipetracker_W[:, 1] < (self.cursor.x() + spot_p))) &
-                                    (((self.cursor.y() - spot_p) < self._model.pipetracker_W[:, 2]) &
-                                     (self._model.pipetracker_W[:, 2] < (self.cursor.y() + spot_p))))
+                    d = np.sqrt((self.cursor.x() - self._model.pipetracker_W[:, 1]) ** 2 +
+                                (self.cursor.y() - self._model.pipetracker_W[:, 2]) ** 2)
+                    ixw = np.where(d < self._model.EditSpot / 2)
 
                 elif view == 'l':
-                    spot_h = self._model.EditSpot / 2
-                    spot_v = self._model.EditSpot / (2 / self._lv.aspect)
-                    ax = 0 if self._lv.ch_Time_Chn.isChecked() else 8  # change time/ chainage on Lview
-                    TP = self._mainWin.ch_ApplyTide.isChecked() * self._model.pipetracker[:, 7]
+                    # change time/ chainage on Lview
+                    ax = 0 if self._lv.ch_Time_Chn.isChecked() else 8
                     TPW = self._mainWin.ch_ApplyTide.isChecked() * self._model.pipetracker_W[:, 7]
 
-                    ix = np.where((((self.cursor.x() - spot_h) < self._model.pipetracker[:, ax]) &
-                                   (self._model.pipetracker[:, ax] < (self.cursor.x() + spot_h))) &
-                                  (((self.cursor.y() - spot_v) <
-                                    (self._model.pipetracker[:, 3] + self._model.pipetracker[:, 11] + TP)) &
-                                   ((self._model.pipetracker[:, 3] + self._model.pipetracker[:, 11] + TP) <
-                                    (self.cursor.y() + spot_v))))
-                    ixw = np.where((((self.cursor.x() - spot_h) < self._model.pipetracker_W[:, ax]) &
-                                    (self._model.pipetracker_W[:, ax] < (self.cursor.x() + spot_h))) &
-                                   (((self.cursor.y() - spot_v) <
-                                     (self._model.pipetracker_W[:, 3] + self._model.pipetracker_W[:, 11] + TPW)) &
-                                    ((self._model.pipetracker_W[:, 3] + self._model.pipetracker_W[:, 11] + TPW) <
-                                     (self.cursor.y() + spot_v))))
+                    a = ((self.cursor.x() - self._model.pipetracker_W[:, ax]) ** 2) / ((self._model.EditSpot / 2) ** 2)
+                    b = ((self.cursor.y() - TPW - self._model.pipetracker_W[:, 3]) ** 2) / ((self._model.EditSpot / (2 / self._lv.aspect)) ** 2)
+                    ixw = np.where((a + b) < 1)
 
-                self._model.pipetracker[ix, 9] = self._pv.rb_RejectPT.isChecked()      # reject / accept
+                # reject / accept
                 self._model.pipetracker_W[ixw, 9] = self._pv.rb_RejectPT.isChecked()
 
                 self.update_pipetracker()
@@ -789,8 +814,6 @@ class Controller:
         # image
         elif _ext in ['.tif', '.tiff', '.png']:
             geoimage, cellsize, o_left, o_top = self._model.load_image(_ext, fName)
-            self.Imgflag = True
-            self._pv.ch_ShowImg.setChecked(True)
             # add image to plotgroup
             self.img = pg.ImageItem(geoimage)
             self.img.setRect(o_left - cellsize, o_top - geoimage.shape[1] * cellsize + cellsize,
@@ -799,6 +822,8 @@ class Controller:
             self.img.setZValue(-1)      # on background
             self._pv.plotgroup.addItem(self.img)
 
+            self.Imgflag = True
+            self._pv.ch_ShowImg.setChecked(True)
             self.update_views()
 
         # dv index
@@ -1229,12 +1254,15 @@ class Controller:
                 os.startfile(self._manualfile)
 
         if sender == 'actionLicense':
-            # open application manual
-            platf = platform.system()
-            if platf == 'Linux':
-                subprocess.call(['xdg-open', self._licensefile])  # , check=True)
-            if platf == 'Windows':
-                os.startfile(self._licensefile)
+            # show license dialog
+            l = LicenseDialog(self._licensefile, self._icon_logo)
+            l.exec()
+
+            # platf = platform.system()
+            # if platf == 'Linux':
+            #     subprocess.call(['xdg-open', self._licensefile])  # , check=True)
+            # if platf == 'Windows':
+            #     os.startfile(self._licensefile)
 
 
     def handle_colors(self, ix, selectedcolor):

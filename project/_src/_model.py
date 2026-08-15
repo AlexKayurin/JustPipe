@@ -694,23 +694,13 @@ class Model:
               self.pipeshape_sin[(180 - int(self.AntiSpoof_A)):(180 + int(self.AntiSpoof_A))])
         pipe_A_pts = [np.hstack((np.zeros((1)), ax, np.zeros((1)))),
                       np.hstack((np.zeros((1)), ay, np.zeros((1))))]
-        # -------------------------antispoof
+        # -------------------------
         assist_pts = [self.pipeR * self.pipeshape_cos,
                       self.pipeR * self.pipeshape_sin]
-        pt_sel_pts_p = [[-self.EditSpot / 2, -self.EditSpot / 2, self.EditSpot / 2,
-                       self.EditSpot / 2, -self.EditSpot / 2],
-                      [-self.EditSpot / 2, self.EditSpot / 2, self.EditSpot / 2,
-                       -self.EditSpot / 2, -self.EditSpot / 2]]
-        pt_sel_pts_l = [[-self.EditSpot / 2,
-                       -self.EditSpot / 2,
-                       self.EditSpot / 2,
-                       self.EditSpot / 2,
-                       -self.EditSpot / 2],
-                      [-self.EditSpot / (2 / self._controller._lv.aspect),
-                       self.EditSpot / (2 / self._controller._lv.aspect),
-                       self.EditSpot / (2 / self._controller._lv.aspect),
-                       -self.EditSpot / (2 / self._controller._lv.aspect),
-                       -self.EditSpot / (2 / self._controller._lv.aspect)]]
+        pt_sel_pts_p = [(self.EditSpot / 2) * self.pipeshape_cos,
+                        (self.EditSpot / 2) * self.pipeshape_sin]
+        pt_sel_pts_l = [(self.EditSpot / 2) * self.pipeshape_cos,
+                        (self.EditSpot / (2 / self._controller._lv.aspect)) * self.pipeshape_sin]
 
         # set shapes of view elements (pipe, walls, antispoof), points are calculate in _model.make_shapes
         self._controller._xv.pipe_P.setData(pipe_P_pts[0], pipe_P_pts[1])
