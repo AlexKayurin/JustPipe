@@ -142,6 +142,7 @@ class Controller:
         self.Imgflag = False            # Image loaded flag
         self.ChunkSelCounter = 0        # click counter/flag for chunk selection (0-not selected; 1-start selected;2-sterat&end (chunk) selected
         self.ManualPipe = False         # Manual pipe placement flag
+        self.UpdateFlags = False        # Update only flags (not pipe)
         self.TopSnap = False            # Snapping TOP to pipetracker
         self.DoPipe = False             # Autorun flag
         self.Interpflag = False         # Running interpolation flag
@@ -551,19 +552,7 @@ class Controller:
                     self.update_views()
             # reset fwd
             if e.key() == Qt.Key_0:
-                if self.ChunkSelCounter == 2:
-                    chs, che = self._model.chunk[0], self._model.chunk[1]
-                else:
-                    chs, che = self._model.prno + 1, self._model.no_of_prof
-
-                self._model.flush[chs:che + 1, 11] = 0
-                self._model.flush[chs:che + 1, 30] = 0
-                self._model.flush[chs:che + 1, 9] = self._model.flush[chs:che + 1, 0]
-                self._model.flush[chs:che + 1, 10] = self._model.flush[chs:che + 1, 1]
-                self._model.flush[chs:che + 1, 4] = self._model.flush[chs, 4]
-
-                self._model.chunk = [-1, -1]
-                self.ChunkSelCounter = 0
+                self._model.reset_pipe()
                 self.get_vals()
                 self.update_views()
 
@@ -688,10 +677,11 @@ class Controller:
                     ((self._model.flush[:, 9] - self.cursor.x()) ** 2 +
                      (self._model.flush[:, 10] - self.cursor.y()) ** 2) ** 0.5)
             elif view == 'l':
-                ixf = 14 if self._lv.ch_Time_Chn.isChecked() else 12  # flush np field index time/ KP on Lview
+                T = self._mainWin.ch_ApplyTide.isChecked() * self._model.flush[:, 15]   # tide
+                ixf = 14 if self._lv.ch_Time_Chn.isChecked() else 12                    # flush np field index time/ KP on Lview
                 selected_pt = np.argmin(
                     ((self._model.flush[:, ixf] - self.cursor.x()) ** 2 +
-                     (self._model.flush[:, 4] - self.cursor.y()) ** 2) ** 0.5)
+                     (self._model.flush[:, 4] + T - self.cursor.y()) ** 2) ** 0.5)
 
             # jump to profile (double-click) / select chunk (right-click)
             if self.EditMode:
@@ -710,7 +700,6 @@ class Controller:
                         self._model.chunk[0] = int(self._model.flush[selected_pt, 13])
                         self.ChunkSelCounter += 1
                         self._model.prno = selected_pt
-                        self.get_vals()
                     elif self.ChunkSelCounter == 1:
                         # selecting second point
                         if selected_pt != self._model.chunk[0]:
@@ -718,7 +707,7 @@ class Controller:
                         self._model.chunk.sort()
                         self.ChunkSelCounter += 1
                         self._model.prno = selected_pt
-                        self.get_vals()
+                    self.get_vals()
                     self.update_views()
 
 
@@ -959,16 +948,27 @@ class Controller:
             self._mainWin.t_AntiSpoof_A.setText(str(int(self._model.AntiSpoof_A + 5)))
             self._model.AntiSpoof_A = float(self._mainWin.t_AntiSpoof_A.text())
 
-        if sender not in ['ch_Center', 'actionBuild_Playlist', 'b_EditMode', 'sp_Pt_Weed', 'rb_Pr', 'ch_ApplyTide',
-                          'b_levelPT', 'b_smoothPT_p_MA', 'b_smoothPT_l_MA',
-                          'b_snap_h', 'b_snap_v', 'ch_ShowPatch', 'ch_ShowAntiSpoof',
-                          'b_savePT', 'b_analysePtShift', 't_PtGap', 't_EdSpot', 't_smW', 't_Lev',
-                          'spb_Timezone', 'spb_CamSize', 'ch_ShowCamOffset',
-                          'gb_PT_Rej_Acc', 'rb_RejectPT', 'rb_AcceptPT',
-                          'sp_ViewRotate',
-                          'ch_ShowTOP', 'ch_ShowFlags', 'ch_ShowPT', 'ch_ShowImg']:
+        # if sender not in ['ch_Center', 'actionBuild_Playlist', 'b_EditMode', 'sp_Pt_Weed', 'rb_Pr', 'ch_ApplyTide',
+        #                   'b_levelPT', 'b_smoothPT_p_MA', 'b_smoothPT_l_MA',
+        #                   'b_snap_h', 'b_snap_v', 'ch_ShowPatch', 'ch_ShowAntiSpoof',
+        #                   'b_savePT', 'b_analysePtShift', 't_PtGap', 't_EdSpot', 't_smW', 't_Lev',
+        #                   'spb_Timezone', 'spb_CamSize', 'ch_ShowCamOffset',
+        #                   'gb_PT_Rej_Acc', 'rb_RejectPT', 'rb_AcceptPT',
+        #                   'sp_ViewRotate',
+        #                   'ch_ShowTOP', 'ch_ShowFlags', 'ch_ShowPT', 'ch_ShowImg']:
+
+        # reset pipe & flags
+        if sender  in ['t_D', 't_IW', 't_OW', 't_HW', 't_VW', 't_RES', 'sp_Weed',
+                       'b_hwm', 'b_hwp', 'b_vwm', 'b_vwp']:
             self._model.flush[self._model.prno, 11] = 0
             self._model.make_profile()
+        # reset flags only
+        elif sender in ['t_FlPt', 't_AdPad', 't_AntiSpoof', 't_AntiSpoof_A', 't_FoDist',
+                        'rb_Fmin', 'rb_Fmax', 'rb_Fmean', 'rb_Fadapt', 'ch_FiSnap', 'ch_FoSnap']:
+            self.UpdateFlags = True
+            self._model.make_profile()
+            self.UpdateFlags = False
+        # no reset
         else:
             pass
 

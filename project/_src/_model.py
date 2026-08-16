@@ -252,6 +252,13 @@ class Model:
             if _ext == '.ptr':
                 with open(fName, 'rb') as loadfile:
                     self.pipetracker = pickle.load(loadfile)
+                    # unapply tide if tide is not loaded but earlier applied in .ptr
+                    if not self._controller.Tideflag and np.sum(self.pipetracker[:, 7]) != 0:
+                        self.pipetracker[:, 7] = 0
+                        self._controller.messagepop('Tide was not loaded into workspace\n'
+                                                    'but applied to saved pipetracker.\n'
+                                                    'Unapplied from pipetracker')
+
 
             # FOR ALL PT TYPES
             self._controller.Ptflag = True
@@ -485,6 +492,22 @@ class Model:
                 ro_file.write(out_ro[:-1])
 
 
+    def reset_pipe(self):
+        if self._controller.ChunkSelCounter == 2:
+            chs, che = self.chunk[0], self.chunk[1]
+        else:
+            chs, che = self.prno + 1, self.no_of_prof
+
+        self.flush[chs:che + 1, 11] = 0
+        self.flush[chs:che + 1, 30] = 0
+        self.flush[chs:che + 1, 9] = self.flush[chs:che + 1, 0]
+        self.flush[chs:che + 1, 10] = self.flush[chs:che + 1, 1]
+        self.flush[chs:che + 1, 4] = self.flush[chs, 4]
+
+        self.chunk = [-1, -1]
+        self._controller.ChunkSelCounter = 0
+
+
     def auto_run(self):
         if self._controller.ChunkSelCounter == 2:
             s, e = self.chunk[0], self.chunk[1]
@@ -671,7 +694,7 @@ class Model:
         self.flush[s:e + 1, 3] = new_dist * np.sin(brg - np.deg2rad(self.flush[s:e + 1, 28]))
 
         # set visited (prevents changing TOP in AutoPipe() but re-sets flags based on Interpolation flag)
-        # if it updates from interpolation, also pipe/pt flag is set
+        # if it updates from interpolation, also 'from pipetracker' flag sets
         self.flush[s:e + 1, 11] = 1
 
         self._controller.Interpflag = True
@@ -778,6 +801,10 @@ class Model:
         self.flush[self.prno, g] = self.flush[self.prno:, g][self.flush[self.prno:, 11] == 0] = rfl_e
         self.flush[self.prno, h] = self.flush[self.prno:, h][self.flush[self.prno:, 11] == 0] = rfl_n
 
+        # write to flash flag = 'from pipe'
+        if not self._controller.TopSnap:
+            self.flush[self.prno, 30] = 1
+
 
     def _autopipe(self):
         # AutoPipe only runs if: profile not visited AND no ManualPipe selected OR Autorun
@@ -872,183 +899,190 @@ class Model:
 
 
     def _autoflags(self):
-        # AutoFlags only runs if: profile unvisited OR running [interpolation / snap to PT] OR AutoRun
-        if not self.flush[self.prno, 11] or self._controller.Interpflag or self._controller.DoPipe:
-            self.min_cx = self.flush[self.prno, 3]
-            self.min_cz = self.flush[self.prno, 4] - self.pipeR
-            # inner flags - initial position
-            self.li_x, self.ri_x = self.min_cx - self.pipeR, self.min_cx + self.pipeR
-            self.li_z = self.ri_z = self.min_cz
-            # outer flags - initial position
-            self.lo_x, self.ro_x = self.min_cx - self.pipeR, self.min_cx + self.pipeR
-            self.lo_z = self.ro_z = self.min_cz
+        # AutoFlags only runs if:
+        # profile unvisited OR Interpolation OR AutoRun OR Update only flags (not pipe)
+        # If TopSnap (to pipetracker), then runs only for flagged 'from pipetracker'
+        if (self._controller.TopSnap and not self.flush[self.prno, 30]) or not self._controller.TopSnap:
+            if (not self.flush[self.prno, 11]
+                    or self._controller.Interpflag
+                    or self._controller.DoPipe
+                    or self._controller.UpdateFlags):
+                self.min_cx = self.flush[self.prno, 3]
+                self.min_cz = self.flush[self.prno, 4] - self.pipeR
+                # inner flags - initial position
+                self.li_x, self.ri_x = self.min_cx - self.pipeR, self.min_cx + self.pipeR
+                self.li_z = self.ri_z = self.min_cz
+                # outer flags - initial position
+                self.lo_x, self.ro_x = self.min_cx - self.pipeR, self.min_cx + self.pipeR
+                self.lo_z = self.ro_z = self.min_cz
 
-            try:
-                # set extended / narrow spot
-                if self._controller._mainWin.rb_Fadapt.isChecked():
-                    # extended spot -+ AdPadli_x(ri_x) +-inflag_patch to -+inflag_patch - for adaptive mode
-                    self.li_spot = (
-                        np.where((self.min_cx - self.pipeR - self.FlP <= self.profile[:, 0]) &
-                                 (self.profile[:, 0] <= self.min_cx - self.AdPad)))
-                    self.ri_spot =(
-                        np.where((self.min_cx + self.AdPad <= self.profile[:, 0]) &
-                                 (self.profile[:, 0] <= self.min_cx + self.pipeR + self.FlP)))
-                else:
-                    # narrow spot li_x(ri_x)+-inflag_patch to inflag - for other modes
-                    self.li_spot =(
-                        np.where((self.min_cx - self.pipeR - self.FlP <= self.profile[:, 0]) &
-                                 (self.profile[:, 0] <= self.min_cx - self.pipeR)))
-                    self.ri_spot =(
-                        np.where((self.min_cx + self.pipeR <= self.profile[:, 0]) &
-                                 (self.profile[:, 0] <= self.min_cx + self.pipeR + self.FlP)))
+                try:
+                    # set extended / narrow spot
+                    if self._controller._mainWin.rb_Fadapt.isChecked():
+                        # extended spot -+ AdPadli_x(ri_x) +-inflag_patch to -+inflag_patch - for adaptive mode
+                        self.li_spot = (
+                            np.where((self.min_cx - self.pipeR - self.FlP <= self.profile[:, 0]) &
+                                     (self.profile[:, 0] <= self.min_cx - self.AdPad)))
+                        self.ri_spot =(
+                            np.where((self.min_cx + self.AdPad <= self.profile[:, 0]) &
+                                     (self.profile[:, 0] <= self.min_cx + self.pipeR + self.FlP)))
+                    else:
+                        # narrow spot li_x(ri_x)+-inflag_patch to inflag - for other modes
+                        self.li_spot =(
+                            np.where((self.min_cx - self.pipeR - self.FlP <= self.profile[:, 0]) &
+                                     (self.profile[:, 0] <= self.min_cx - self.pipeR)))
+                        self.ri_spot =(
+                            np.where((self.min_cx + self.pipeR <= self.profile[:, 0]) &
+                                     (self.profile[:, 0] <= self.min_cx + self.pipeR + self.FlP)))
 
-                if len(self.li_spot[0]) != 0 and len(self.ri_spot[0]) != 0:
-                    # if in bad profile low number of datapoints (not hitting flag patch)
-                    if self._controller._mainWin.rb_Fmean.isChecked():
-                        # no point snapping for 'mean'
-                        self.li_x, self.ri_x = self.min_cx - self.pipeR, self.min_cx + self.pipeR
-                        self.li_z, self.ri_z = np.mean(self.profile[self.li_spot][:, 1]), np.mean(self.profile[self.ri_spot][:, 1])
-
-                    elif self._controller._mainWin.rb_Fmin.isChecked():
-                        if not self._controller._mainWin.ch_FiSnap.isChecked():
+                    if len(self.li_spot[0]) != 0 and len(self.ri_spot[0]) != 0:
+                        # if in bad profile low number of datapoints (not hitting flag patch)
+                        if self._controller._mainWin.rb_Fmean.isChecked():
+                            # no point snapping for 'mean'
                             self.li_x, self.ri_x = self.min_cx - self.pipeR, self.min_cx + self.pipeR
-                            self.li_z, self.ri_z = np.max(self.profile[self.li_spot][:, 1]), np.max(
-                                self.profile[self.ri_spot][:, 1])
-                        else:
-                            self.li_ix, self.ri_ix = np.argmax(self.profile[self.li_spot][:, 1]), np.argmax(
-                                self.profile[self.ri_spot][:, 1])
-                            self.li_x, self.ri_x = (self.profile[self.li_spot][self.li_ix, 0],
-                                                    self.profile[self.ri_spot][self.ri_ix, 0])
-                            self.li_z, self.ri_z = (self.profile[self.li_spot][self.li_ix, 1],
-                                                    self.profile[self.ri_spot][self.ri_ix, 1])
+                            self.li_z, self.ri_z = np.mean(self.profile[self.li_spot][:, 1]), np.mean(self.profile[self.ri_spot][:, 1])
 
-                    elif self._controller._mainWin.rb_Fmax.isChecked():
-                        if not self._controller._mainWin.ch_FiSnap.isChecked():
-                            self.li_x, self.ri_x = self.min_cx - self.pipeR, self.min_cx + self.pipeR
-                            self.li_z, self.ri_z = np.min(self.profile[self.li_spot][:, 1]), np.min(
-                                self.profile[self.ri_spot][:, 1])
-                        else:
-                            self.li_ix, self.ri_ix = np.argmin(self.profile[self.li_spot][:, 1]), np.argmin(
-                                self.profile[self.ri_spot][:, 1])
-                            self.li_x, self.ri_x = (self.profile[self.li_spot][self.li_ix, 0],
-                                                    self.profile[self.ri_spot][self.ri_ix, 0])
-                            self.li_z, self.ri_z = (self.profile[self.li_spot][self.li_ix, 1],
-                                                    self.profile[self.ri_spot][self.ri_ix, 1])
-
-                    elif self._controller._mainWin.rb_Fadapt.isChecked():
-                        # distances and vertical angles from pipe centre to profile points
-                        li_d = ((self.profile[self.li_spot][:, 0] - self.min_cx) ** 2 + (
-                                    self.profile[self.li_spot][:, 1] - self.min_cz) ** 2) ** 0.5
-                        ri_d = ((self.profile[self.ri_spot][:, 0] - self.min_cx) ** 2 + (
-                                    self.profile[self.ri_spot][:, 1] - self.min_cz) ** 2) ** 0.5
-                        li_a = np.rad2deg(_F_funcs.Bearing(self.profile[self.li_spot][:, 0] - self.min_cx,
-                                                           self.profile[self.li_spot][:, 1] - self.min_cz)) - 361
-                        ri_a = np.rad2deg(_F_funcs.Bearing(self.profile[self.ri_spot][:, 0] - self.min_cx,
-                                                           self.profile[self.ri_spot][:, 1] - self.min_cz))
-
-                        # set d == 1000 if within pipe + anti-spoof sector (to reject from min dist)
-                        li_d[:][li_d[:] <= self.pipeR] = 100000
-                        ri_d[:][ri_d[:] <= self.pipeR] = 100000
-
-                        li_d[:][(li_d[:] <= (self.AntiSpoof + self.pipeR)) &
-                                (li_a[:] >= -self.AntiSpoof_A)] = 100000
-                        ri_d[:][(ri_d[:] <= (self.AntiSpoof + self.pipeR)) &
-                                (ri_a[:] <= self.AntiSpoof_A)] = 100000
-
-
-                        flagdetected = False  # !!! True if adaptive algo works; False otherwise
-                        for dist, flagspot, side in zip([li_d, ri_d],
-                                                        [self.profile[self.li_spot],
-                                                         self.profile[self.ri_spot]],
-                                                        ['l', 'r']):
-                            # closest point to pipe (outside wall+antispoof)
-                            closest_ix = np.argmin(dist)
-                            closest_dx, closest_z = flagspot[closest_ix, 0], flagspot[closest_ix, 1]
-
-                            if (self.min_cz - self.pipeR - self.AntiSpoof <= closest_z <
-                                    self.min_cz + self.pipeR + self.AntiSpoof):
-                                # if closest point z is within pipe centre z +- R (& AntiSpoof)
-                                # takes closest point
-                                fl_x, fl_z = closest_dx, closest_z
-                                flagdetected = True
+                        elif self._controller._mainWin.rb_Fmin.isChecked():
+                            if not self._controller._mainWin.ch_FiSnap.isChecked():
+                                self.li_x, self.ri_x = self.min_cx - self.pipeR, self.min_cx + self.pipeR
+                                self.li_z, self.ri_z = np.max(self.profile[self.li_spot][:, 1]), np.max(
+                                    self.profile[self.ri_spot][:, 1])
                             else:
-                                if closest_z > self.min_cz + self.pipeR + self.AntiSpoof:
-                                    # if closest profile point z is higher than pipe (& AntiSpoof)
-                                    # takes point closest to min_cx
-                                    if len(flagspot[:, 0]) != 0:
-                                        fl_ix = np.argmin(np.abs(flagspot[:, 0] - self.min_cx))
-                                        fl_x, fl_z = flagspot[fl_ix, 0], flagspot[fl_ix, 1]
-                                        flagdetected = True
+                                self.li_ix, self.ri_ix = np.argmax(self.profile[self.li_spot][:, 1]), np.argmax(
+                                    self.profile[self.ri_spot][:, 1])
+                                self.li_x, self.ri_x = (self.profile[self.li_spot][self.li_ix, 0],
+                                                        self.profile[self.ri_spot][self.ri_ix, 0])
+                                self.li_z, self.ri_z = (self.profile[self.li_spot][self.li_ix, 1],
+                                                        self.profile[self.ri_spot][self.ri_ix, 1])
+
+                        elif self._controller._mainWin.rb_Fmax.isChecked():
+                            if not self._controller._mainWin.ch_FiSnap.isChecked():
+                                self.li_x, self.ri_x = self.min_cx - self.pipeR, self.min_cx + self.pipeR
+                                self.li_z, self.ri_z = np.min(self.profile[self.li_spot][:, 1]), np.min(
+                                    self.profile[self.ri_spot][:, 1])
+                            else:
+                                self.li_ix, self.ri_ix = np.argmin(self.profile[self.li_spot][:, 1]), np.argmin(
+                                    self.profile[self.ri_spot][:, 1])
+                                self.li_x, self.ri_x = (self.profile[self.li_spot][self.li_ix, 0],
+                                                        self.profile[self.ri_spot][self.ri_ix, 0])
+                                self.li_z, self.ri_z = (self.profile[self.li_spot][self.li_ix, 1],
+                                                        self.profile[self.ri_spot][self.ri_ix, 1])
+
+                        elif self._controller._mainWin.rb_Fadapt.isChecked():
+                            # distances and vertical angles from pipe centre to profile points
+                            li_d = ((self.profile[self.li_spot][:, 0] - self.min_cx) ** 2 + (
+                                        self.profile[self.li_spot][:, 1] - self.min_cz) ** 2) ** 0.5
+                            ri_d = ((self.profile[self.ri_spot][:, 0] - self.min_cx) ** 2 + (
+                                        self.profile[self.ri_spot][:, 1] - self.min_cz) ** 2) ** 0.5
+                            li_a = np.rad2deg(_F_funcs.Bearing(self.profile[self.li_spot][:, 0] - self.min_cx,
+                                                               self.profile[self.li_spot][:, 1] - self.min_cz)) - 361
+                            ri_a = np.rad2deg(_F_funcs.Bearing(self.profile[self.ri_spot][:, 0] - self.min_cx,
+                                                               self.profile[self.ri_spot][:, 1] - self.min_cz))
+
+                            # set d == 1000 if within pipe + anti-spoof sector (to reject from min dist)
+                            li_d[:][li_d[:] <= self.pipeR] = 100000
+                            ri_d[:][ri_d[:] <= self.pipeR] = 100000
+
+                            li_d[:][(li_d[:] <= (self.AntiSpoof + self.pipeR)) &
+                                    (li_a[:] >= -self.AntiSpoof_A)] = 100000
+                            ri_d[:][(ri_d[:] <= (self.AntiSpoof + self.pipeR)) &
+                                    (ri_a[:] <= self.AntiSpoof_A)] = 100000
+
+
+                            flagdetected = False  # !!! True if adaptive algo works; False otherwise
+                            for dist, flagspot, side in zip([li_d, ri_d],
+                                                            [self.profile[self.li_spot],
+                                                             self.profile[self.ri_spot]],
+                                                            ['l', 'r']):
+                                # closest point to pipe (outside wall+antispoof)
+                                closest_ix = np.argmin(dist)
+                                closest_dx, closest_z = flagspot[closest_ix, 0], flagspot[closest_ix, 1]
+
+                                if (self.min_cz - self.pipeR - self.AntiSpoof <= closest_z <
+                                        self.min_cz + self.pipeR + self.AntiSpoof):
+                                    # if closest point z is within pipe centre z +- R (& AntiSpoof)
+                                    # takes closest point
+                                    fl_x, fl_z = closest_dx, closest_z
+                                    flagdetected = True
                                 else:
-                                    # if closest profile point z is lower than pipe (& AntiSpoof)
-                                    # takes closest point to min_cx where z < lower than pipe wall (& antispoof)
-                                    if len(flagspot[:, 0][flagspot[:, 1] < self.min_cz - self.pipeR]) != 0:
-                                        fl_ix = np.argmin(
-                                            np.abs(flagspot[:, 0][flagspot[:, 1] < self.min_cz - self.pipeR] - self.min_cx))
-                                        fl_x = (flagspot[:][flagspot[:, 1] < self.min_cz - self.pipeR])[fl_ix, 0]
-                                        fl_z = (flagspot[:][flagspot[:, 1] < self.min_cz - self.pipeR])[fl_ix, 1]
-                                        flagdetected = True
+                                    if closest_z > self.min_cz + self.pipeR + self.AntiSpoof:
+                                        # if closest profile point z is higher than pipe (& AntiSpoof)
+                                        # takes point closest to min_cx
+                                        if len(flagspot[:, 0]) != 0:
+                                            fl_ix = np.argmin(np.abs(flagspot[:, 0] - self.min_cx))
+                                            fl_x, fl_z = flagspot[fl_ix, 0], flagspot[fl_ix, 1]
+                                            flagdetected = True
+                                    else:
+                                        # if closest profile point z is lower than pipe (& AntiSpoof)
+                                        # takes closest point to min_cx where z < lower than pipe wall (& antispoof)
+                                        if len(flagspot[:, 0][flagspot[:, 1] < self.min_cz - self.pipeR]) != 0:
+                                            fl_ix = np.argmin(
+                                                np.abs(flagspot[:, 0][flagspot[:, 1] < self.min_cz - self.pipeR] - self.min_cx))
+                                            fl_x = (flagspot[:][flagspot[:, 1] < self.min_cz - self.pipeR])[fl_ix, 0]
+                                            fl_z = (flagspot[:][flagspot[:, 1] < self.min_cz - self.pipeR])[fl_ix, 1]
+                                            flagdetected = True
 
-                            if side == 'l' and flagdetected:
-                                self.li_x, self.li_z = fl_x, fl_z
-                            if side == 'r' and flagdetected:
-                                self.ri_x, self.ri_z = fl_x, fl_z
+                                if side == 'l' and flagdetected:
+                                    self.li_x, self.li_z = fl_x, fl_z
+                                if side == 'r' and flagdetected:
+                                    self.ri_x, self.ri_z = fl_x, fl_z
 
-                # outer flags
-                self.lo_ix = np.argmin(np.abs(self.profile[:, 0] - (self.min_cx - self.FoDist)))
-                self.ro_ix = np.argmin(np.abs(self.profile[:, 0] - (self.min_cx + self.FoDist)))
-                self.lo_z, self.ro_z = self.profile[self.lo_ix, 1], self.profile[self.ro_ix, 1]
+                    # outer flags
+                    self.lo_ix = np.argmin(np.abs(self.profile[:, 0] - (self.min_cx - self.FoDist)))
+                    self.ro_ix = np.argmin(np.abs(self.profile[:, 0] - (self.min_cx + self.FoDist)))
+                    self.lo_z, self.ro_z = self.profile[self.lo_ix, 1], self.profile[self.ro_ix, 1]
 
-                if not self._controller._mainWin.ch_FoSnap.isChecked():
-                    self.lo_x, self.ro_x = self.min_cx - self.FoDist, self.min_cx + self.FoDist
-                else:
-                    self.lo_x, self.ro_x = self.profile[self.lo_ix, 0], self.profile[self.ro_ix, 0]
+                    if not self._controller._mainWin.ch_FoSnap.isChecked():
+                        self.lo_x, self.ro_x = self.min_cx - self.FoDist, self.min_cx + self.FoDist
+                    else:
+                        self.lo_x, self.ro_x = self.profile[self.lo_ix, 0], self.profile[self.ro_ix, 0]
 
-            except:
-                pass
+                except:
+                    pass
 
-            # write to flush flags x & z
-            self.flush[self.prno, 5] = self.flush[self.prno:, 5][self.flush[self.prno:, 11] == 0] = self.li_x
-            self.flush[self.prno, 6] = self.flush[self.prno:, 6][self.flush[self.prno:, 11] == 0] = self.li_z
-            self.flush[self.prno, 7] = self.flush[self.prno:, 7][self.flush[self.prno:, 11] == 0] = self.ri_x
-            self.flush[self.prno, 8] = self.flush[self.prno:, 8][self.flush[self.prno:, 11] == 0] = self.ri_z
-            self.flush[self.prno, 16] = self.flush[self.prno:, 16][self.flush[self.prno:, 11] == 0] = self.lo_x
-            self.flush[self.prno, 17] = self.flush[self.prno:, 17][self.flush[self.prno:, 11] == 0] = self.lo_z
-            self.flush[self.prno, 18] = self.flush[self.prno:, 18][self.flush[self.prno:, 11] == 0] = self.ro_x
-            self.flush[self.prno, 19] = self.flush[self.prno:, 19][self.flush[self.prno:, 11] == 0] = self.ro_z
+                # write to flush flags x & z
+                self.flush[self.prno, 5] = self.flush[self.prno:, 5][self.flush[self.prno:, 11] == 0] = self.li_x
+                self.flush[self.prno, 6] = self.flush[self.prno:, 6][self.flush[self.prno:, 11] == 0] = self.li_z
+                self.flush[self.prno, 7] = self.flush[self.prno:, 7][self.flush[self.prno:, 11] == 0] = self.ri_x
+                self.flush[self.prno, 8] = self.flush[self.prno:, 8][self.flush[self.prno:, 11] == 0] = self.ri_z
+                self.flush[self.prno, 16] = self.flush[self.prno:, 16][self.flush[self.prno:, 11] == 0] = self.lo_x
+                self.flush[self.prno, 17] = self.flush[self.prno:, 17][self.flush[self.prno:, 11] == 0] = self.lo_z
+                self.flush[self.prno, 18] = self.flush[self.prno:, 18][self.flush[self.prno:, 11] == 0] = self.ro_x
+                self.flush[self.prno, 19] = self.flush[self.prno:, 19][self.flush[self.prno:, 11] == 0] = self.ro_z
 
-            # flags en
-            ref_east, ref_north, hdg = self.flush[self.prno, 0], self.flush[self.prno, 1], self.flush[self.prno, 2]
-            # left inner flag
-            li_en = _F_funcs.Rotation2D(self.li_x, ref_east, ref_north, hdg)
-            li_e, li_n = round(li_en[0], 3), round(li_en[1], 3)
-            # right inner flag
-            ri_en = _F_funcs.Rotation2D(self.ri_x, ref_east, ref_north, hdg)
-            ri_e, ri_n = round(ri_en[0], 3), round(ri_en[1], 3)
-            # left outer flag
-            lo_en = _F_funcs.Rotation2D(self.lo_x, ref_east, ref_north, hdg)
-            lo_e, lo_n = round(lo_en[0], 3), round(lo_en[1], 3)
-            # right inner flag
-            ro_en = _F_funcs.Rotation2D(self.ro_x, ref_east, ref_north, hdg)
-            ro_e, ro_n = round(ro_en[0], 3), round(ro_en[1], 3)
+                # flags en
+                ref_east, ref_north, hdg = self.flush[self.prno, 0], self.flush[self.prno, 1], self.flush[self.prno, 2]
+                # left inner flag
+                li_en = _F_funcs.Rotation2D(self.li_x, ref_east, ref_north, hdg)
+                li_e, li_n = round(li_en[0], 3), round(li_en[1], 3)
+                # right inner flag
+                ri_en = _F_funcs.Rotation2D(self.ri_x, ref_east, ref_north, hdg)
+                ri_e, ri_n = round(ri_en[0], 3), round(ri_en[1], 3)
+                # left outer flag
+                lo_en = _F_funcs.Rotation2D(self.lo_x, ref_east, ref_north, hdg)
+                lo_e, lo_n = round(lo_en[0], 3), round(lo_en[1], 3)
+                # right inner flag
+                ro_en = _F_funcs.Rotation2D(self.ro_x, ref_east, ref_north, hdg)
+                ro_e, ro_n = round(ro_en[0], 3), round(ro_en[1], 3)
 
-            # write to flash flags e & n
-            self.flush[self.prno, 20] = li_e
-            self.flush[self.prno, 21] = li_n
-            self.flush[self.prno, 22] = ri_e
-            self.flush[self.prno, 23] = ri_n
-            self.flush[self.prno, 24] = lo_e
-            self.flush[self.prno, 25] = lo_n
-            self.flush[self.prno, 26] = ro_e
-            self.flush[self.prno, 27] = ro_n
+                # write to flash flags e & n
+                self.flush[self.prno, 20] = li_e
+                self.flush[self.prno, 21] = li_n
+                self.flush[self.prno, 22] = ri_e
+                self.flush[self.prno, 23] = ri_n
+                self.flush[self.prno, 24] = lo_e
+                self.flush[self.prno, 25] = lo_n
+                self.flush[self.prno, 26] = ro_e
+                self.flush[self.prno, 27] = ro_n
 
-            # write to flash flag = 'visited'
-            self.flush[self.prno, 11] = 1
-            if not self._controller.TopSnap:
-                self.flush[self.prno, 30] = 1
+                # write to flash flag = 'visited'
+                self.flush[self.prno, 11] = 1
+                # write to flash flag = 'from pipe'
+                if not self._controller.TopSnap:
+                    self.flush[self.prno, 30] = 1
 
 
-        if not self._controller.Interpflag and not self._controller.DoPipe:
-            pass
+            # if not self._controller.Interpflag and not self._controller.DoPipe:
+            #     pass
 
 
