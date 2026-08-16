@@ -187,6 +187,8 @@ class Model:
 
             if self._controller.Ptflag:
                 # interpolating tide from flush to pipetracker filed 7
+                self.pipetracker[:, 7] = np.interp(self.pipetracker[:, 0], self.flush[:, 14],
+                                                   self.flush[:, 15])
                 self.pipetracker_W[:, 7] = np.interp(self.pipetracker_W[:, 0], self.flush[:, 14],
                                                      self.flush[:, 15])
 
@@ -252,13 +254,16 @@ class Model:
                     self.pipetracker = pickle.load(loadfile)
 
             # FOR ALL PT TYPES
+            self._controller.Ptflag = True
+            # initial weed pipetracker
+            self.weed_pipetracker()
+
             # interpolating tide from flush to pipetracker filed 7
             if self._controller.Tideflag:
                 self.pipetracker[:, 7] = np.interp(self.pipetracker[:, 0], self.flush[:, 14],
                                                    self.flush[:, 15])
-
-            self.weed_pipetracker()
-            self._controller.Ptflag = True
+                self.pipetracker_W[:, 7] = np.interp(self.pipetracker_W[:, 0], self.flush[:, 14],
+                                                   self.flush[:, 15])
 
 
     def load_image(self, _ext, fName):

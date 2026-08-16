@@ -1216,11 +1216,11 @@ class Controller:
             # lView
             ixp = 0 if self._lv.ch_Time_Chn.isChecked() else 8  # pipetracker np field index time/ KP on Lview
             # tide for pipetracker on long
-            TP_acc = self._mainWin.ch_ApplyTide.isChecked() * self._model.pipetracker_W[:, 7]
+            TP = self._mainWin.ch_ApplyTide.isChecked() * self._model.pipetracker_W[:, 7]
             self._lv.pt_acc.setData(self._model.pipetracker_W[:, ixp],
                                     self._model.pipetracker_W[:, 6] +
                                     self._model.pipetracker_W[:, 11]
-                                    + TP_acc,
+                                    + TP,
                                     connect=accepted_mask)
 
         else:
