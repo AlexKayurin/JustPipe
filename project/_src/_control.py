@@ -980,6 +980,7 @@ class Controller:
 
 
     def update_views(self):
+        # POI button icons
         for but in [self._xv.b_POI , self._pv.b_POI, self._lv.b_POI]:
             if self._model.flush[self._model.prno, 29]:
                     but.setText('\u2717')
@@ -991,7 +992,13 @@ class Controller:
         # profile timestamp (for DV)
         tstamp = self._model.flush[self._model.prno, 14] + self._model.Tzone * 3600
         # pipe & flags coordinates
-        pipe_coord = [self._model.flush[self._model.prno, 3], self._model.flush[self._model.prno, 4] - self._model.pipeR]
+        # R - pipe radius form flush for visited, pipeR for running
+        if self._model.flush[self._model.prno, 31] != 0:
+            R = self._model.flush[self._model.prno, 31] / 2
+        else:
+            R = self._model.pipeR
+        pipe_coord = [self._model.flush[self._model.prno, 3], self._model.flush[self._model.prno, 4] - R]
+
         l_inner_coord = [self._model.flush[self._model.prno, 5], self._model.flush[self._model.prno, 6]]
         r_inner_coord = [self._model.flush[self._model.prno, 7], self._model.flush[self._model.prno, 8]]
         l_outer_coord = [self._model.flush[self._model.prno, 16], self._model.flush[self._model.prno, 17]]
@@ -1024,6 +1031,7 @@ class Controller:
         # profile
         self._xv.x_prof.setData(self._model.profile[:, 0], self._model.profile[:, 1] + TXC)
         # pipe/walls/antispoof
+        self._model.make_shapes()
         self._xv.pipe_P.setPos(pipe_coord[0], pipe_coord[1] + TXC)
         self._xv.pipe_I.setPos(pipe_coord[0], pipe_coord[1] + TXC)
         self._xv.pipe_O.setPos(pipe_coord[0], pipe_coord[1] + TXC)
@@ -1165,7 +1173,7 @@ class Controller:
             # bop visited
             self._lv.visited_bot.setData(self._model.flush[:, ixf],
                                          self._model.flush[:, 4] -
-                                            self._model.pipeD + TLV, connect=visited_mask)
+                                            self._model.flush[:, 31] + TLV, connect=visited_mask)
         else:
             pass
         # madj/msbl

@@ -45,7 +45,7 @@ class Model:
 
             self.no_of_prof = len(self.profiles_from_file)
             # initial self.flush array for TOP/LI/RI - '0' timestamps will be removed in final
-            self.flush = np.zeros((self.no_of_prof, 31))
+            self.flush = np.zeros((self.no_of_prof, 32))
 
             for line in self.profiles_from_file:
                 try:
@@ -106,7 +106,7 @@ class Model:
 
             self.no_of_prof = len(self.profiles_from_file)
             # initial self.flush array for TOP/LI/RI - '0' timestamps will be removed in final
-            self.flush = np.zeros((self.no_of_prof, 31))
+            self.flush = np.zeros((self.no_of_prof, 32))
 
             for line in self.profiles_from_file:
                 try:
@@ -500,6 +500,7 @@ class Model:
 
         self.flush[chs:che + 1, 11] = 0
         self.flush[chs:che + 1, 30] = 0
+        self.flush[chs:che + 1, 31] = 0
         self.flush[chs:che + 1, 9] = self.flush[chs:che + 1, 0]
         self.flush[chs:che + 1, 10] = self.flush[chs:che + 1, 1]
         self.flush[chs:che + 1, 4] = self.flush[chs, 4]
@@ -709,22 +710,28 @@ class Model:
 
     def make_shapes(self):
         # make shapes of view elements (pipe, walls, antispoof)
-        pipe_P_pts = [self.pipeR * self.pipeshape_cos,
-                      self.pipeR * self.pipeshape_sin]
-        pipe_I_pts = [self.inWall * self.pipeR * self.pipeshape_cos,
-                      self.inWall * self.pipeR * self.pipeshape_sin]
-        pipe_O_pts = [self.outWall * self.pipeR * self.pipeshape_cos,
-                      self.outWall * self.pipeR * self.pipeshape_sin]
+        # R - pipe radius form flush for visited, pipeR for running
+        if self.flush[self.prno, 31] != 0:
+            R = self.flush[self.prno, 31] / 2
+        else:
+            R = self.pipeR
+
+        pipe_P_pts = [R * self.pipeshape_cos,
+                      R * self.pipeshape_sin]
+        pipe_I_pts = [self.inWall * R * self.pipeshape_cos,
+                      self.inWall * R * self.pipeshape_sin]
+        pipe_O_pts = [self.outWall * R * self.pipeshape_cos,
+                      self.outWall * R * self.pipeshape_sin]
         # -------------------------antispoof
-        ax = ((self.pipeR + self.AntiSpoof) *
+        ax = ((R + self.AntiSpoof) *
               self.pipeshape_cos[(180 - int(self.AntiSpoof_A)):(180 + int(self.AntiSpoof_A))])
-        ay = ((self.pipeR + self.AntiSpoof) *
+        ay = ((R + self.AntiSpoof) *
               self.pipeshape_sin[(180 - int(self.AntiSpoof_A)):(180 + int(self.AntiSpoof_A))])
         pipe_A_pts = [np.hstack((np.zeros((1)), ax, np.zeros((1)))),
                       np.hstack((np.zeros((1)), ay, np.zeros((1))))]
         # -------------------------
-        assist_pts = [self.pipeR * self.pipeshape_cos,
-                      self.pipeR * self.pipeshape_sin]
+        assist_pts = [R * self.pipeshape_cos,
+                      R * self.pipeshape_sin]
         pt_sel_pts_p = [(self.EditSpot / 2) * self.pipeshape_cos,
                         (self.EditSpot / 2) * self.pipeshape_sin]
         pt_sel_pts_l = [(self.EditSpot / 2) * self.pipeshape_cos,
@@ -762,7 +769,7 @@ class Model:
         self.flush[self.prno, 3] = self.min_cx
         self.flush[self.prno, 4] = self.flush[self.prno:, 4][
             self.flush[self.prno:, 11] == 0] = self.min_cz + self.pipeR  # + T
-        # write to flush top_, top_n
+        # write to flush top_, top_n, pipeD
         ref_east, ref_north, hdg = (self.flush[self.prno, 0],
                                     self.flush[self.prno, 1],
                                     self.flush[self.prno, 2])
@@ -771,6 +778,7 @@ class Model:
                                   self.flush[self.prno, 1], hdg)
         self.flush[self.prno, 9] = top[0]
         self.flush[self.prno, 10] = top[1]
+        self.flush[self.prno, 31] = self.pipeD
 
         self._controller.ManualPipe = True
 
@@ -888,10 +896,12 @@ class Model:
             # xini for next profile
             self.xini = self.min_cx
 
-            # write to flush: top_x, top_z
+            # write to flush: top_x, top_z, pipeD
             self.flush[self.prno, 3] = self.min_cx
             self.flush[self.prno, 4] = self.flush[self.prno:, 4][self.flush[self.prno:, 11] == 0] =(
                     self.min_cz + self.pipeR)
+
+        self.flush[self.prno, 31] = self.pipeD
 
         self._controller.ManualPipe = False       # reset flag if manual pipe placement was done
 
